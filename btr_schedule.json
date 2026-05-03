@@ -1,0 +1,1464 @@
+{
+  "title": "BTR Blueprint \u2014 NEET PG / AIIMS PG 2026",
+  "description": "16-week BTR-based study plan for a working doctor on rotating shifts (Morning/Evening/Night/Day-off). High-yield subjects first. Double watch on Pharma, Path, Biochemistry, PSM+Infections. Two buffer weeks for wedding events. Target: complete all content by July 31, 2026.",
+  "targetDate": "2026-07-31",
+  "cycleLengthDays": 112,
+  "timetable": [
+    {
+      "dayNumber": 1,
+      "slots": [
+        {
+          "subject": "CVS System",
+          "topic": "Introduction to CVS \u00b7 Heart failure \u2014 types, classification, pathophysiology"
+        },
+        {
+          "subject": "CVS System",
+          "topic": "Heart failure \u2014 clinical features, investigations, management"
+        }
+      ]
+    },
+    {
+      "dayNumber": 2,
+      "slots": [
+        {
+          "subject": "CVS System",
+          "topic": "Ischemic heart disease \u2014 angina, pathophysiology, types"
+        },
+        {
+          "subject": "CVS System",
+          "topic": "Myocardial infarction \u2014 STEMI vs NSTEMI, complications, management"
+        }
+      ]
+    },
+    {
+      "dayNumber": 3,
+      "slots": [
+        {
+          "subject": "CVS System",
+          "topic": "Arrhythmias \u2014 atrial fibrillation, flutter, SVT, WPW syndrome"
+        },
+        {
+          "subject": "CVS System",
+          "topic": "Ventricular arrhythmias \u00b7 Conduction defects \u2014 heart blocks, BBB"
+        }
+      ]
+    },
+    {
+      "dayNumber": 4,
+      "slots": [
+        {
+          "subject": "CVS System",
+          "topic": "Hypertension \u2014 classification, JNC guidelines, target organ damage, management"
+        },
+        {
+          "subject": "CVS System",
+          "topic": "Secondary hypertension \u00b7 Hypertensive urgency vs emergency"
+        }
+      ]
+    },
+    {
+      "dayNumber": 5,
+      "slots": [
+        {
+          "subject": "CVS System",
+          "topic": "Valvular diseases \u2014 mitral stenosis, mitral regurgitation"
+        },
+        {
+          "subject": "CVS System",
+          "topic": "Valvular diseases \u2014 aortic stenosis, aortic regurgitation \u00b7 Prosthetic valves"
+        }
+      ]
+    },
+    {
+      "dayNumber": 6,
+      "slots": [
+        {
+          "subject": "CVS System",
+          "topic": "Pericardial diseases \u2014 pericarditis, pericardial effusion, cardiac tamponade"
+        },
+        {
+          "subject": "CVS System",
+          "topic": "Aortic diseases \u2014 aortic aneurysm, aortic dissection \u00b7 Cardiomyopathies"
+        }
+      ]
+    },
+    {
+      "dayNumber": 7,
+      "slots": [
+        {
+          "subject": "CVS System",
+          "topic": "PYQ Practice \u2014 CVS (INICET + NEET PG last 4 years)"
+        },
+        {
+          "subject": "CVS System",
+          "topic": "Q-Bank \u2014 CVS high yield MCQs + active recall revision"
+        }
+      ]
+    },
+    {
+      "dayNumber": 8,
+      "slots": [
+        {
+          "subject": "Respiratory System",
+          "topic": "COPD \u2014 definition, GOLD classification, pathophysiology, management"
+        },
+        {
+          "subject": "Respiratory System",
+          "topic": "Asthma \u2014 classification, spirometry, stepwise management, status asthmaticus"
+        }
+      ]
+    },
+    {
+      "dayNumber": 9,
+      "slots": [
+        {
+          "subject": "Respiratory System",
+          "topic": "ILD \u2014 UIP, NSIP, COP, hypersensitivity pneumonitis, sarcoidosis"
+        },
+        {
+          "subject": "Respiratory System",
+          "topic": "Pulmonary hypertension \u2014 primary and secondary, WHO classification"
+        }
+      ]
+    },
+    {
+      "dayNumber": 10,
+      "slots": [
+        {
+          "subject": "Respiratory System",
+          "topic": "Pleural effusion \u2014 exudate vs transudate, Light's criteria \u00b7 Pneumothorax"
+        },
+        {
+          "subject": "Respiratory System",
+          "topic": "Lung cancers \u2014 types, staging, paraneoplastic syndromes \u00b7 PYQ practice"
+        }
+      ]
+    },
+    {
+      "dayNumber": 11,
+      "slots": [
+        {
+          "subject": "Renal System",
+          "topic": "Glomerulonephritis \u2014 classification, nephritic vs nephrotic, RPGN"
+        },
+        {
+          "subject": "Renal System",
+          "topic": "Nephrotic syndrome \u2014 primary and secondary causes, complications, management"
+        }
+      ]
+    },
+    {
+      "dayNumber": 12,
+      "slots": [
+        {
+          "subject": "Renal System",
+          "topic": "AKI \u2014 KDIGO classification, causes, FENa, management, dialysis indications"
+        },
+        {
+          "subject": "Renal System",
+          "topic": "CKD \u2014 staging, complications, anemia of CKD, renal osteodystrophy"
+        }
+      ]
+    },
+    {
+      "dayNumber": 13,
+      "slots": [
+        {
+          "subject": "Renal System",
+          "topic": "Tubular disorders \u2014 RTA types, Fanconi syndrome, Bartter, Gitelman"
+        },
+        {
+          "subject": "Renal System",
+          "topic": "Renovascular hypertension \u00b7 Renal tubular acidosis \u2014 clinical approach"
+        }
+      ]
+    },
+    {
+      "dayNumber": 14,
+      "slots": [
+        {
+          "subject": "Respiratory System",
+          "topic": "PYQ + Q-Bank \u2014 Respiratory (all PYQs last 4 NEET PG + INICET)"
+        },
+        {
+          "subject": "Renal System",
+          "topic": "PYQ + Q-Bank \u2014 Renal \u00b7 Combined active recall revision"
+        }
+      ]
+    },
+    {
+      "dayNumber": 15,
+      "slots": [
+        {
+          "subject": "Neurology",
+          "topic": "Stroke \u2014 ischemic vs hemorrhagic, NIHSS, thrombolysis, management"
+        },
+        {
+          "subject": "Neurology",
+          "topic": "TIA \u00b7 Subarachnoid hemorrhage \u00b7 Cerebral venous sinus thrombosis"
+        }
+      ]
+    },
+    {
+      "dayNumber": 16,
+      "slots": [
+        {
+          "subject": "Neurology",
+          "topic": "Epilepsy \u2014 classification, EEG, antiepileptics, status epilepticus management"
+        },
+        {
+          "subject": "Neurology",
+          "topic": "Movement disorders \u2014 Parkinson's, Huntington's, Wilson's, essential tremor"
+        }
+      ]
+    },
+    {
+      "dayNumber": 17,
+      "slots": [
+        {
+          "subject": "Neurology",
+          "topic": "Demyelinating diseases \u2014 MS, NMO, ADEM \u00b7 Dementia \u2014 Alzheimer's, Lewy body"
+        },
+        {
+          "subject": "Neurology",
+          "topic": "Peripheral neuropathy \u2014 GBS, CIDP, mononeuritis multiplex \u00b7 MND"
+        }
+      ]
+    },
+    {
+      "dayNumber": 18,
+      "slots": [
+        {
+          "subject": "GI System",
+          "topic": "IBD \u2014 Crohn's vs Ulcerative colitis \u2014 differences, complications, management"
+        },
+        {
+          "subject": "GI System",
+          "topic": "Liver diseases \u2014 viral hepatitis A/B/C/D/E \u2014 serology, natural history, treatment"
+        }
+      ]
+    },
+    {
+      "dayNumber": 19,
+      "slots": [
+        {
+          "subject": "GI System",
+          "topic": "Cirrhosis \u2014 Child-Pugh, MELD score \u00b7 Portal hypertension \u2014 varices, splenomegaly"
+        },
+        {
+          "subject": "GI System",
+          "topic": "Hepatic encephalopathy \u00b7 SBP \u00b7 Hepatorenal syndrome \u00b7 Hepatopulmonary"
+        }
+      ]
+    },
+    {
+      "dayNumber": 20,
+      "slots": [
+        {
+          "subject": "GI System",
+          "topic": "Pancreatitis \u2014 acute (Ranson, Atlanta classification) \u00b7 Chronic pancreatitis"
+        },
+        {
+          "subject": "GI System",
+          "topic": "GI malignancies \u2014 HCC, cholangiocarcinoma, pancreatic cancer, CRC staging"
+        }
+      ]
+    },
+    {
+      "dayNumber": 21,
+      "slots": [
+        {
+          "subject": "Neurology",
+          "topic": "PYQ + Q-Bank \u2014 Neurology (INICET + NEET PG)"
+        },
+        {
+          "subject": "GI System",
+          "topic": "PYQ + Q-Bank \u2014 GI System \u00b7 Active recall both subjects"
+        }
+      ]
+    },
+    {
+      "dayNumber": 22,
+      "slots": [
+        {
+          "subject": "Hematology",
+          "topic": "Anemias \u2014 iron deficiency, megaloblastic, sideroblastic, aplastic \u2014 approach and management"
+        },
+        {
+          "subject": "Hematology",
+          "topic": "Hemolytic anemias \u2014 G6PD, hereditary spherocytosis, PNH, autoimmune hemolytic"
+        }
+      ]
+    },
+    {
+      "dayNumber": 23,
+      "slots": [
+        {
+          "subject": "Hematology",
+          "topic": "Thalassemias \u2014 alpha and beta \u00b7 Sickle cell disease \u00b7 Hemoglobinopathies"
+        },
+        {
+          "subject": "Hematology",
+          "topic": "Leukemias \u2014 ALL, AML, CLL, CML \u2014 classification, cytogenetics, treatment"
+        }
+      ]
+    },
+    {
+      "dayNumber": 24,
+      "slots": [
+        {
+          "subject": "Hematology",
+          "topic": "Lymphomas \u2014 Hodgkin's vs NHL \u2014 staging, Reed-Sternberg, treatment"
+        },
+        {
+          "subject": "Hematology",
+          "topic": "Coagulation disorders \u2014 hemophilia A/B, VWD, DIC, thrombocytopenia"
+        }
+      ]
+    },
+    {
+      "dayNumber": 25,
+      "slots": [
+        {
+          "subject": "Rheumatology",
+          "topic": "Rheumatoid arthritis \u2014 criteria, extra-articular, DMARDs, biologics"
+        },
+        {
+          "subject": "Rheumatology",
+          "topic": "SLE \u2014 ACR/EULAR criteria, lupus nephritis, ANA panel, treatment"
+        }
+      ]
+    },
+    {
+      "dayNumber": 26,
+      "slots": [
+        {
+          "subject": "Rheumatology",
+          "topic": "Spondyloarthropathies \u2014 AS, psoriatic arthritis, reactive arthritis, IBD-associated"
+        },
+        {
+          "subject": "Rheumatology",
+          "topic": "Vasculitides \u2014 GCA, Takayasu, Wegener's (GPA), Churg-Strauss, PAN, Kawasaki"
+        }
+      ]
+    },
+    {
+      "dayNumber": 27,
+      "slots": [
+        {
+          "subject": "Immunology",
+          "topic": "Immunodeficiency disorders \u2014 primary (SCID, Bruton's, DiGeorge) and secondary"
+        },
+        {
+          "subject": "Immunology",
+          "topic": "Hypersensitivity reactions \u2014 Type I\u2013IV \u00b7 Complement system \u00b7 Autoimmunity basics"
+        }
+      ]
+    },
+    {
+      "dayNumber": 28,
+      "slots": [
+        {
+          "subject": "Hematology",
+          "topic": "PYQ + Q-Bank \u2014 Hematology + Rheumatology"
+        },
+        {
+          "subject": "Immunology",
+          "topic": "PYQ + Q-Bank \u2014 Immunology \u00b7 Active recall all three subjects"
+        }
+      ]
+    },
+    {
+      "dayNumber": 29,
+      "slots": [
+        {
+          "subject": "BUFFER WEEK",
+          "topic": "Spaced recall \u2014 CVS + Respiratory (flashcards + BTR pearls only)"
+        },
+        {
+          "subject": "BUFFER WEEK",
+          "topic": "PYQ revision \u2014 CVS (ZV recommended tag only)"
+        }
+      ]
+    },
+    {
+      "dayNumber": 30,
+      "slots": [
+        {
+          "subject": "BUFFER WEEK",
+          "topic": "Spaced recall \u2014 Renal + Neuro (flashcards + BTR pearls only)"
+        },
+        {
+          "subject": "BUFFER WEEK",
+          "topic": "PYQ revision \u2014 Renal (ZV recommended tag only)"
+        }
+      ]
+    },
+    {
+      "dayNumber": 31,
+      "slots": [
+        {
+          "subject": "BUFFER WEEK",
+          "topic": "Spaced recall \u2014 GI + Hematology (flashcards + BTR pearls only)"
+        },
+        {
+          "subject": "BUFFER WEEK",
+          "topic": "PYQ revision \u2014 Neuro + GI (ZV recommended tag only)"
+        }
+      ]
+    },
+    {
+      "dayNumber": 32,
+      "slots": [
+        {
+          "subject": "BUFFER WEEK",
+          "topic": "Spaced recall \u2014 Rheumatology + Immunology"
+        },
+        {
+          "subject": "BUFFER WEEK",
+          "topic": "PYQ revision \u2014 Hematology (ZV recommended tag only)"
+        }
+      ]
+    },
+    {
+      "dayNumber": 33,
+      "slots": [
+        {
+          "subject": "BUFFER WEEK",
+          "topic": "Weak area identification \u2014 review wrong PYQs from weeks 1\u20134"
+        },
+        {
+          "subject": "BUFFER WEEK",
+          "topic": "Rest and family time \u2014 no new content"
+        }
+      ]
+    },
+    {
+      "dayNumber": 34,
+      "slots": [
+        {
+          "subject": "BUFFER WEEK",
+          "topic": "Light pearls + flashcards only \u2014 any subject"
+        },
+        {
+          "subject": "BUFFER WEEK",
+          "topic": "Rest \u2014 this is planned rest, not procrastination"
+        }
+      ]
+    },
+    {
+      "dayNumber": 35,
+      "slots": [
+        {
+          "subject": "BUFFER WEEK",
+          "topic": "Prepare for Phase 1 continuation \u2014 review Week 6 topics ahead"
+        },
+        {
+          "subject": "BUFFER WEEK",
+          "topic": "Mindset reset \u2014 re-read your plan"
+        }
+      ]
+    },
+    {
+      "dayNumber": 36,
+      "slots": [
+        {
+          "subject": "Endocrinology",
+          "topic": "Diabetes mellitus \u2014 type 1 vs 2, pathophysiology, insulin types, OHAs"
+        },
+        {
+          "subject": "Endocrinology",
+          "topic": "Diabetic complications \u2014 DKA, HHS, microvascular and macrovascular"
+        }
+      ]
+    },
+    {
+      "dayNumber": 37,
+      "slots": [
+        {
+          "subject": "Endocrinology",
+          "topic": "Thyroid disorders \u2014 hypothyroidism, hyperthyroidism (Graves', toxic nodular), thyroiditis"
+        },
+        {
+          "subject": "Endocrinology",
+          "topic": "Thyroid cancer \u2014 papillary, follicular, medullary, anaplastic \u00b7 Thyroid function tests"
+        }
+      ]
+    },
+    {
+      "dayNumber": 38,
+      "slots": [
+        {
+          "subject": "Endocrinology",
+          "topic": "Adrenal disorders \u2014 Cushing's syndrome/disease, Addison's disease, CAH, pheochromocytoma"
+        },
+        {
+          "subject": "Endocrinology",
+          "topic": "Pituitary disorders \u2014 acromegaly, prolactinoma, hypopituitarism, DI, SIADH"
+        }
+      ]
+    },
+    {
+      "dayNumber": 39,
+      "slots": [
+        {
+          "subject": "Endocrinology",
+          "topic": "Calcium metabolism \u2014 hyperparathyroidism, hypoparathyroidism, osteoporosis, Paget's disease"
+        },
+        {
+          "subject": "Endocrinology",
+          "topic": "MEN syndromes \u2014 MEN 1, 2A, 2B \u00b7 Carcinoid \u00b7 Insulinoma \u00b7 Glucagonoma"
+        }
+      ]
+    },
+    {
+      "dayNumber": 40,
+      "slots": [
+        {
+          "subject": "General Physiology",
+          "topic": "Membrane physiology \u2014 resting membrane potential, action potential, Na-K ATPase"
+        },
+        {
+          "subject": "General Physiology",
+          "topic": "Neuromuscular junction \u2014 nicotinic receptors, neurotransmitters, myasthenia gravis relevance"
+        }
+      ]
+    },
+    {
+      "dayNumber": 41,
+      "slots": [
+        {
+          "subject": "General Physiology",
+          "topic": "Neurophysiology \u2014 autonomic nervous system, receptor pharmacology integration"
+        },
+        {
+          "subject": "General Physiology",
+          "topic": "Cardiac physiology \u2014 Frank-Starling, cardiac cycle, JVP waveforms, Starling forces"
+        }
+      ]
+    },
+    {
+      "dayNumber": 42,
+      "slots": [
+        {
+          "subject": "Endocrinology",
+          "topic": "PYQ + Q-Bank \u2014 Endocrinology (high yield)"
+        },
+        {
+          "subject": "General Physiology",
+          "topic": "PYQ + Q-Bank \u2014 General Physiology \u00b7 Active recall revision"
+        }
+      ]
+    },
+    {
+      "dayNumber": 43,
+      "slots": [
+        {
+          "subject": "General Pharmacology [DW]",
+          "topic": "FIRST WATCH \u2014 Pharmacokinetics: absorption, distribution, metabolism, excretion, bioavailability"
+        },
+        {
+          "subject": "General Pharmacology [DW]",
+          "topic": "FIRST WATCH \u2014 Pharmacodynamics: receptor types, agonist/antagonist, dose-response curves"
+        }
+      ]
+    },
+    {
+      "dayNumber": 44,
+      "slots": [
+        {
+          "subject": "General Pharmacology [DW]",
+          "topic": "SECOND WATCH \u2014 Pharmacokinetics + active recall workbook"
+        },
+        {
+          "subject": "General Pharmacology [DW]",
+          "topic": "SECOND WATCH \u2014 Pharmacodynamics + PYQ practice"
+        }
+      ]
+    },
+    {
+      "dayNumber": 45,
+      "slots": [
+        {
+          "subject": "General Pharmacology [DW]",
+          "topic": "FIRST WATCH \u2014 Autonomic pharmacology: sympathomimetics, adrenergic blockers"
+        },
+        {
+          "subject": "General Pharmacology [DW]",
+          "topic": "FIRST WATCH \u2014 Cholinergic drugs, anticholinesterases, neuromuscular blockers"
+        }
+      ]
+    },
+    {
+      "dayNumber": 46,
+      "slots": [
+        {
+          "subject": "General Pharmacology [DW]",
+          "topic": "SECOND WATCH \u2014 Autonomic pharmacology + active recall workbook"
+        },
+        {
+          "subject": "General Pathology [DW]",
+          "topic": "FIRST WATCH \u2014 Cell injury: causes, reversible vs irreversible, apoptosis vs necrosis"
+        }
+      ]
+    },
+    {
+      "dayNumber": 47,
+      "slots": [
+        {
+          "subject": "General Pathology [DW]",
+          "topic": "FIRST WATCH \u2014 Inflammation: acute vs chronic, mediators, granuloma, healing"
+        },
+        {
+          "subject": "General Pathology [DW]",
+          "topic": "FIRST WATCH \u2014 Neoplasia: dysplasia, metaplasia, benign vs malignant, tumor markers"
+        }
+      ]
+    },
+    {
+      "dayNumber": 48,
+      "slots": [
+        {
+          "subject": "General Pathology [DW]",
+          "topic": "SECOND WATCH \u2014 Cell injury + Inflammation + active recall workbook"
+        },
+        {
+          "subject": "General Pathology [DW]",
+          "topic": "SECOND WATCH \u2014 Neoplasia + PYQ practice \u2014 Path"
+        }
+      ]
+    },
+    {
+      "dayNumber": 49,
+      "slots": [
+        {
+          "subject": "General Pharmacology [DW]",
+          "topic": "PYQ + Q-Bank \u2014 General Pharmacology (all ZV recommended PYQs)"
+        },
+        {
+          "subject": "General Pathology [DW]",
+          "topic": "PYQ + Q-Bank \u2014 General Pathology (all ZV recommended PYQs)"
+        }
+      ]
+    },
+    {
+      "dayNumber": 50,
+      "slots": [
+        {
+          "subject": "Biochemistry [DW]",
+          "topic": "FIRST WATCH \u2014 Carbohydrate metabolism: glycolysis, TCA cycle, gluconeogenesis, glycogen metabolism"
+        },
+        {
+          "subject": "Biochemistry [DW]",
+          "topic": "FIRST WATCH \u2014 Regulation of blood glucose \u00b7 Diabetes biochemistry \u00b7 HbA1c"
+        }
+      ]
+    },
+    {
+      "dayNumber": 51,
+      "slots": [
+        {
+          "subject": "Biochemistry [DW]",
+          "topic": "SECOND WATCH \u2014 Carbohydrate metabolism + active recall workbook"
+        },
+        {
+          "subject": "Biochemistry [DW]",
+          "topic": "FIRST WATCH \u2014 Lipid metabolism: beta-oxidation, fatty acid synthesis, ketone bodies, lipoproteins"
+        }
+      ]
+    },
+    {
+      "dayNumber": 52,
+      "slots": [
+        {
+          "subject": "Biochemistry [DW]",
+          "topic": "SECOND WATCH \u2014 Lipid metabolism + active recall workbook"
+        },
+        {
+          "subject": "Biochemistry [DW]",
+          "topic": "FIRST WATCH \u2014 Amino acid metabolism, urea cycle, inborn errors: PKU, maple syrup, homocystinuria"
+        }
+      ]
+    },
+    {
+      "dayNumber": 53,
+      "slots": [
+        {
+          "subject": "Biochemistry [DW]",
+          "topic": "SECOND WATCH \u2014 Amino acid metabolism + active recall workbook"
+        },
+        {
+          "subject": "Biochemistry [DW]",
+          "topic": "FIRST WATCH \u2014 Molecular biology: DNA replication, transcription, translation, mutations, PCR"
+        }
+      ]
+    },
+    {
+      "dayNumber": 54,
+      "slots": [
+        {
+          "subject": "Biochemistry [DW]",
+          "topic": "SECOND WATCH \u2014 Molecular biology + active recall workbook"
+        },
+        {
+          "subject": "Biochemistry [DW]",
+          "topic": "FIRST WATCH \u2014 Vitamins: fat-soluble (A,D,E,K) + water-soluble (B complex, C) \u2014 deficiencies"
+        }
+      ]
+    },
+    {
+      "dayNumber": 55,
+      "slots": [
+        {
+          "subject": "Biochemistry [DW]",
+          "topic": "SECOND WATCH \u2014 Vitamins + Minerals + active recall workbook"
+        },
+        {
+          "subject": "Biochemistry [DW]",
+          "topic": "PYQ + Q-Bank \u2014 Biochemistry (all INICET + NEET PG PYQs)"
+        }
+      ]
+    },
+    {
+      "dayNumber": 56,
+      "slots": [
+        {
+          "subject": "GRAND TEST #1",
+          "topic": "GT #1 \u2014 Full mock: Systems (CVS, Resp, Renal, Neuro, GI, Hematology, Rheum, Endo) + Biochemistry + General Pharma/Path"
+        },
+        {
+          "subject": "GRAND TEST #1",
+          "topic": "GT #1 \u2014 Review wrong answers \u00b7 Identify gaps \u00b7 Log score in RATAN"
+        }
+      ]
+    },
+    {
+      "dayNumber": 57,
+      "slots": [
+        {
+          "subject": "BUFFER WEEK",
+          "topic": "Spaced recall \u2014 General Pharma + General Path (flashcards + pearls)"
+        },
+        {
+          "subject": "BUFFER WEEK",
+          "topic": "Review GT #1 weak areas \u2014 targeted PYQs only"
+        }
+      ]
+    },
+    {
+      "dayNumber": 58,
+      "slots": [
+        {
+          "subject": "BUFFER WEEK",
+          "topic": "Spaced recall \u2014 Biochemistry (flashcards + pearls)"
+        },
+        {
+          "subject": "BUFFER WEEK",
+          "topic": "PYQ revision \u2014 Biochemistry ZV recommended tag"
+        }
+      ]
+    },
+    {
+      "dayNumber": 59,
+      "slots": [
+        {
+          "subject": "BUFFER WEEK",
+          "topic": "Spaced recall \u2014 Endocrinology + Physiology"
+        },
+        {
+          "subject": "BUFFER WEEK",
+          "topic": "Rest and family time"
+        }
+      ]
+    },
+    {
+      "dayNumber": 60,
+      "slots": [
+        {
+          "subject": "BUFFER WEEK",
+          "topic": "Light PYQs \u2014 any Phase 1 subject"
+        },
+        {
+          "subject": "BUFFER WEEK",
+          "topic": "No new content \u2014 recall only"
+        }
+      ]
+    },
+    {
+      "dayNumber": 61,
+      "slots": [
+        {
+          "subject": "BUFFER WEEK",
+          "topic": "Weak subject focus \u2014 extra PYQs from lowest GT #1 topic"
+        },
+        {
+          "subject": "BUFFER WEEK",
+          "topic": "Rest"
+        }
+      ]
+    },
+    {
+      "dayNumber": 62,
+      "slots": [
+        {
+          "subject": "BUFFER WEEK",
+          "topic": "Preview Surgery Part 1 topics ahead"
+        },
+        {
+          "subject": "BUFFER WEEK",
+          "topic": "Pearls and flashcards \u2014 Phase 1 combined"
+        }
+      ]
+    },
+    {
+      "dayNumber": 63,
+      "slots": [
+        {
+          "subject": "BUFFER WEEK",
+          "topic": "Mindset reset \u2014 re-read the plan \u00b7 Set Week 10 intention"
+        },
+        {
+          "subject": "BUFFER WEEK",
+          "topic": "Rest"
+        }
+      ]
+    },
+    {
+      "dayNumber": 64,
+      "slots": [
+        {
+          "subject": "Surgery",
+          "topic": "GI Surgery \u2014 esophageal diseases, achalasia, GERD, hiatus hernia, carcinoma esophagus"
+        },
+        {
+          "subject": "Surgery",
+          "topic": "Stomach surgery \u2014 peptic ulcer disease, gastric carcinoma, post-gastrectomy syndromes"
+        }
+      ]
+    },
+    {
+      "dayNumber": 65,
+      "slots": [
+        {
+          "subject": "Surgery",
+          "topic": "Small bowel \u2014 intestinal obstruction, intussusception, Meckel's diverticulum, carcinoid"
+        },
+        {
+          "subject": "Surgery",
+          "topic": "Large bowel \u2014 colorectal carcinoma, polyps, diverticular disease, volvulus, hirschsprung"
+        }
+      ]
+    },
+    {
+      "dayNumber": 66,
+      "slots": [
+        {
+          "subject": "Surgery",
+          "topic": "Hepatobiliary \u2014 cholelithiasis, cholecystitis, obstructive jaundice, cholangiocarcinoma"
+        },
+        {
+          "subject": "Surgery",
+          "topic": "Pancreatic surgery \u2014 pancreatic carcinoma, cysts, Whipple's procedure \u00b7 Spleen"
+        }
+      ]
+    },
+    {
+      "dayNumber": 67,
+      "slots": [
+        {
+          "subject": "Surgery",
+          "topic": "Breast \u2014 anatomy, FNAC vs core biopsy, DCIS, invasive carcinoma, staging, management"
+        },
+        {
+          "subject": "Surgery",
+          "topic": "Breast \u2014 special types, male breast, fibrocystic changes, gynecomastia"
+        }
+      ]
+    },
+    {
+      "dayNumber": 68,
+      "slots": [
+        {
+          "subject": "Surgery",
+          "topic": "Thyroid surgery \u2014 solitary nodule approach, thyroid cancers \u2014 surgical management"
+        },
+        {
+          "subject": "Surgery",
+          "topic": "Parathyroid \u00b7 Adrenal surgery \u2014 pheo, Conn's, adrenocortical carcinoma"
+        }
+      ]
+    },
+    {
+      "dayNumber": 69,
+      "slots": [
+        {
+          "subject": "Surgery",
+          "topic": "Neck \u2014 lymph node management, radical neck dissection, salivary gland tumors"
+        },
+        {
+          "subject": "Surgery",
+          "topic": "Hernias \u2014 inguinal (direct vs indirect), femoral, umbilical, incisional, complications"
+        }
+      ]
+    },
+    {
+      "dayNumber": 70,
+      "slots": [
+        {
+          "subject": "Surgery",
+          "topic": "PYQ + Q-Bank \u2014 Surgery Part 1 (GI, Hepatobiliary, Breast, Thyroid, Neck, Hernias)"
+        },
+        {
+          "subject": "Surgery",
+          "topic": "Active recall revision \u2014 Surgery Part 1 \u00b7 High yield points list"
+        }
+      ]
+    },
+    {
+      "dayNumber": 71,
+      "slots": [
+        {
+          "subject": "Surgery",
+          "topic": "Vascular surgery \u2014 peripheral arterial disease, acute limb ischemia, DVT, varicose veins"
+        },
+        {
+          "subject": "Surgery",
+          "topic": "Abdominal aortic aneurysm \u00b7 Carotid artery disease \u00b7 Buerger's disease"
+        }
+      ]
+    },
+    {
+      "dayNumber": 72,
+      "slots": [
+        {
+          "subject": "Surgery",
+          "topic": "Urology \u2014 BPH, prostate carcinoma (PSA, staging, management)"
+        },
+        {
+          "subject": "Surgery",
+          "topic": "Urology \u2014 bladder carcinoma, renal cell carcinoma, wilms tumor, testicular tumors"
+        }
+      ]
+    },
+    {
+      "dayNumber": 73,
+      "slots": [
+        {
+          "subject": "Surgery",
+          "topic": "Neurosurgery \u2014 raised ICP, extradural hematoma vs subdural hematoma, skull fractures"
+        },
+        {
+          "subject": "Surgery",
+          "topic": "Brain tumors \u2014 glioblastoma, meningioma, acoustic neuroma \u00b7 Spinal cord compression"
+        }
+      ]
+    },
+    {
+      "dayNumber": 74,
+      "slots": [
+        {
+          "subject": "Surgery",
+          "topic": "Trauma \u2014 ATLS primary survey, ABCDE approach, abdominal trauma, splenic injury"
+        },
+        {
+          "subject": "Surgery",
+          "topic": "Burns \u2014 rule of nines, Parkland formula, Lund-Browder, burn management"
+        }
+      ]
+    },
+    {
+      "dayNumber": 75,
+      "slots": [
+        {
+          "subject": "Surgery",
+          "topic": "Surgical oncology \u2014 tumor markers, staging principles, surgical margins, adjuvant therapy"
+        },
+        {
+          "subject": "Surgery",
+          "topic": "Minimally invasive surgery \u2014 laparoscopic principles, complications, port placement"
+        }
+      ]
+    },
+    {
+      "dayNumber": 76,
+      "slots": [
+        {
+          "subject": "Surgery",
+          "topic": "Pre and postoperative care \u2014 ASA classification, fluid management, wound complications"
+        },
+        {
+          "subject": "Surgery",
+          "topic": "Surgical infections \u2014 clostridial, necrotizing fasciitis, SSI, antibiotic prophylaxis"
+        }
+      ]
+    },
+    {
+      "dayNumber": 77,
+      "slots": [
+        {
+          "subject": "Surgery",
+          "topic": "PYQ + Q-Bank \u2014 Surgery Part 2 (Vascular, Urology, Neuro, Trauma, Burns)"
+        },
+        {
+          "subject": "Surgery",
+          "topic": "Active recall \u2014 Surgery Part 1 + Part 2 combined \u00b7 Full surgery revision"
+        }
+      ]
+    },
+    {
+      "dayNumber": 78,
+      "slots": [
+        {
+          "subject": "OBG",
+          "topic": "Normal labour \u2014 stages, mechanism of labour, partogram, fetal monitoring"
+        },
+        {
+          "subject": "OBG",
+          "topic": "Abnormal labour \u2014 prolonged labour, obstructed labour, shoulder dystocia"
+        }
+      ]
+    },
+    {
+      "dayNumber": 79,
+      "slots": [
+        {
+          "subject": "OBG",
+          "topic": "APH \u2014 placenta previa (classification, management) \u00b7 Abruptio placentae"
+        },
+        {
+          "subject": "OBG",
+          "topic": "PPH \u2014 causes (4Ts), management, B-Lynch suture, hysterectomy indications"
+        }
+      ]
+    },
+    {
+      "dayNumber": 80,
+      "slots": [
+        {
+          "subject": "OBG",
+          "topic": "Hypertensive disorders \u2014 gestational hypertension, pre-eclampsia, eclampsia management"
+        },
+        {
+          "subject": "OBG",
+          "topic": "HELLP syndrome \u00b7 Chronic hypertension in pregnancy \u00b7 Antihypertensives safe in pregnancy"
+        }
+      ]
+    },
+    {
+      "dayNumber": 81,
+      "slots": [
+        {
+          "subject": "OBG",
+          "topic": "Preterm labour \u2014 risk factors, tocolysis, antenatal corticosteroids, cervical cerclage"
+        },
+        {
+          "subject": "OBG",
+          "topic": "PROM and PPROM \u2014 management \u00b7 Post-dates pregnancy \u2014 management"
+        }
+      ]
+    },
+    {
+      "dayNumber": 82,
+      "slots": [
+        {
+          "subject": "OBG",
+          "topic": "Fetal monitoring \u2014 CTG interpretation, biophysical profile, Doppler, IUGR"
+        },
+        {
+          "subject": "OBG",
+          "topic": "Malpresentations \u2014 breech, transverse lie, face, brow \u2014 management"
+        }
+      ]
+    },
+    {
+      "dayNumber": 83,
+      "slots": [
+        {
+          "subject": "OBG",
+          "topic": "Obstetric analgesia \u00b7 Operative deliveries \u2014 forceps, ventouse \u00b7 LSCS \u2014 indications"
+        },
+        {
+          "subject": "OBG",
+          "topic": "Ectopic pregnancy \u00b7 Hydatidiform mole \u00b7 Gestational trophoblastic disease"
+        }
+      ]
+    },
+    {
+      "dayNumber": 84,
+      "slots": [
+        {
+          "subject": "OBG",
+          "topic": "PYQ + Q-Bank \u2014 OBG Part 1 (Normal labour, APH, PPH, Hypertensive disorders, Preterm)"
+        },
+        {
+          "subject": "OBG",
+          "topic": "Active recall \u2014 OBG Part 1 \u00b7 Key numbers and percentages"
+        }
+      ]
+    },
+    {
+      "dayNumber": 85,
+      "slots": [
+        {
+          "subject": "OBG",
+          "topic": "PCOS \u2014 Rotterdam criteria, hormonal profile, management, long-term complications"
+        },
+        {
+          "subject": "OBG",
+          "topic": "Fibroids \u2014 classification, complications, management \u00b7 Adenomyosis"
+        }
+      ]
+    },
+    {
+      "dayNumber": 86,
+      "slots": [
+        {
+          "subject": "OBG",
+          "topic": "Endometriosis \u2014 clinical features, staging (ASRM), medical and surgical management"
+        },
+        {
+          "subject": "OBG",
+          "topic": "Cervical cancer \u2014 HPV, staging (FIGO), colposcopy, management by stage"
+        }
+      ]
+    },
+    {
+      "dayNumber": 87,
+      "slots": [
+        {
+          "subject": "OBG",
+          "topic": "Endometrial carcinoma \u2014 staging, risk factors, management"
+        },
+        {
+          "subject": "OBG",
+          "topic": "Ovarian tumors \u2014 classification, tumor markers, staging \u00b7 Epithelial vs germ cell"
+        }
+      ]
+    },
+    {
+      "dayNumber": 88,
+      "slots": [
+        {
+          "subject": "OBG",
+          "topic": "Contraception \u2014 hormonal methods, IUCDs, barrier, emergency contraception, sterilization"
+        },
+        {
+          "subject": "OBG",
+          "topic": "Infertility \u2014 male factor, female factor, ART, IVF, ICSI, ovulation induction"
+        }
+      ]
+    },
+    {
+      "dayNumber": 89,
+      "slots": [
+        {
+          "subject": "Pediatrics",
+          "topic": "Neonatology \u2014 birth asphyxia, APGAR score, resuscitation, NEC, RDS, jaundice of newborn"
+        },
+        {
+          "subject": "Pediatrics",
+          "topic": "IUGR, SGA, LGA \u00b7 Preterm complications \u00b7 Neonatal sepsis \u00b7 Hypoglycemia"
+        }
+      ]
+    },
+    {
+      "dayNumber": 90,
+      "slots": [
+        {
+          "subject": "Pediatrics",
+          "topic": "Growth and development \u2014 milestones (motor, social, language), failure to thrive"
+        },
+        {
+          "subject": "Pediatrics",
+          "topic": "Pediatric infections \u2014 measles, mumps, rubella, chickenpox, pertussis, diphtheria"
+        }
+      ]
+    },
+    {
+      "dayNumber": 91,
+      "slots": [
+        {
+          "subject": "OBG",
+          "topic": "PYQ + Q-Bank \u2014 OBG Part 2 (PCOS, fibroids, cancers, contraception, infertility)"
+        },
+        {
+          "subject": "Pediatrics",
+          "topic": "PYQ + Q-Bank \u2014 Pediatrics \u00b7 Active recall both subjects"
+        }
+      ]
+    },
+    {
+      "dayNumber": 92,
+      "slots": [
+        {
+          "subject": "PSM [DW]",
+          "topic": "FIRST WATCH \u2014 Epidemiology: descriptive, analytical, experimental studies \u00b7 Bias and confounding"
+        },
+        {
+          "subject": "PSM [DW]",
+          "topic": "FIRST WATCH \u2014 Biostatistics: mean/median/mode, SD, sensitivity, specificity, PPV, NPV, LR"
+        }
+      ]
+    },
+    {
+      "dayNumber": 93,
+      "slots": [
+        {
+          "subject": "PSM [DW]",
+          "topic": "SECOND WATCH \u2014 Epidemiology + Biostatistics + active recall workbook"
+        },
+        {
+          "subject": "PSM [DW]",
+          "topic": "FIRST WATCH \u2014 TB program: RNTCP/NTP, DOTS, drug regimens, MDR-TB, XDR-TB"
+        }
+      ]
+    },
+    {
+      "dayNumber": 94,
+      "slots": [
+        {
+          "subject": "PSM [DW]",
+          "topic": "SECOND WATCH \u2014 TB program + active recall"
+        },
+        {
+          "subject": "Integrated Infections [DW]",
+          "topic": "FIRST WATCH \u2014 HIV/AIDS: natural history, CD4 count, opportunistic infections, ART"
+        }
+      ]
+    },
+    {
+      "dayNumber": 95,
+      "slots": [
+        {
+          "subject": "Integrated Infections [DW]",
+          "topic": "SECOND WATCH \u2014 HIV + active recall"
+        },
+        {
+          "subject": "Integrated Infections [DW]",
+          "topic": "FIRST WATCH \u2014 Vector-borne diseases: malaria (Plasmodium, treatment), dengue, chikungunya, kala-azar"
+        }
+      ]
+    },
+    {
+      "dayNumber": 96,
+      "slots": [
+        {
+          "subject": "Integrated Infections [DW]",
+          "topic": "SECOND WATCH \u2014 Vector-borne diseases + active recall"
+        },
+        {
+          "subject": "Integrated Infections [DW]",
+          "topic": "FIRST WATCH \u2014 Antimicrobials: beta-lactams, aminoglycosides, macrolides, fluoroquinolones, antifungals, antivirals"
+        }
+      ]
+    },
+    {
+      "dayNumber": 97,
+      "slots": [
+        {
+          "subject": "PSM [DW]",
+          "topic": "FIRST WATCH \u2014 Vaccines: UIP schedule, cold chain, AEFI, new vaccines"
+        },
+        {
+          "subject": "PSM [DW]",
+          "topic": "SECOND WATCH \u2014 Vaccines + PYQ + Q-Bank \u2014 PSM + Infections combined"
+        }
+      ]
+    },
+    {
+      "dayNumber": 98,
+      "slots": [
+        {
+          "subject": "GRAND TEST #2",
+          "topic": "GT #2 \u2014 Full mock: Surgery + OBG + Pediatrics + PSM + Infections \u00b7 All clinical subjects"
+        },
+        {
+          "subject": "GRAND TEST #2",
+          "topic": "GT #2 \u2014 Review wrong answers \u00b7 Log score in RATAN \u00b7 Identify weak clinical areas"
+        }
+      ]
+    },
+    {
+      "dayNumber": 99,
+      "slots": [
+        {
+          "subject": "Anatomy",
+          "topic": "Upper limb \u2014 brachial plexus, axilla, shoulder, elbow, wrist, hand \u2014 lesions and clinical"
+        },
+        {
+          "subject": "Anatomy",
+          "topic": "Lower limb \u2014 femoral triangle, popliteal fossa, lumbar plexus, sacral plexus"
+        }
+      ]
+    },
+    {
+      "dayNumber": 100,
+      "slots": [
+        {
+          "subject": "Anatomy",
+          "topic": "Thorax \u2014 heart, mediastinum, great vessels, diaphragm \u00b7 Lungs and pleurae"
+        },
+        {
+          "subject": "Anatomy",
+          "topic": "Abdomen \u2014 inguinal canal, portal-systemic anastomoses, peritoneum \u00b7 Pelvis overview"
+        }
+      ]
+    },
+    {
+      "dayNumber": 101,
+      "slots": [
+        {
+          "subject": "Anatomy",
+          "topic": "Head and neck \u2014 triangles, cranial nerves (all 12), cavernous sinus, parotid region"
+        },
+        {
+          "subject": "Anatomy",
+          "topic": "Neuroanatomy \u2014 internal capsule, basal ganglia, cerebellum, brainstem, spinal cord tracts"
+        }
+      ]
+    },
+    {
+      "dayNumber": 102,
+      "slots": [
+        {
+          "subject": "Anatomy",
+          "topic": "Embryology \u2014 cardiac development, gut rotation, kidney development, CNS, pharyngeal arches"
+        },
+        {
+          "subject": "Anatomy",
+          "topic": "PYQ + Q-Bank \u2014 Anatomy (all INICET + NEET PG PYQs) \u00b7 Active recall"
+        }
+      ]
+    },
+    {
+      "dayNumber": 103,
+      "slots": [
+        {
+          "subject": "ENT",
+          "topic": "Ear \u2014 anatomy, otitis media, CSOM (tubotympanic vs atticoantral), SNHL, otosclerosis"
+        },
+        {
+          "subject": "ENT",
+          "topic": "Ear \u2014 Meniere's disease, acoustic neuroma, mastoiditis \u00b7 Audiological tests"
+        }
+      ]
+    },
+    {
+      "dayNumber": 104,
+      "slots": [
+        {
+          "subject": "ENT",
+          "topic": "Nose and sinuses \u2014 sinusitis, DNS, nasal polyps, epistaxis, angiofibroma"
+        },
+        {
+          "subject": "ENT",
+          "topic": "Throat/Larynx \u2014 hoarseness, laryngeal carcinoma, vocal cord palsy, tonsillar diseases"
+        }
+      ]
+    },
+    {
+      "dayNumber": 105,
+      "slots": [
+        {
+          "subject": "Ophthalmology",
+          "topic": "Glaucoma \u2014 open angle vs closed angle, optic disc changes, tonometry, management"
+        },
+        {
+          "subject": "Ophthalmology",
+          "topic": "Retinal diseases \u2014 diabetic retinopathy, CRVO, CRAO, retinal detachment, ARMD \u00b7 PYQ + Q-Bank ENT + Ophthalmology"
+        }
+      ]
+    },
+    {
+      "dayNumber": 106,
+      "slots": [
+        {
+          "subject": "Orthopedics",
+          "topic": "Fractures \u2014 healing, complications, open fractures, compartment syndrome \u00b7 Colles, FOOSH"
+        },
+        {
+          "subject": "Orthopedics",
+          "topic": "Bone tumors \u2014 osteosarcoma, Ewing's, chondrosarcoma, metastases \u00b7 Bone markers"
+        }
+      ]
+    },
+    {
+      "dayNumber": 107,
+      "slots": [
+        {
+          "subject": "Orthopedics",
+          "topic": "Infections \u2014 osteomyelitis (acute vs chronic), septic arthritis \u00b7 Scoliosis, kyphosis"
+        },
+        {
+          "subject": "Forensic Medicine & Toxicology",
+          "topic": "IPC sections \u2014 174, 302, 304, 304A, 375, 376 \u00b7 MLC \u2014 documentation, dying declaration"
+        }
+      ]
+    },
+    {
+      "dayNumber": 108,
+      "slots": [
+        {
+          "subject": "Forensic Medicine & Toxicology",
+          "topic": "Forensic thanatology \u2014 changes after death, rigor mortis, decomposition, time of death"
+        },
+        {
+          "subject": "Forensic Medicine & Toxicology",
+          "topic": "Forensic injuries \u2014 wounds, firearm injuries, sexual assault examination"
+        }
+      ]
+    },
+    {
+      "dayNumber": 109,
+      "slots": [
+        {
+          "subject": "Radiology",
+          "topic": "Chest X-ray \u2014 systematic approach, consolidation, collapse, pleural effusion, mediastinal masses"
+        },
+        {
+          "subject": "Radiology",
+          "topic": "CT, MRI basics \u2014 indications, contraindications, contrast \u00b7 USG principles"
+        }
+      ]
+    },
+    {
+      "dayNumber": 110,
+      "slots": [
+        {
+          "subject": "Dermatology",
+          "topic": "Psoriasis, lichen planus, pemphigus, pemphigoid, SJS/TEN \u2014 clinical features and management"
+        },
+        {
+          "subject": "Psychiatry",
+          "topic": "Classification (ICD-11/DSM-5), schizophrenia, mood disorders, anxiety \u2014 first-line drugs"
+        }
+      ]
+    },
+    {
+      "dayNumber": 111,
+      "slots": [
+        {
+          "subject": "Anesthesia",
+          "topic": "Preoperative assessment, ASA classification, premedication, GA agents, spinal anesthesia"
+        },
+        {
+          "subject": "Short Subjects Review",
+          "topic": "PYQ practice \u2014 Ortho + FMT + Radiology + Dermatology + Psychiatry + Anesthesia combined"
+        }
+      ]
+    },
+    {
+      "dayNumber": 112,
+      "slots": [
+        {
+          "subject": "GRAND TEST #3",
+          "topic": "GT #3 \u2014 FULL MOCK EXAM \u2014 All 16 weeks of content \u00b7 Simulate exam day conditions"
+        },
+        {
+          "subject": "GRAND TEST #3",
+          "topic": "GT #3 \u2014 Review \u00b7 Score analysis \u00b7 Flag gaps for August revision \u00b7 Log final status in RATAN"
+        }
+      ]
+    }
+  ]
+}

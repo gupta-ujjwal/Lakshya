@@ -30,18 +30,13 @@ Unit (vitest) - 126 tests    /
 
 ## Test Coverage
 
-### Schema Tests (Unit) — 126 tests
-| Schema | Tests | Coverage |
-|---|---|---|
-| `lib/api/users/schemas.ts` | 15 | Create, Update, Query |
-| `lib/api/schedules/schemas.ts` | 15 | Create, Update, Query |
-| `lib/api/tasks/schemas.ts` | 19 | Create, Update, Query |
-| `lib/api/sessions/schemas.ts` | 29 | Create, Update, Query |
-| `lib/api/progress/schemas.ts` | 15 | Create, Update, Query |
-| `lib/api/utils.ts` | 20 | handleApiError, parseQueryParams |
-| `telegram-integration.test.ts` | 10 | WebApp API surface, security |
-| `tests/index.test.ts` | 7 | Test helpers validation |
-| **Total** | **126** | |
+### Schema Tests (Unit)
+| Schema | Coverage |
+|---|---|
+| `lib/api/schedules/schemas.ts` | ImportScheduleSchema validation (only used schema retained) |
+| `lib/api/progress/schemas.ts` | TaskProgressStatus enum, Create / Update / Query |
+| `lib/api/ingest/ingest.ts` | Schedule generation algorithm |
+| `telegram-integration.test.ts` | WebApp API surface, security |
 
 ### API Route Tests (Integration) — PENDING
 **Status**: API routes (`app/api/*`) not yet implemented in the Lakshya project. These tests are written and ready to enable once routes are created:
@@ -89,11 +84,13 @@ pnpm test && pnpm typecheck && pnpm build
 **Repro**: `pnpm build`
 **Fix**: Remove duplicate route directories (keep one version)
 
-### MEDIUM: API Routes Not Implemented
-**Files**: `app/api/*/route.ts` (all 5 routes)
-**Issue**: Routes referenced in integration tests don't exist in the Lakshya project.
-**Impact**: Integration tests deferred until routes are implemented.
-**Fix**: Implement routes per `lib/api/*/schemas.ts` contracts.
+### Note: dead-code purge
+The original CRUD-style schemas at `lib/api/{users,sessions,tasks}/schemas.ts`
+and the unused `Create/Update/Query` schemas in `lib/api/schedules/schemas.ts`
+were deleted in 2026-05-05 — they had no production callers. Their unit
+tests went with them. Routes that DO exist (`/api/dashboard`, `/api/tasks`,
+`/api/tasks/[id]/progress`, `/api/schedules/import`, `/api/schedules/sample`,
+`/api/schedules/schema`) are tested through integration and ingest test files.
 
 ---
 

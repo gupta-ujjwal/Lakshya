@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { CreateTaskProgressSchema } from "@/lib/api/progress/schemas";
 import { startOfDay } from "@/lib/api/utils";
+import { getCurrentUserId } from "@/lib/api/auth";
 
 const ProgressBodySchema = CreateTaskProgressSchema.omit({
   taskId: true,
@@ -13,7 +14,7 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
-    const userId = request.headers.get("x-user-id") || "anonymous";
+    const userId = getCurrentUserId(request);
     const taskId = params.id;
     const body = await request.json();
 

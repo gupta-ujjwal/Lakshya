@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ImportScheduleSchema } from "@/lib/api/schedules/schemas";
 import { importSchedule } from "@/lib/api/schedules/ingest";
+import { getCurrentUserId } from "@/lib/api/auth";
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,7 +15,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const userId = request.headers.get("x-user-id") || "anonymous";
+    const userId = getCurrentUserId(request);
     const result = await importSchedule(userId, validation.data);
 
     if (!result.success) {

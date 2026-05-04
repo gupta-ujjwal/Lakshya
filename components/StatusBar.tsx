@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatDateShortYear } from "@/lib/format";
 
 interface ScheduleSummary {
   title: string;
@@ -85,14 +86,6 @@ function journeyProgress(createdAt: string, targetDate: string): number {
   return Math.min(100, Math.max(0, (elapsed / total) * 100));
 }
 
-function formatTarget(dateString: string): string {
-  return new Date(dateString).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
 export function StatusBar() {
   const [schedule, setSchedule] = useState<ScheduleSummary | null>(null);
 
@@ -142,7 +135,7 @@ export function StatusBar() {
           </span>
         </span>
         <span className={`text-[11px] font-medium whitespace-nowrap ${tone.subtext}`}>
-          {formatTarget(schedule.targetDate)}
+          {formatDateShortYear(schedule.targetDate)}
         </span>
       </div>
       <div className={`h-1 ${tone.progressTrack}`}>

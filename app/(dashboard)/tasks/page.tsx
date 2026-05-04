@@ -6,6 +6,7 @@ import { Header } from "@/components/Header";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import type { TaskListItem, TaskStatus } from "@/app/api/tasks/route";
 import type { TaskProgressStatus } from "@/lib/api/progress/schemas";
+import { formatDateShort } from "@/lib/format";
 
 type ViewMode = "list" | "kanban" | "calendar";
 type PriorityTier = "high" | "medium" | "low";
@@ -35,13 +36,6 @@ const priorityLabels: Record<PriorityTier, string> = {
   medium: "Medium",
   low: "Low",
 };
-
-function formatTargetDate(dateString: string): string {
-  return new Date(dateString).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
-}
 
 export default function TasksPage() {
   const router = useRouter();
@@ -353,7 +347,7 @@ export default function TasksPage() {
                     </h3>
                     <div className="flex items-center gap-3 mt-2">
                       <span className="text-xs text-text-tertiary">
-                        {formatTargetDate(task.targetDate)}
+                        {formatDateShort(task.targetDate)}
                       </span>
                       <span className="px-2 py-0.5 bg-bg-tertiary text-text-secondary text-xs rounded-full">
                         {task.subject}

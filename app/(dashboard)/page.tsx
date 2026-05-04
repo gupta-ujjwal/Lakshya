@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { formatDateLong } from "@/lib/format";
 
 interface Schedule {
   id: string;
@@ -68,14 +69,6 @@ const quickActions = [
     color: "text",
   },
 ];
-
-function formatDate(dateString: string): string {
-  return new Date(dateString).toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-  });
-}
 
 function adherenceTone(pct: number): { color: string; label: string } {
   if (pct >= 85) return { color: "text-success", label: "On track" };
@@ -194,7 +187,7 @@ export default function DashboardPage() {
             Dashboard
           </h1>
           <p className="text-sm text-text-secondary">
-            {formatDate(new Date().toISOString())}
+            {formatDateLong(new Date().toISOString())}
           </p>
         </div>
         <Link

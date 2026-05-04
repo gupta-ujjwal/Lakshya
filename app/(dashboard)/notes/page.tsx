@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Header } from "@/components/Header";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { formatDateShort } from "@/lib/format";
 
 interface Note {
   id: string;
@@ -292,7 +293,7 @@ function NoteCard({
               {note.subject}
             </span>
             <span className="text-xs text-text-tertiary">
-              {note.updatedAt.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+              {formatDateShort(note.updatedAt)}
             </span>
           </div>
         </div>
@@ -330,7 +331,7 @@ function NoteCard({
       <p className="text-sm text-text-secondary line-clamp-3 flex-1">{note.content}</p>
       <div className="flex items-center justify-between mt-4 pt-3 border-t border-border">
         <span className="text-xs text-text-tertiary">
-          {note.updatedAt.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+          {formatDateShort(note.updatedAt)}
         </span>
         <button
           onClick={(e) => {

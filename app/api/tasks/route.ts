@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { TaskProgressStatusSchema } from "@/lib/api/progress/schemas";
 
 export type TaskStatus = "pending" | "completed" | "overdue";
+
+const COMPLETED: typeof TaskProgressStatusSchema._type = "completed";
 
 export interface TaskListItem {
   id: string;
@@ -37,7 +40,7 @@ export async function GET(request: NextRequest) {
     // two semantics are intentionally different views of the same source.
     // See app/api/dashboard/route.ts for the day-windowed equivalent.
     const completedProgress = await prisma.taskProgress.findMany({
-      where: { task: { scheduleId: schedule.id }, status: "completed" },
+      where: { task: { scheduleId: schedule.id }, status: COMPLETED },
       select: { taskId: true },
     });
     const completedTaskIds = new Set(completedProgress.map((p) => p.taskId));

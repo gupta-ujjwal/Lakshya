@@ -17,11 +17,11 @@ describe("Progress Integration Tests", () => {
       expect(result.success).toBe(true);
     });
 
-    it("creates progress for in_progress task", () => {
+    it("creates progress for pending task", () => {
       const result = CreateTaskProgressSchema.safeParse({
         taskId: "task-123",
-        status: "in_progress",
-        notes: "Halfway through chapter 2",
+        status: "pending",
+        notes: "Started but not finished",
       });
       expect(result.success).toBe(true);
     });
@@ -34,12 +34,12 @@ describe("Progress Integration Tests", () => {
       expect(result.success).toBe(true);
     });
 
-    it("accepts any non-empty string as status (no enum validation in schema)", () => {
+    it("rejects unknown status values", () => {
       const result = CreateTaskProgressSchema.safeParse({
         taskId: "task-123",
         status: "unknown_status",
       });
-      expect(result.success).toBe(true);
+      expect(result.success).toBe(false);
     });
 
     it("rejects missing taskId", () => {
@@ -57,9 +57,8 @@ describe("Progress Integration Tests", () => {
       expect(result.success).toBe(false);
     });
 
-    it("accepts all valid status values", () => {
-      const statuses = ["pending", "in_progress", "completed", "skipped", "blocked"];
-      for (const status of statuses) {
+    it("accepts the supported status values", () => {
+      for (const status of ["pending", "completed"] as const) {
         const result = CreateTaskProgressSchema.safeParse({
           taskId: "task-123",
           status,
@@ -81,7 +80,7 @@ describe("Progress Integration Tests", () => {
   describe("UpdateTaskProgressSchema - partial updates", () => {
     it("updates status only", () => {
       const result = UpdateTaskProgressSchema.safeParse({
-        status: "in_progress",
+        status: "completed",
       });
       expect(result.success).toBe(true);
     });
@@ -141,18 +140,12 @@ describe("Progress Integration Tests", () => {
   });
 
   describe("Progress workflow - task lifecycle", () => {
-    it("simulates task progress through states", () => {
+    it("simulates pending → completed lifecycle", () => {
       const pending = CreateTaskProgressSchema.safeParse({
         taskId: "task-abc",
         status: "pending",
       });
       expect(pending.success).toBe(true);
-
-      const inProgress = UpdateTaskProgressSchema.safeParse({
-        status: "in_progress",
-        notes: "Started working on this",
-      });
-      expect(inProgress.success).toBe(true);
 
       const completed = UpdateTaskProgressSchema.safeParse({
         status: "completed",
@@ -161,27 +154,14 @@ describe("Progress Integration Tests", () => {
       expect(completed.success).toBe(true);
     });
 
-    it("task can be marked skipped", () => {
-      const skipped = CreateTaskProgressSchema.safeParse({
-        taskId: "task-def",
-        status: "skipped",
-        notes: "Not relevant for current study plan",
-      });
-      expect(skipped.success).toBe(true);
-    });
-
-    it("task can be blocked then unblocked", () => {
-      const blocked = UpdateTaskProgressSchema.safeParse({
-        status: "blocked",
-        notes: "Waiting for prerequisite material",
-      });
-      expect(blocked.success).toBe(true);
-
-      const unblocked = UpdateTaskProgressSchema.safeParse({
-        status: "in_progress",
-        notes: "Prerequisites completed",
-      });
-      expect(unblocked.success).toBe(true);
+    it("rejects extended states like skipped/blocked", () => {
+      for (const status of ["skipped", "blocked", "in_progress"]) {
+        const result = CreateTaskProgressSchema.safeParse({
+          taskId: "task-def",
+          status,
+        });
+        expect(result.success).toBe(false);
+      }
     });
   });
 });

@@ -1,14 +1,17 @@
 import { z } from "zod";
 
+export const TaskProgressStatusSchema = z.enum(["pending", "completed"]);
+export type TaskProgressStatus = z.infer<typeof TaskProgressStatusSchema>;
+
 export const CreateTaskProgressSchema = z.object({
   taskId: z.string().min(1),
-  status: z.string().min(1),
+  status: TaskProgressStatusSchema,
   notes: z.string().optional(),
   date: z.string().datetime().or(z.date()).optional(),
 });
 
 export const UpdateTaskProgressSchema = z.object({
-  status: z.string().min(1).optional(),
+  status: TaskProgressStatusSchema.optional(),
   notes: z.string().optional(),
   date: z.string().datetime().or(z.date()).optional(),
 });

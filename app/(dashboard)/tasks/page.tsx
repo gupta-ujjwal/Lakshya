@@ -31,6 +31,11 @@ const priorityColors: Record<PriorityTier, string> = {
   low: "bg-success text-white",
 };
 
+const filterPriorityActiveColors: Record<FilterPriority, string> = {
+  all: "bg-accent text-white",
+  ...priorityColors,
+};
+
 const priorityLabels: Record<PriorityTier, string> = {
   high: "High",
   medium: "Medium",
@@ -229,28 +234,21 @@ export default function TasksPage() {
               Priority
             </p>
             <div className="flex flex-wrap gap-2">
-              {(["all", "high", "medium", "low"] as FilterPriority[]).map((priority) => (
+              {(["all", "high", "medium", "low"] as FilterPriority[]).map((priority) => {
+                const active = filterPriority === priority;
+                const colors = active
+                  ? filterPriorityActiveColors[priority]
+                  : "bg-bg-tertiary text-text-secondary";
+                return (
                 <button
                   key={priority}
                   onClick={() => setFilterPriority(priority)}
-                  className={`
-                    px-3 py-1.5 text-sm font-medium rounded-full transition-all
-                    ${
-                      filterPriority === priority
-                        ? priority === "high"
-                          ? "bg-danger text-white"
-                          : priority === "medium"
-                          ? "bg-warning text-black"
-                          : priority === "low"
-                          ? "bg-success text-white"
-                          : "bg-accent text-white"
-                        : "bg-bg-tertiary text-text-secondary"
-                    }
-                  `}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-full transition-all ${colors}`}
                 >
                   {priority === "all" ? "All" : priority.charAt(0).toUpperCase() + priority.slice(1)}
                 </button>
-              ))}
+                );
+              })}
             </div>
           </div>
           <div>

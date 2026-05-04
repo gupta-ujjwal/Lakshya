@@ -34,26 +34,20 @@ export async function POST(
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
 
-    const existing = await prisma.taskProgress.findFirst({
-      where: { taskId, date: { gte: today, lt: tomorrow } },
+    const progress = await prisma.taskProgress.upsert({
+      where: { taskId_date: { taskId, date: today } },
+      create: {
+        taskId,
+        status: parsed.data.status,
+        notes: parsed.data.notes,
+        date: today,
+      },
+      update: {
+        status: parsed.data.status,
+        notes: parsed.data.notes,
+      },
     });
-
-    const progress = existing
-      ? await prisma.taskProgress.update({
-          where: { id: existing.id },
-          data: { status: parsed.data.status, notes: parsed.data.notes },
-        })
-      : await prisma.taskProgress.create({
-          data: {
-            taskId,
-            status: parsed.data.status,
-            notes: parsed.data.notes,
-            date: new Date(),
-          },
-        });
 
     return NextResponse.json({ progress });
   } catch (error) {

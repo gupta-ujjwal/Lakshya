@@ -51,6 +51,8 @@ model TaskProgress {
   status    String
   notes     String?
   date      DateTime @default(now())
+
+  @@unique([taskId, date])
 }
 
 model Session {

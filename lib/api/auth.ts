@@ -5,5 +5,5 @@ import type { NextRequest } from "next/server";
 // auth — anyone can pass any value. When OAuth or magic-link auth lands,
 // only this function changes; routes stay as they are.
 export function getCurrentUserId(request: NextRequest): string {
-  return request.headers.get("x-user-id") || "anonymous";
+  return request.headers.get("x-user-id") ?? "anonymous";
 }

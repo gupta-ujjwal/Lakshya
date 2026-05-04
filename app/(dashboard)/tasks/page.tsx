@@ -96,10 +96,9 @@ export default function TasksPage() {
   async function toggleTaskStatus(task: UiTask) {
     const nextStatus: TaskProgressStatus =
       task.status === "completed" ? "pending" : "completed";
-    const optimisticStatus: TaskStatus = nextStatus;
     setPendingTaskIds((prev) => new Set(prev).add(task.id));
     setTasks((prev) =>
-      prev.map((t) => (t.id === task.id ? { ...t, status: optimisticStatus } : t))
+      prev.map((t) => (t.id === task.id ? { ...t, status: nextStatus } : t))
     );
     try {
       const res = await fetch(`/api/tasks/${task.id}/progress`, {

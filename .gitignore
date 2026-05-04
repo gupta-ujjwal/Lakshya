@@ -71,3 +71,11 @@ Desktop.ini
 *.pem
 .vercel
 .turbo
+
+# APM / agency
+/.do-results.json
+/apm_modules/
+
+
+# APM dependencies
+apm_modules/

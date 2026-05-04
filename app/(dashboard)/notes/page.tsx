@@ -125,50 +125,29 @@ export default function NotesPage() {
     <div className="space-y-6">
       <Header
         title="Notes"
-        subtitle={`${notes.length} notes`}
+        subtitle={`${notes.length} note${notes.length !== 1 ? "s" : ""}`}
         showSearch
         actions={
           <>
             <ThemeToggle />
-            <div className="flex items-center gap-1 bg-bg-secondary rounded-lg p-1 border border-border">
-              <button
-                onClick={() => setViewMode("grid")}
-                className={`
-                  p-2 rounded-md transition-all
-                  ${viewMode === "grid" ? "bg-accent text-white" : "text-text-secondary hover:text-text-primary"}
-                `}
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                </svg>
-              </button>
-              <button
-                onClick={() => setViewMode("list")}
-                className={`
-                  p-2 rounded-md transition-all
-                  ${viewMode === "list" ? "bg-accent text-white" : "text-text-secondary hover:text-text-primary"}
-                `}
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
-            </div>
-            <button onClick={() => openEditor()} className="btn btn-primary">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            <button
+              onClick={() => openEditor()}
+              aria-label="New note"
+              className="w-11 h-11 flex items-center justify-center rounded-full bg-accent text-white active:scale-95 transition-all"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
               </svg>
-              New Note
             </button>
           </>
         }
       />
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
         <select
           value={selectedSubject}
           onChange={(e) => setSelectedSubject(e.target.value)}
-          className="input w-auto"
+          className="input flex-1"
         >
           {subjects.map((subject) => (
             <option key={subject} value={subject}>
@@ -176,6 +155,36 @@ export default function NotesPage() {
             </option>
           ))}
         </select>
+        <div className="flex items-center bg-bg-secondary rounded-lg p-1 border border-border">
+          <button
+            onClick={() => setViewMode("grid")}
+            aria-label="Grid view"
+            aria-pressed={viewMode === "grid"}
+            className={`w-10 h-10 flex items-center justify-center rounded-md transition-all ${
+              viewMode === "grid"
+                ? "bg-accent text-white"
+                : "text-text-secondary"
+            }`}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+            </svg>
+          </button>
+          <button
+            onClick={() => setViewMode("list")}
+            aria-label="List view"
+            aria-pressed={viewMode === "list"}
+            className={`w-10 h-10 flex items-center justify-center rounded-md transition-all ${
+              viewMode === "list"
+                ? "bg-accent text-white"
+                : "text-text-secondary"
+            }`}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {pinnedNotes.length > 0 && (
@@ -183,7 +192,7 @@ export default function NotesPage() {
           <h2 className="text-sm font-semibold text-text-secondary uppercase tracking-wide">
             Pinned
           </h2>
-          <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" : "space-y-3"}>
+          <div className={viewMode === "grid" ? "grid grid-cols-2 gap-3" : "space-y-3"}>
             {pinnedNotes.map((note) => (
               <NoteCard
                 key={note.id}
@@ -197,7 +206,7 @@ export default function NotesPage() {
         </div>
       )}
 
-      <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" : "space-y-3"}>
+      <div className={viewMode === "grid" ? "grid grid-cols-2 gap-3" : "space-y-3"}>
         {regularNotes.map((note) => (
           <NoteCard
             key={note.id}

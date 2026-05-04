@@ -100,44 +100,50 @@ export default function SettingsPage() {
     <div className="space-y-6">
       <Header
         title="Settings"
-        subtitle="Customize your experience"
         actions={
           <>
             <ThemeToggle />
-            <button onClick={handleSave} className="btn btn-primary">
+            <button
+              onClick={handleSave}
+              aria-label={savedMessage ? "Saved" : "Save changes"}
+              className={`h-11 px-4 flex items-center gap-1.5 rounded-full font-semibold text-sm active:scale-95 transition-all ${
+                savedMessage
+                  ? "bg-success text-white"
+                  : "bg-accent text-white"
+              }`}
+            >
               {savedMessage ? (
                 <>
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                   </svg>
                   Saved
                 </>
               ) : (
-                <>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                  </svg>
-                  Save Changes
-                </>
+                "Save"
               )}
             </button>
           </>
         }
       />
 
-      <div className="flex flex-col md:flex-row gap-6">
-        <nav className="w-full md:w-56 flex-shrink-0">
-          <div className="card p-2">
+      <div className="space-y-4">
+        <nav
+          className="-mx-4 px-4 overflow-x-auto scrollbar-hide"
+          aria-label="Settings sections"
+        >
+          <div className="inline-flex items-center gap-1 bg-bg-secondary rounded-full p-1 border border-border">
             {(["general", "schedule", "display", "data"] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
+                aria-pressed={activeTab === tab}
                 className={`
-                  w-full px-4 py-2.5 text-left text-sm font-medium rounded-lg transition-all capitalize
+                  px-4 h-9 rounded-full text-sm font-medium transition-all capitalize whitespace-nowrap
                   ${
                     activeTab === tab
-                      ? "bg-accent-soft text-accent"
-                      : "text-text-secondary hover:bg-bg-tertiary hover:text-text-primary"
+                      ? "bg-accent text-white"
+                      : "text-text-secondary"
                   }
                 `}
               >
@@ -147,7 +153,7 @@ export default function SettingsPage() {
           </div>
         </nav>
 
-        <div className="flex-1">
+        <div>
           {activeTab === "general" && (
             <div className="space-y-6 animate-fade-in">
               <div className="card p-6">

@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import type { TaskProgressStatus } from "@/lib/api/progress/schemas";
+import { PROGRESS_COMPLETED } from "@/lib/api/progress/schemas";
 import { startOfDay } from "@/lib/api/utils";
 
 const STREAK_LOOKBACK_DAYS = 30;
 const ADHERENCE_WINDOW_DAYS = 7;
-const COMPLETED: TaskProgressStatus = "completed";
 
 function dateKey(date: Date): string {
   return startOfDay(date).toISOString().split("T")[0];
@@ -63,7 +62,7 @@ export async function GET(request: NextRequest) {
     const recentProgress = await prisma.taskProgress.findMany({
       where: {
         task: { scheduleId: schedule.id },
-        status: COMPLETED,
+        status: PROGRESS_COMPLETED,
         date: { gte: streakWindowStart },
       },
       select: { taskId: true, date: true },

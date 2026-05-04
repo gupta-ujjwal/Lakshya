@@ -38,6 +38,14 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
           rel="stylesheet"
         />
+        {/*
+          Pre-hydration theme application. Mirrors the resolution logic in
+          lib/theme-context.tsx (resolveTheme). Two implementations are
+          unavoidable: this runs as inline JS before React loads to prevent
+          FOUC; the context takes over post-hydration. If you change the
+          localStorage key, the value set, or the resolution rule, update
+          both sites.
+        */}
         <script
           dangerouslySetInnerHTML={{
             __html: `

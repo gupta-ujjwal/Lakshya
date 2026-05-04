@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { TaskProgressStatusSchema } from "@/lib/api/progress/schemas";
+import type { TaskProgressStatus } from "@/lib/api/progress/schemas";
+import { startOfDay } from "@/lib/api/utils";
 
 export type TaskStatus = "pending" | "completed" | "overdue";
 
-const COMPLETED: typeof TaskProgressStatusSchema._type = "completed";
+const COMPLETED: TaskProgressStatus = "completed";
 
 export interface TaskListItem {
   id: string;
@@ -45,8 +46,7 @@ export async function GET(request: NextRequest) {
     });
     const completedTaskIds = new Set(completedProgress.map((p) => p.taskId));
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = startOfDay(new Date());
 
     const items: TaskListItem[] = tasks.map((task) => {
       const completed = completedTaskIds.has(task.id);

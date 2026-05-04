@@ -1,16 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import type { TaskProgressStatus } from "@/lib/api/progress/schemas";
+import { startOfDay } from "@/lib/api/utils";
 
 const STREAK_LOOKBACK_DAYS = 30;
 const ADHERENCE_WINDOW_DAYS = 7;
 const COMPLETED: TaskProgressStatus = "completed";
-
-function startOfDay(date: Date): Date {
-  const d = new Date(date);
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
 
 function dateKey(date: Date): string {
   return startOfDay(date).toISOString().split("T")[0];

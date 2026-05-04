@@ -41,6 +41,12 @@ export class ValidationError extends Error {
   }
 }
 
+export function startOfDay(date: Date): Date {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
 export function handleApiError(error: unknown) {
   console.error("API Error:", error);
   if (error instanceof ValidationError) {

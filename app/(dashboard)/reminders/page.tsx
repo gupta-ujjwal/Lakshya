@@ -147,61 +147,41 @@ export default function RemindersPage() {
     <div className="space-y-6">
       <Header
         title="Reminders"
-        subtitle={`${activeReminders.length} active reminders`}
+        subtitle={`${activeReminders.length} active`}
         actions={
           <>
             <ThemeToggle />
-            <button onClick={() => setShowAddModal(true)} className="btn btn-primary">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            <button
+              onClick={() => setShowAddModal(true)}
+              aria-label="Add reminder"
+              className="w-11 h-11 flex items-center justify-center rounded-full bg-accent text-white active:scale-95 transition-all"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
               </svg>
-              Add Reminder
             </button>
           </>
         }
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="card p-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-accent-soft flex items-center justify-center">
-              <svg className="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div>
-              <p className="text-2xl font-display font-bold text-text-primary">{todayReminders.length}</p>
-              <p className="text-sm text-text-secondary">Today</p>
-            </div>
-          </div>
+      <div className="grid grid-cols-3 gap-2">
+        <div className="card p-3 text-center">
+          <p className="text-xl font-display font-bold text-accent leading-tight">
+            {todayReminders.length}
+          </p>
+          <p className="text-[11px] text-text-secondary mt-0.5">Today</p>
         </div>
-        <div className="card p-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-success-soft flex items-center justify-center">
-              <svg className="w-5 h-5 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-            </div>
-            <div>
-              <p className="text-2xl font-display font-bold text-text-primary">{thisWeekReminders.length}</p>
-              <p className="text-sm text-text-secondary">This Week</p>
-            </div>
-          </div>
+        <div className="card p-3 text-center">
+          <p className="text-xl font-display font-bold text-success leading-tight">
+            {thisWeekReminders.length}
+          </p>
+          <p className="text-[11px] text-text-secondary mt-0.5">This week</p>
         </div>
-        <div className="card p-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-warning-soft flex items-center justify-center">
-              <svg className="w-5 h-5 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            </div>
-            <div>
-              <p className="text-2xl font-display font-bold text-text-primary">
-                {reminders.filter((r) => r.repeat !== "none").length}
-              </p>
-              <p className="text-sm text-text-secondary">Recurring</p>
-            </div>
-          </div>
+        <div className="card p-3 text-center">
+          <p className="text-xl font-display font-bold text-warning leading-tight">
+            {reminders.filter((r) => r.repeat !== "none").length}
+          </p>
+          <p className="text-[11px] text-text-secondary mt-0.5">Recurring</p>
         </div>
       </div>
 

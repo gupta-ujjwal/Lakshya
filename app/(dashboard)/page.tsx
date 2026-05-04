@@ -19,6 +19,13 @@ interface Task {
   completed?: boolean;
 }
 
+interface Stats {
+  streak: number;
+  adherence: number;
+  overdueCount: number;
+  adherenceWindowDays: number;
+}
+
 const quickActions = [
   {
     label: "Add Task",
@@ -51,7 +58,7 @@ const quickActions = [
     color: "warning",
   },
   {
-    label: "Import Schedule",
+    label: "Import",
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
@@ -63,29 +70,27 @@ const quickActions = [
 ];
 
 function formatDate(dateString: string): string {
-  const date = new Date(dateString);
-  const options: Intl.DateTimeFormatOptions = {
+  return new Date(dateString).toLocaleDateString("en-US", {
     weekday: "long",
-    year: "numeric",
     month: "long",
     day: "numeric",
-  };
-  return date.toLocaleDateString("en-US", options);
+  });
 }
 
-function daysUntil(dateString: string): number {
-  const targetDate = new Date(dateString);
-  const today = new Date();
-  const msPerDay = 1000 * 60 * 60 * 24;
-  return Math.ceil((targetDate.getTime() - today.getTime()) / msPerDay);
+function adherenceTone(pct: number): { color: string; label: string } {
+  if (pct >= 85) return { color: "text-success", label: "On track" };
+  if (pct >= 60) return { color: "text-warning", label: "Slipping" };
+  return { color: "text-danger", label: "Behind" };
 }
 
 export default function DashboardPage() {
   const router = useRouter();
   const [schedule, setSchedule] = useState<Schedule | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [pendingTaskIds, setPendingTaskIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     async function fetchData() {
@@ -101,6 +106,7 @@ export default function DashboardPage() {
         const data = await response.json();
         setSchedule(data.schedule);
         setTasks(data.tasks || []);
+        setStats(data.stats || null);
       } catch (err) {
         setError(err instanceof Error ? err.message : "An error occurred");
       } finally {
@@ -111,17 +117,43 @@ export default function DashboardPage() {
     fetchData();
   }, [router]);
 
+  async function toggleTaskComplete(task: Task) {
+    const nextCompleted = !task.completed;
+    setPendingTaskIds((prev) => new Set(prev).add(task.id));
+    setTasks((prev) =>
+      prev.map((t) => (t.id === task.id ? { ...t, completed: nextCompleted } : t))
+    );
+    try {
+      const res = await fetch(`/api/tasks/${task.id}/progress`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: nextCompleted ? "completed" : "pending" }),
+      });
+      if (!res.ok) throw new Error("Failed to update task");
+    } catch {
+      setTasks((prev) =>
+        prev.map((t) => (t.id === task.id ? { ...t, completed: !nextCompleted } : t))
+      );
+    } finally {
+      setPendingTaskIds((prev) => {
+        const next = new Set(prev);
+        next.delete(task.id);
+        return next;
+      });
+    }
+  }
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="p-6">
+      <div className="p-2">
         <div className="card p-6 bg-danger-soft text-danger">
           <p>Error loading dashboard: {error}</p>
           <button
@@ -135,52 +167,152 @@ export default function DashboardPage() {
     );
   }
 
-  if (!schedule) {
-    return null; // Router will handle redirect
-  }
+  if (!schedule) return null;
 
-  const daysLeft = daysUntil(schedule.targetDate);
   const today = new Date().toISOString().split("T")[0];
-  const todaysTasks = tasks.filter(
-    (t) => new Date(t.targetDate).toISOString().split("T")[0] === today
-  );
-  const completedTasks = todaysTasks.filter((t) => t.completed).length;
+  const todaysTasks = tasks.filter((t) => t.targetDate === today);
+  const completedTodayCount = todaysTasks.filter((t) => t.completed).length;
   const progress =
-    todaysTasks.length > 0 ? Math.round((completedTasks / todaysTasks.length) * 100) : 0;
+    todaysTasks.length > 0
+      ? Math.round((completedTodayCount / todaysTasks.length) * 100)
+      : 0;
+
+  const upNext = todaysTasks
+    .filter((t) => !t.completed)
+    .sort((a, b) => b.priority - a.priority)[0];
+
+  const adherence = stats?.adherence ?? 0;
+  const streak = stats?.streak ?? 0;
+  const overdueCount = stats?.overdueCount ?? 0;
+  const tone = adherenceTone(adherence);
 
   return (
-    <div className="space-y-6 pb-6">
-      <header className="pt-2 pb-4">
-        <h1 className="text-2xl font-display font-bold text-text-primary">Dashboard</h1>
-        <p className="text-sm text-text-secondary">{formatDate(new Date().toISOString())}</p>
+    <div className="space-y-5 pb-6">
+      <header className="pt-2 pb-1 flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-display font-bold text-text-primary">
+            Dashboard
+          </h1>
+          <p className="text-sm text-text-secondary">
+            {formatDate(new Date().toISOString())}
+          </p>
+        </div>
+        <Link
+          href="/settings"
+          aria-label="Settings"
+          className="w-11 h-11 -mt-1 -mr-2 flex items-center justify-center rounded-full text-text-secondary hover:bg-bg-secondary active:scale-95 transition-all"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        </Link>
       </header>
 
-      <div className="card p-6 text-center bg-gradient-to-br from-accent/10 to-accent/5 rounded-2xl animate-fade-in">
-        <p className="text-sm font-medium text-accent mb-2">{schedule.title}</p>
-        <p className="text-5xl font-display font-bold text-text-primary mb-1">{daysLeft}</p>
-        <p className="text-base text-text-secondary mb-2">DAYS LEFT</p>
-        <p className="text-xs text-text-muted">
-          Target: {formatDate(schedule.targetDate)}
-        </p>
-      </div>
-
-      <div className="card p-5 animate-fade-in">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-text-primary">
-            Today&apos;s Progress
+      {upNext ? (
+        <div className="card p-5 bg-gradient-to-br from-accent/10 to-accent/5 animate-fade-in">
+          <p className="text-xs font-semibold text-accent uppercase tracking-wide mb-2">
+            Up Next
+          </p>
+          <h2 className="text-lg font-display font-semibold text-text-primary leading-snug">
+            {upNext.title}
           </h2>
-          <span className="text-sm font-medium text-success">{progress}%</span>
+          <p className="text-sm text-text-secondary mt-1">{upNext.subject}</p>
+          <button
+            onClick={() => toggleTaskComplete(upNext)}
+            disabled={pendingTaskIds.has(upNext.id)}
+            className="mt-4 w-full h-12 rounded-md bg-accent text-white font-semibold text-base active:scale-[0.98] transition-all disabled:opacity-60"
+          >
+            Mark complete
+          </button>
         </div>
-        <div className="progress-bar">
-          <div className="progress-bar-fill" style={{ width: `${progress}%` }} />
+      ) : todaysTasks.length > 0 ? (
+        <div className="card p-5 bg-success-soft animate-fade-in text-center">
+          <p className="text-2xl mb-1" aria-hidden>🎉</p>
+          <p className="text-base font-semibold text-text-primary">
+            All caught up for today
+          </p>
+          <p className="text-sm text-text-secondary mt-1">
+            {todaysTasks.length} task{todaysTasks.length !== 1 ? "s" : ""} done
+          </p>
         </div>
-        <p className="text-sm text-text-secondary mt-3">
-          {completedTasks}/{todaysTasks.length} tasks completed
-        </p>
+      ) : (
+        <div className="card p-5 animate-fade-in text-center">
+          <p className="text-base font-semibold text-text-primary">
+            Nothing scheduled today
+          </p>
+          <p className="text-sm text-text-secondary mt-1">
+            Take a break or pull from the backlog
+          </p>
+        </div>
+      )}
+
+      {overdueCount > 0 && (
+        <Link
+          href="/tasks?filter=overdue"
+          className="card flex items-center justify-between p-4 border border-danger/30 bg-danger-soft/50 animate-fade-in active:scale-[0.99] transition-all"
+        >
+          <span className="flex items-center gap-3">
+            <span
+              className="w-9 h-9 rounded-full bg-danger/15 flex items-center justify-center"
+              aria-hidden
+            >
+              <svg className="w-5 h-5 text-danger" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </span>
+            <span>
+              <p className="text-sm font-semibold text-text-primary">
+                {overdueCount} task{overdueCount !== 1 ? "s" : ""} carried over
+              </p>
+              <p className="text-xs text-text-secondary">
+                Tap to review and reschedule
+              </p>
+            </span>
+          </span>
+          <svg className="w-5 h-5 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </Link>
+      )}
+
+      <div className="grid grid-cols-3 gap-3">
+        <div className="card p-3 text-center">
+          <p className="text-xl" aria-hidden>🔥</p>
+          <p className="text-xl font-display font-bold text-text-primary leading-tight">
+            {streak}
+          </p>
+          <p className="text-[11px] text-text-secondary mt-0.5">
+            day streak
+          </p>
+        </div>
+        <div className="card p-3 text-center">
+          <p className={`text-xl font-display font-bold leading-tight ${tone.color}`}>
+            {adherence}%
+          </p>
+          <p className="text-[11px] text-text-secondary mt-0.5">
+            7-day plan
+          </p>
+          <p className={`text-[10px] font-medium ${tone.color}`}>{tone.label}</p>
+        </div>
+        <div className="card p-3 text-center">
+          <p className="text-xl font-display font-bold text-text-primary leading-tight">
+            {completedTodayCount}/{todaysTasks.length}
+          </p>
+          <p className="text-[11px] text-text-secondary mt-0.5">
+            today
+          </p>
+          <div className="progress-bar mt-1.5 h-1">
+            <div
+              className="progress-bar-fill h-1"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        </div>
       </div>
 
       <div className="card p-5 animate-fade-in">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-semibold text-text-primary">
             Today&apos;s Tasks
           </h2>
@@ -188,40 +320,54 @@ export default function DashboardPage() {
             View all
           </Link>
         </div>
-        <div className="space-y-2">
-          {todaysTasks.slice(0, 3).map((task) => (
-            <div
-              key={task.id}
-              className="flex items-center gap-3 p-3 bg-bg-tertiary/50 rounded-lg"
-            >
-              <div
-                className={`w-6 h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${
-                  task.completed
-                    ? "bg-success border-success text-white"
-                    : "border-border-strong"
-                }`}
-              >
-                {task.completed && (
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                  </svg>
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p
-                  className={`text-sm font-medium truncate ${
-                    task.completed ? "line-through text-text-muted" : "text-text-primary"
-                  }`}
-                >
-                  {task.title}
-                </p>
-                <p className="text-xs text-text-muted">{task.subject}</p>
-              </div>
-            </div>
-          ))}
+        <div className="space-y-1.5">
           {todaysTasks.length === 0 && (
-            <p className="text-sm text-text-muted text-center py-4">No tasks for today</p>
+            <p className="text-sm text-text-muted text-center py-4">
+              No tasks for today
+            </p>
           )}
+          {todaysTasks.slice(0, 5).map((task) => {
+            const isPending = pendingTaskIds.has(task.id);
+            return (
+              <button
+                key={task.id}
+                onClick={() => toggleTaskComplete(task)}
+                disabled={isPending}
+                className="w-full flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-bg-tertiary/50 active:bg-bg-tertiary transition-colors text-left disabled:opacity-60"
+              >
+                <span
+                  className={`w-11 h-11 -m-2 flex-shrink-0 flex items-center justify-center`}
+                  aria-hidden
+                >
+                  <span
+                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                      task.completed
+                        ? "bg-success border-success text-white"
+                        : "border-border-strong"
+                    }`}
+                  >
+                    {task.completed && (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </span>
+                </span>
+                <span className="flex-1 min-w-0">
+                  <span
+                    className={`block text-sm font-medium truncate ${
+                      task.completed ? "line-through text-text-muted" : "text-text-primary"
+                    }`}
+                  >
+                    {task.title}
+                  </span>
+                  <span className="block text-xs text-text-muted">
+                    {task.subject}
+                  </span>
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -229,12 +375,12 @@ export default function DashboardPage() {
         <h2 className="text-lg font-semibold text-text-primary mb-4">
           Quick Actions
         </h2>
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-4 gap-2">
           {quickActions.map((action) => (
             <Link
               key={action.label}
               href={action.href}
-              className="flex flex-col items-center gap-2 p-3 rounded-xl bg-bg-tertiary/50 hover:bg-bg-tertiary transition-colors"
+              className="flex flex-col items-center gap-2 p-2 rounded-xl bg-bg-tertiary/40 hover:bg-bg-tertiary transition-colors"
             >
               <span
                 className={`w-11 h-11 rounded-xl flex items-center justify-center ${
@@ -249,7 +395,7 @@ export default function DashboardPage() {
               >
                 {action.icon}
               </span>
-              <span className="text-xs text-text-secondary text-center">
+              <span className="text-[11px] text-text-secondary text-center leading-tight">
                 {action.label}
               </span>
             </Link>

@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { ThemeProvider } from "@/lib/theme-context";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -43,9 +44,9 @@ export default function RootLayout({
               (function() {
                 try {
                   var theme = localStorage.getItem('theme');
-                  if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                    document.documentElement.classList.add('dark');
-                  }
+                  var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                  var resolved = theme === 'light' || theme === 'dark' ? theme : (prefersDark ? 'dark' : 'light');
+                  if (resolved === 'dark') document.documentElement.classList.add('dark');
                 } catch (e) {}
               })();
             `,
@@ -53,7 +54,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen antialiased">
-        {children}
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   );

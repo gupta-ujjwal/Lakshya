@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useTheme, type Theme } from "@/lib/theme-context";
 
 interface Settings {
-  theme: "light" | "dark" | "system";
   notifications: {
     enabled: boolean;
     taskReminders: boolean;
@@ -26,7 +26,6 @@ interface Settings {
 }
 
 const defaultSettings: Settings = {
-  theme: "system",
   notifications: {
     enabled: true,
     taskReminders: true,
@@ -50,6 +49,7 @@ export default function SettingsPage() {
   const [settings, setSettings] = useState<Settings>(defaultSettings);
   const [savedMessage, setSavedMessage] = useState(false);
   const [activeTab, setActiveTab] = useState<"general" | "schedule" | "display" | "data">("general");
+  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
     const saved = localStorage.getItem("lakshya-settings");
@@ -63,13 +63,6 @@ export default function SettingsPage() {
     localStorage.setItem("lakshya-settings", JSON.stringify(settings));
     setSavedMessage(true);
     setTimeout(() => setSavedMessage(false), 2000);
-  };
-
-  const updateSettings = <K extends keyof Settings>(
-    key: K,
-    value: Settings[K]
-  ) => {
-    setSettings((prev) => ({ ...prev, [key]: value }));
   };
 
   const updateNotifications = (
@@ -169,8 +162,8 @@ export default function SettingsPage() {
                       </p>
                     </div>
                     <select
-                      value={settings.theme}
-                      onChange={(e) => updateSettings("theme", e.target.value as Settings["theme"])}
+                      value={theme}
+                      onChange={(e) => setTheme(e.target.value as Theme)}
                       className="input w-auto"
                     >
                       <option value="light">Light</option>

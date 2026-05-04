@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Header } from "@/components/Header";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import type { TaskListItem, TaskStatus } from "@/app/api/tasks/route";
+import type { TaskProgressStatus } from "@/lib/api/progress/schemas";
 
 type ViewMode = "list" | "kanban" | "calendar";
 type PriorityTier = "high" | "medium" | "low";
@@ -99,11 +100,12 @@ export default function TasksPage() {
   });
 
   async function toggleTaskStatus(task: UiTask) {
-    const nextStatus: TaskStatus =
+    const nextStatus: TaskProgressStatus =
       task.status === "completed" ? "pending" : "completed";
+    const optimisticStatus: TaskStatus = nextStatus;
     setPendingTaskIds((prev) => new Set(prev).add(task.id));
     setTasks((prev) =>
-      prev.map((t) => (t.id === task.id ? { ...t, status: nextStatus } : t))
+      prev.map((t) => (t.id === task.id ? { ...t, status: optimisticStatus } : t))
     );
     try {
       const res = await fetch(`/api/tasks/${task.id}/progress`, {
@@ -112,7 +114,8 @@ export default function TasksPage() {
         body: JSON.stringify({ status: nextStatus }),
       });
       if (!res.ok) throw new Error("Failed to update task");
-    } catch {
+    } catch (err) {
+      console.error("Toggle task progress failed:", err);
       setTasks((prev) =>
         prev.map((t) => (t.id === task.id ? { ...t, status: task.status } : t))
       );

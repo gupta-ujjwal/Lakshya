@@ -27,6 +27,8 @@ model Schedule {
   targetDate DateTime
   data       Json
   tasks      Task[]
+
+  @@index([userId, createdAt])
 }
 
 model Task {
@@ -40,6 +42,8 @@ model Task {
   targetDate   DateTime
   priority     Int            @default(0)
   progress     TaskProgress[]
+
+  @@index([scheduleId, targetDate])
 }
 
 model TaskProgress {

@@ -43,7 +43,7 @@ model Task {
   priority     Int            @default(0)
   progress     TaskProgress[]
 
-  @@index([scheduleId, targetDate])
+  @@index([scheduleId, targetDate, priority])
 }
 
 model TaskProgress {

@@ -28,7 +28,7 @@ model Schedule {
   data       Json
   tasks      Task[]
 
-  @@index([userId, createdAt])
+  @@index([userId, createdAt(sort: Desc)])
 }
 
 model Task {

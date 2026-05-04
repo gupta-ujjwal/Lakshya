@@ -34,22 +34,3 @@ export const ImportScheduleSchema = z.object({
 });
 
 export type ImportScheduleInput = z.infer<typeof ImportScheduleSchema>;
-
-export const CreateScheduleSchema = z.object({
-  userId: z.string().min(1),
-  title: z.string().min(1).max(255),
-  targetDate: z.string().datetime().or(z.date()),
-  data: z.any().optional(),
-});
-
-export const UpdateScheduleSchema = z.object({
-  title: z.string().min(1).max(255).optional(),
-  targetDate: z.string().datetime().or(z.date()).optional(),
-  data: z.any().optional(),
-});
-
-export const ScheduleQuerySchema = z.object({
-  userId: z.string().optional(),
-  take: z.coerce.number().min(1).max(100).optional(),
-  skip: z.coerce.number().min(0).optional(),
-});

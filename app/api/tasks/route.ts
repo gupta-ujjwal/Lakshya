@@ -31,6 +31,11 @@ export async function GET(request: NextRequest) {
       orderBy: [{ targetDate: "asc" }, { priority: "asc" }],
     });
 
+    // All-time completion: a task is "completed" if it has any progress
+    // record with status="completed", regardless of when. The dashboard
+    // route uses a today-only window for its adherence/streak math — the
+    // two semantics are intentionally different views of the same source.
+    // See app/api/dashboard/route.ts for the day-windowed equivalent.
     const completedProgress = await prisma.taskProgress.findMany({
       where: { task: { scheduleId: schedule.id }, status: "completed" },
       select: { taskId: true },

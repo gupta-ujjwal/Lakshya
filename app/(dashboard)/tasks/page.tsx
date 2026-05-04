@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/Header";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -80,23 +80,27 @@ export default function TasksPage() {
     fetchTasks();
   }, [router]);
 
-  const subjects = [
-    subjectsAll,
-    ...Array.from(new Set(tasks.map((t) => t.subject))).sort(),
-  ];
+  const subjects = useMemo(
+    () => [subjectsAll, ...Array.from(new Set(tasks.map((t) => t.subject))).sort()],
+    [tasks]
+  );
 
   const activeFilterCount =
     (filterPriority !== "all" ? 1 : 0) +
     (filterStatus !== "all" ? 1 : 0) +
     (selectedSubject !== subjectsAll ? 1 : 0);
 
-  const filteredTasks = tasks.filter((task) => {
-    if (filterPriority !== "all" && task.tier !== filterPriority) return false;
-    if (filterStatus !== "all" && task.status !== filterStatus) return false;
-    if (selectedSubject !== subjectsAll && task.subject !== selectedSubject)
-      return false;
-    return true;
-  });
+  const filteredTasks = useMemo(
+    () =>
+      tasks.filter((task) => {
+        if (filterPriority !== "all" && task.tier !== filterPriority) return false;
+        if (filterStatus !== "all" && task.status !== filterStatus) return false;
+        if (selectedSubject !== subjectsAll && task.subject !== selectedSubject)
+          return false;
+        return true;
+      }),
+    [tasks, filterPriority, filterStatus, selectedSubject]
+  );
 
   async function toggleTaskStatus(task: UiTask) {
     const nextStatus: TaskProgressStatus =

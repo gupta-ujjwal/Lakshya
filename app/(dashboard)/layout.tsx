@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { StatusBar } from "@/components/StatusBar";
+import { ROUTE_ICONS } from "@/lib/icons";
 import { NAV_ITEMS } from "@/lib/navigation";
 
 export default function DashboardLayout({
@@ -28,7 +29,7 @@ export default function DashboardLayout({
                 href={item.href}
                 className={`nav-item ${isActive ? "active" : ""}`}
               >
-                {item.icon}
+                {ROUTE_ICONS[item.iconKey]}
                 <span className="text-xs">{item.label}</span>
               </Link>
             );

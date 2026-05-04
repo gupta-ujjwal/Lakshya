@@ -28,20 +28,21 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "No schedule found" }, { status: 404 });
     }
 
-    const tasks = await prisma.task.findMany({
-      where: { scheduleId: schedule.id },
-      orderBy: [{ targetDate: "asc" }, { priority: "asc" }],
-    });
-
     // All-time completion: a task is "completed" if it has any progress
     // record with status="completed", regardless of when. The dashboard
     // route uses a today-only window for its adherence/streak math — the
     // two semantics are intentionally different views of the same source.
     // See app/api/dashboard/route.ts for the day-windowed equivalent.
-    const completedProgress = await prisma.taskProgress.findMany({
-      where: { task: { scheduleId: schedule.id }, status: PROGRESS_COMPLETED },
-      select: { taskId: true },
-    });
+    const [tasks, completedProgress] = await Promise.all([
+      prisma.task.findMany({
+        where: { scheduleId: schedule.id },
+        orderBy: [{ targetDate: "asc" }, { priority: "asc" }],
+      }),
+      prisma.taskProgress.findMany({
+        where: { task: { scheduleId: schedule.id }, status: PROGRESS_COMPLETED },
+        select: { taskId: true },
+      }),
+    ]);
     const completedTaskIds = new Set(completedProgress.map((p) => p.taskId));
 
     const today = startOfDay(new Date());

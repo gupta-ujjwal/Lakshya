@@ -17,7 +17,7 @@ interface Task {
   subject: string;
   targetDate: string;
   priority: number;
-  completed?: boolean;
+  completedToday?: boolean;
 }
 
 interface Stats {
@@ -111,10 +111,10 @@ export default function DashboardPage() {
   }, [router]);
 
   async function toggleTaskComplete(task: Task) {
-    const nextCompleted = !task.completed;
+    const nextCompleted = !task.completedToday;
     setPendingTaskIds((prev) => new Set(prev).add(task.id));
     setTasks((prev) =>
-      prev.map((t) => (t.id === task.id ? { ...t, completed: nextCompleted } : t))
+      prev.map((t) => (t.id === task.id ? { ...t, completedToday: nextCompleted } : t))
     );
     try {
       const res = await fetch(`/api/tasks/${task.id}/progress`, {
@@ -125,7 +125,7 @@ export default function DashboardPage() {
       if (!res.ok) throw new Error("Failed to update task");
     } catch {
       setTasks((prev) =>
-        prev.map((t) => (t.id === task.id ? { ...t, completed: !nextCompleted } : t))
+        prev.map((t) => (t.id === task.id ? { ...t, completedToday: !nextCompleted } : t))
       );
     } finally {
       setPendingTaskIds((prev) => {
@@ -164,14 +164,14 @@ export default function DashboardPage() {
 
   const today = new Date().toISOString().split("T")[0];
   const todaysTasks = tasks.filter((t) => t.targetDate === today);
-  const completedTodayCount = todaysTasks.filter((t) => t.completed).length;
+  const completedTodayCount = todaysTasks.filter((t) => t.completedToday).length;
   const progress =
     todaysTasks.length > 0
       ? Math.round((completedTodayCount / todaysTasks.length) * 100)
       : 0;
 
   const upNext = todaysTasks
-    .filter((t) => !t.completed)
+    .filter((t) => !t.completedToday)
     .sort((a, b) => b.priority - a.priority)[0];
 
   const adherence = stats?.adherence ?? 0;
@@ -334,12 +334,12 @@ export default function DashboardPage() {
                 >
                   <span
                     className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                      task.completed
+                      task.completedToday
                         ? "bg-success border-success text-white"
                         : "border-border-strong"
                     }`}
                   >
-                    {task.completed && (
+                    {task.completedToday && (
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                       </svg>
@@ -349,7 +349,7 @@ export default function DashboardPage() {
                 <span className="flex-1 min-w-0">
                   <span
                     className={`block text-sm font-medium truncate ${
-                      task.completed ? "line-through text-text-muted" : "text-text-primary"
+                      task.completedToday ? "line-through text-text-muted" : "text-text-primary"
                     }`}
                   >
                     {task.title}

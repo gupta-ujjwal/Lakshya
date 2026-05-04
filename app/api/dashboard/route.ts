@@ -118,7 +118,7 @@ export async function GET(request: NextRequest) {
         subject: task.subject,
         targetDate: task.targetDate.toISOString().split("T")[0],
         priority: task.priority,
-        completed: completedTodayIds.has(task.id),
+        completedToday: completedTodayIds.has(task.id),
       })),
     });
   } catch (error) {

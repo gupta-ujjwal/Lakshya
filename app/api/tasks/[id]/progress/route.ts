@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { CreateTaskProgressSchema } from "@/lib/api/progress/schemas";
+import { startOfDay } from "@/lib/api/utils";
 
 const ProgressBodySchema = CreateTaskProgressSchema.omit({
   taskId: true,
@@ -32,28 +33,21 @@ export async function POST(
       return NextResponse.json({ error: "Task not found" }, { status: 404 });
     }
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    const today = startOfDay(new Date());
 
-    const existing = await prisma.taskProgress.findFirst({
-      where: { taskId, date: { gte: today, lt: tomorrow } },
+    const progress = await prisma.taskProgress.upsert({
+      where: { taskId_date: { taskId, date: today } },
+      create: {
+        taskId,
+        status: parsed.data.status,
+        notes: parsed.data.notes,
+        date: today,
+      },
+      update: {
+        status: parsed.data.status,
+        notes: parsed.data.notes,
+      },
     });
-
-    const progress = existing
-      ? await prisma.taskProgress.update({
-          where: { id: existing.id },
-          data: { status: parsed.data.status, notes: parsed.data.notes },
-        })
-      : await prisma.taskProgress.create({
-          data: {
-            taskId,
-            status: parsed.data.status,
-            notes: parsed.data.notes,
-            date: new Date(),
-          },
-        });
 
     return NextResponse.json({ progress });
   } catch (error) {

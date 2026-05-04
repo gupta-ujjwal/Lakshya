@@ -1,145 +1,160 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Header } from "@/components/Header";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import type { TaskListItem, TaskStatus } from "@/app/api/tasks/route";
+import type { TaskProgressStatus } from "@/lib/api/progress/schemas";
+import { formatDateShort } from "@/lib/format";
 
 type ViewMode = "list" | "kanban" | "calendar";
-type FilterPriority = "all" | "high" | "medium" | "low";
-type FilterStatus = "all" | "pending" | "completed" | "overdue";
+type PriorityTier = "high" | "medium" | "low";
+type FilterPriority = "all" | PriorityTier;
+type FilterStatus = "all" | TaskStatus;
 
-interface Task {
-  id: string;
-  title: string;
-  subject: string;
-  targetDate: Date;
-  priority: "high" | "medium" | "low";
-  status: "pending" | "completed" | "overdue";
-  description?: string;
+interface UiTask extends TaskListItem {
+  tier: PriorityTier;
 }
 
-const mockTasks: Task[] = [
-  {
-    id: "1",
-    title: "Cardiovascular System Review",
-    subject: "Physiology",
-    targetDate: new Date("2026-04-24"),
-    priority: "high",
-    status: "completed",
-    description: "Complete chapter 5 cardiovascular system",
-  },
-  {
-    id: "2",
-    title: "Drug Classifications",
-    subject: "Pharmacology",
-    targetDate: new Date("2026-04-24"),
-    priority: "high",
-    status: "completed",
-    description: "Review autonomic nervous system drugs",
-  },
-  {
-    id: "3",
-    title: "Renal Physiology Quiz",
-    subject: "Physiology",
-    targetDate: new Date("2026-04-24"),
-    priority: "medium",
-    status: "completed",
-    description: "Complete the online quiz on renal physiology",
-  },
-  {
-    id: "4",
-    title: "Biochemical Pathways",
-    subject: "Biochemistry",
-    targetDate: new Date("2026-04-24"),
-    priority: "medium",
-    status: "pending",
-    description: "Study glycolysis, gluconeogenesis, and Krebs cycle",
-  },
-  {
-    id: "5",
-    title: "Neuroanatomy Diagrams",
-    subject: "Anatomy",
-    targetDate: new Date("2026-04-25"),
-    priority: "low",
-    status: "pending",
-    description: "Label brain stem and cranial nerve nuclei",
-  },
-  {
-    id: "6",
-    title: "Pathology Case Studies",
-    subject: "Pathology",
-    targetDate: new Date("2026-04-23"),
-    priority: "medium",
-    status: "overdue",
-    description: "Review 5 clinical cases involving cardiovascular pathology",
-  },
-  {
-    id: "7",
-    title: "Pharmacokinetics Problems",
-    subject: "Pharmacology",
-    targetDate: new Date("2026-04-26"),
-    priority: "high",
-    status: "pending",
-    description: "Solve 20 pharmacokinetics calculation problems",
-  },
-  {
-    id: "8",
-    title: "Histology Slides Review",
-    subject: "Anatomy",
-    targetDate: new Date("2026-04-27"),
-    priority: "low",
-    status: "pending",
-    description: "Review epithelial and connective tissue slides",
-  },
-];
+function priorityToTier(priority: number): PriorityTier {
+  if (priority <= 0) return "high";
+  if (priority === 1) return "medium";
+  return "low";
+}
 
-const subjects = ["All Subjects", "Physiology", "Pharmacology", "Biochemistry", "Anatomy", "Pathology"];
+const subjectsAll = "All Subjects";
 
-const priorityColors = {
+const priorityColors: Record<PriorityTier, string> = {
   high: "bg-danger text-white",
   medium: "bg-warning text-black",
   low: "bg-success text-white",
 };
 
-const priorityLabels = {
+const filterPriorityActiveColors: Record<FilterPriority, string> = {
+  all: "bg-accent text-white",
+  ...priorityColors,
+};
+
+const priorityLabels: Record<PriorityTier, string> = {
   high: "High",
   medium: "Medium",
   low: "Low",
 };
 
 export default function TasksPage() {
+  const router = useRouter();
+  const [tasks, setTasks] = useState<UiTask[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [pendingTaskIds, setPendingTaskIds] = useState<Set<string>>(new Set());
+
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [filterPriority, setFilterPriority] = useState<FilterPriority>("all");
   const [filterStatus, setFilterStatus] = useState<FilterStatus>("all");
-  const [selectedSubject, setSelectedSubject] = useState("All Subjects");
-  const [tasks, setTasks] = useState<Task[]>(mockTasks);
+  const [selectedSubject, setSelectedSubject] = useState(subjectsAll);
   const [showAddModal, setShowAddModal] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
+
+  useEffect(() => {
+    async function fetchTasks() {
+      try {
+        const response = await fetch("/api/tasks");
+        if (response.status === 404) {
+          router.push("/import");
+          return;
+        }
+        if (!response.ok) {
+          throw new Error("Failed to fetch tasks");
+        }
+        const data: { tasks: TaskListItem[] } = await response.json();
+        setTasks(
+          data.tasks.map((t) => ({ ...t, tier: priorityToTier(t.priority) }))
+        );
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "An error occurred");
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchTasks();
+  }, [router]);
+
+  const subjects = useMemo(
+    () => [subjectsAll, ...Array.from(new Set(tasks.map((t) => t.subject))).sort()],
+    [tasks]
+  );
 
   const activeFilterCount =
     (filterPriority !== "all" ? 1 : 0) +
     (filterStatus !== "all" ? 1 : 0) +
-    (selectedSubject !== "All Subjects" ? 1 : 0);
+    (selectedSubject !== subjectsAll ? 1 : 0);
 
-  const filteredTasks = tasks.filter((task) => {
-    if (filterPriority !== "all" && task.priority !== filterPriority) return false;
-    if (filterStatus !== "all" && task.status !== filterStatus) return false;
-    if (selectedSubject !== "All Subjects" && task.subject !== selectedSubject) return false;
-    return true;
-  });
+  const filteredTasks = useMemo(
+    () =>
+      tasks.filter((task) => {
+        if (filterPriority !== "all" && task.tier !== filterPriority) return false;
+        if (filterStatus !== "all" && task.status !== filterStatus) return false;
+        if (selectedSubject !== subjectsAll && task.subject !== selectedSubject)
+          return false;
+        return true;
+      }),
+    [tasks, filterPriority, filterStatus, selectedSubject]
+  );
 
-  const toggleTaskStatus = (taskId: string) => {
+  async function toggleTaskStatus(task: UiTask) {
+    const nextStatus: TaskProgressStatus =
+      task.status === "completed" ? "pending" : "completed";
+    setPendingTaskIds((prev) => new Set(prev).add(task.id));
     setTasks((prev) =>
-      prev.map((task) =>
-        task.id === taskId
-          ? { ...task, status: task.status === "completed" ? "pending" : "completed" }
-          : task
-      )
+      prev.map((t) => (t.id === task.id ? { ...t, status: nextStatus } : t))
     );
-  };
+    try {
+      const res = await fetch(`/api/tasks/${task.id}/progress`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: nextStatus }),
+      });
+      if (!res.ok) throw new Error("Failed to update task");
+    } catch (err) {
+      console.error("Toggle task progress failed:", err);
+      setTasks((prev) =>
+        prev.map((t) => (t.id === task.id ? { ...t, status: task.status } : t))
+      );
+    } finally {
+      setPendingTaskIds((prev) => {
+        const next = new Set(prev);
+        next.delete(task.id);
+        return next;
+      });
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-2">
+        <div className="card p-6 bg-danger-soft text-danger">
+          <p>Error loading tasks: {error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 btn-primary"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const completedCount = tasks.filter((t) => t.status === "completed").length;
-  const pendingCount = tasks.filter((t) => t.status === "pending").length;
   const overdueCount = tasks.filter((t) => t.status === "overdue").length;
 
   return (
@@ -223,28 +238,21 @@ export default function TasksPage() {
               Priority
             </p>
             <div className="flex flex-wrap gap-2">
-              {(["all", "high", "medium", "low"] as FilterPriority[]).map((priority) => (
+              {(["all", "high", "medium", "low"] as FilterPriority[]).map((priority) => {
+                const active = filterPriority === priority;
+                const colors = active
+                  ? filterPriorityActiveColors[priority]
+                  : "bg-bg-tertiary text-text-secondary";
+                return (
                 <button
                   key={priority}
                   onClick={() => setFilterPriority(priority)}
-                  className={`
-                    px-3 py-1.5 text-sm font-medium rounded-full transition-all
-                    ${
-                      filterPriority === priority
-                        ? priority === "high"
-                          ? "bg-danger text-white"
-                          : priority === "medium"
-                          ? "bg-warning text-black"
-                          : priority === "low"
-                          ? "bg-success text-white"
-                          : "bg-accent text-white"
-                        : "bg-bg-tertiary text-text-secondary"
-                    }
-                  `}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-full transition-all ${colors}`}
                 >
                   {priority === "all" ? "All" : priority.charAt(0).toUpperCase() + priority.slice(1)}
                 </button>
-              ))}
+                );
+              })}
             </div>
           </div>
           <div>
@@ -280,102 +288,93 @@ export default function TasksPage() {
               <svg className="w-16 h-16 mx-auto mb-4 text-text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
               </svg>
-              <h3 className="text-lg font-semibold text-text-primary mb-2">No tasks yet</h3>
-              <p className="text-text-secondary mb-4">Add your first study topic to get started</p>
-              <button
-                onClick={() => setShowAddModal(true)}
-                className="btn btn-primary inline-flex items-center justify-center gap-2 max-w-xs"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                Add Task
-              </button>
+              <h3 className="text-lg font-semibold text-text-primary mb-2">
+                {tasks.length === 0 ? "No tasks yet" : "No tasks match your filters"}
+              </h3>
+              <p className="text-text-secondary mb-4">
+                {tasks.length === 0
+                  ? "Import a schedule to get started"
+                  : "Try clearing some filters above"}
+              </p>
             </div>
           ) : (
-            filteredTasks.map((task) => (
-            <div
-              key={task.id}
-              className={`
-                card p-4 flex items-start gap-4 cursor-pointer
-                hover:border-border-strong transition-all
-                ${task.status === "overdue" ? "border-danger/50 bg-danger-soft/30" : ""}
-                ${task.status === "completed" ? "opacity-60" : ""}
-              `}
-              onClick={() => toggleTaskStatus(task.id)}
-            >
-              <span
-                aria-hidden
-                className="w-11 h-11 -m-2.5 flex-shrink-0 flex items-center justify-center"
-              >
-                <span
+            filteredTasks.map((task) => {
+              const isPending = pendingTaskIds.has(task.id);
+              return (
+                <button
+                  key={task.id}
+                  onClick={() => toggleTaskStatus(task)}
+                  disabled={isPending}
                   className={`
-                    w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all
-                    ${
-                      task.status === "completed"
-                        ? "bg-success border-success text-white"
-                        : task.status === "overdue"
-                        ? "border-danger"
-                        : "border-border-strong"
-                    }
+                    w-full text-left card p-4 flex items-start gap-4 cursor-pointer
+                    hover:border-border-strong transition-all
+                    ${task.status === "overdue" ? "border-danger/50 bg-danger-soft/30" : ""}
+                    ${task.status === "completed" ? "opacity-60" : ""}
+                    disabled:opacity-50
                   `}
                 >
-                  {task.status === "completed" && (
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  )}
-                </span>
-              </span>
-
-              <div className="flex-1 min-w-0">
-                <h3
-                  className={`
-                    font-medium text-text-primary
-                    ${task.status === "completed" ? "line-through" : ""}
-                  `}
-                >
-                  {task.title}
-                </h3>
-                {task.description && (
-                  <p className="text-sm text-text-secondary mt-1 line-clamp-2">
-                    {task.description}
-                  </p>
-                )}
-                <div className="flex items-center gap-3 mt-2">
-                  <span className="text-xs text-text-tertiary">
-                    {task.targetDate.toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                    })}
+                  <span
+                    aria-hidden
+                    className="w-11 h-11 -m-2.5 flex-shrink-0 flex items-center justify-center"
+                  >
+                    <span
+                      className={`
+                        w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all
+                        ${
+                          task.status === "completed"
+                            ? "bg-success border-success text-white"
+                            : task.status === "overdue"
+                            ? "border-danger"
+                            : "border-border-strong"
+                        }
+                      `}
+                    >
+                      {task.status === "completed" && (
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </span>
                   </span>
-                  <span className="px-2 py-0.5 bg-bg-tertiary text-text-secondary text-xs rounded-full">
-                    {task.subject}
-                  </span>
-                </div>
-              </div>
 
-              <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${priorityColors[task.priority]}`}>
-                {priorityLabels[task.priority]}
-              </span>
-            </div>
-            ))
+                  <div className="flex-1 min-w-0">
+                    <h3
+                      className={`
+                        font-medium text-text-primary
+                        ${task.status === "completed" ? "line-through" : ""}
+                      `}
+                    >
+                      {task.title}
+                    </h3>
+                    <div className="flex items-center gap-3 mt-2">
+                      <span className="text-xs text-text-tertiary">
+                        {formatDateShort(task.targetDate)}
+                      </span>
+                      <span className="px-2 py-0.5 bg-bg-tertiary text-text-secondary text-xs rounded-full">
+                        {task.subject}
+                      </span>
+                    </div>
+                  </div>
+
+                  <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${priorityColors[task.tier]}`}>
+                    {priorityLabels[task.tier]}
+                  </span>
+                </button>
+              );
+            })
           )}
         </div>
       )}
 
       {viewMode === "kanban" && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-fade-in">
-          {["pending", "in_progress", "completed"].map((status) => {
-            const statusTasks = filteredTasks.filter(
-              (t) => (status === "pending" ? t.status === "pending" : t.status === status) || 
-                     (status === "in_progress" ? t.status === "pending" : t.status === status)
-            );
+          {(["pending", "completed", "overdue"] as TaskStatus[]).map((status) => {
+            const statusTasks = filteredTasks.filter((t) => t.status === status);
             return (
               <div key={status} className="space-y-3">
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold text-text-primary capitalize">
-                    {status.replace("_", " ")}
+                    {status}
                   </h3>
                   <span className="px-2 py-0.5 bg-bg-tertiary text-text-secondary text-xs rounded-full">
                     {statusTasks.length}
@@ -388,10 +387,10 @@ export default function TasksPage() {
                       <div className="flex items-center justify-between mt-2">
                         <span className="text-xs text-text-tertiary">{task.subject}</span>
                         <span
-                          className={`px-1.5 py-0.5 text-[10px] font-bold rounded ${priorityColors[task.priority]}`}
-                          aria-label={`${priorityLabels[task.priority]} priority`}
+                          className={`px-1.5 py-0.5 text-[10px] font-bold rounded ${priorityColors[task.tier]}`}
+                          aria-label={`${priorityLabels[task.tier]} priority`}
                         >
-                          {priorityLabels[task.priority][0]}
+                          {priorityLabels[task.tier][0]}
                         </span>
                       </div>
                     </div>
@@ -425,63 +424,19 @@ export default function TasksPage() {
             <h2 className="text-xl font-display font-bold text-text-primary mb-4">
               Add New Task
             </h2>
-            <form className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-text-secondary mb-1">
-                  Title
-                </label>
-                <input type="text" className="input" placeholder="Task title" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-text-secondary mb-1">
-                  Subject
-                </label>
-                <select className="input">
-                  {subjects.slice(1).map((subject) => (
-                    <option key={subject} value={subject}>
-                      {subject}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-text-secondary mb-1">
-                  Target Date
-                </label>
-                <input type="date" className="input" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-text-secondary mb-1">
-                  Priority
-                </label>
-                <div className="flex gap-2">
-                  {(["high", "medium", "low"] as const).map((p) => (
-                    <button
-                      key={p}
-                      type="button"
-                      className={`
-                        flex-1 py-2 text-sm font-medium rounded-lg transition-all
-                        ${priorityColors[p]} hover:opacity-80
-                      `}
-                    >
-                      {p.charAt(0).toUpperCase() + p.slice(1)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="flex gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowAddModal(false)}
-                  className="btn btn-secondary flex-1"
-                >
-                  Cancel
-                </button>
-                <button type="submit" className="btn btn-primary flex-1">
-                  Add Task
-                </button>
-              </div>
-            </form>
+            <p className="text-sm text-text-secondary mb-4">
+              Manual task creation isn&apos;t wired up yet — tasks come from your imported schedule.
+              Visit <span className="font-medium">Import</span> to load a different schedule.
+            </p>
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowAddModal(false)}
+                className="btn btn-secondary flex-1"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

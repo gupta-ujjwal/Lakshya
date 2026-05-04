@@ -72,14 +72,23 @@ describe("Progress API Schemas", () => {
       expect(result.success).toBe(false);
     });
 
-    it("accepts various status values", () => {
-      const statuses = ["pending", "in_progress", "completed", "skipped", "blocked"];
-      for (const status of statuses) {
+    it("accepts the supported status values", () => {
+      for (const status of ["pending", "completed"] as const) {
         const result = CreateTaskProgressSchema.safeParse({
           taskId: "task-123",
           status,
         });
         expect(result.success).toBe(true);
+      }
+    });
+
+    it("rejects unsupported status values", () => {
+      for (const status of ["in_progress", "skipped", "blocked", "Completed"]) {
+        const result = CreateTaskProgressSchema.safeParse({
+          taskId: "task-123",
+          status,
+        });
+        expect(result.success).toBe(false);
       }
     });
 
@@ -96,7 +105,7 @@ describe("Progress API Schemas", () => {
   describe("UpdateTaskProgressSchema", () => {
     it("accepts partial update with status only", () => {
       const result = UpdateTaskProgressSchema.safeParse({
-        status: "in_progress",
+        status: "completed",
       });
       expect(result.success).toBe(true);
     });

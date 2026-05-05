@@ -4,7 +4,6 @@ export const SessionReflectionSchema = z.enum(["💪", "🙂", "😩"]);
 export type SessionReflection = z.infer<typeof SessionReflectionSchema>;
 
 export const DEFAULT_FOCUS_MINUTES = 25;
-export const DEFAULT_BREAK_MINUTES = 5;
 
 export const StartSessionSchema = z.object({
   taskId: z.string().min(1).optional(),

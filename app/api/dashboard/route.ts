@@ -1,11 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { PROGRESS_COMPLETED } from "@/lib/api/progress/schemas";
+import { HoursPerDaySchema } from "@/lib/api/schedules/schemas";
 import { startOfDay } from "@/lib/api/dates";
 import { getCurrentUserId } from "@/lib/api/auth";
 
 const STREAK_LOOKBACK_DAYS = 30;
 const ADHERENCE_WINDOW_DAYS = 7;
+const DEFAULT_HOURS_PER_DAY = 6;
+
+// Read-side defensiveness: ImportScheduleSchema enforces the range at write
+// time, so a parse failure here means corrupted data — fall back rather than
+// surface a user-facing error.
+function readHoursPerDay(data: unknown): number {
+  const raw = (data as { hoursPerDay?: unknown } | null)?.hoursPerDay;
+  return HoursPerDaySchema.safeParse(raw).data ?? DEFAULT_HOURS_PER_DAY;
+}
 
 function dateKey(date: Date): string {
   return startOfDay(date).toISOString().split("T")[0];
@@ -105,6 +115,7 @@ export async function GET(request: NextRequest) {
         title: schedule.title,
         targetDate: schedule.targetDate.toISOString().split("T")[0],
         createdAt: schedule.createdAt.toISOString(),
+        hoursPerDay: readHoursPerDay(schedule.data),
       },
       stats: {
         streak,

@@ -88,30 +88,39 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [pendingTaskIds, setPendingTaskIds] = useState<Set<string>>(new Set());
 
-  async function loadDashboard({ redirectIfMissing }: { redirectIfMissing: boolean }) {
+  async function refreshDashboard() {
     try {
       const response = await fetch("/api/dashboard");
-      if (response.status === 404) {
-        if (redirectIfMissing) router.push("/import");
-        return;
-      }
-      if (!response.ok) {
-        throw new Error("Failed to fetch dashboard data");
-      }
+      if (!response.ok) return;
       const data = await response.json();
       setSchedule(data.schedule);
       setTasks(data.tasks || []);
       setStats(data.stats || null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
-    } finally {
-      setLoading(false);
+    } catch {
+      // Silent: refresh failures are not user-actionable; the prior state is still valid.
     }
   }
 
   useEffect(() => {
-    loadDashboard({ redirectIfMissing: true });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    async function loadInitial() {
+      try {
+        const response = await fetch("/api/dashboard");
+        if (response.status === 404) {
+          router.push("/import");
+          return;
+        }
+        if (!response.ok) throw new Error("Failed to fetch dashboard data");
+        const data = await response.json();
+        setSchedule(data.schedule);
+        setTasks(data.tasks || []);
+        setStats(data.stats || null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "An error occurred");
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadInitial();
   }, [router]);
 
   async function toggleTaskComplete(task: Task) {
@@ -215,7 +224,7 @@ export default function DashboardPage() {
       {upNext ? (
         <SessionWidget
           task={{ id: upNext.id, title: upNext.title, subject: upNext.subject }}
-          onSessionFinished={() => loadDashboard({ redirectIfMissing: false })}
+          onSessionFinished={refreshDashboard}
         />
       ) : todaysTasks.length > 0 ? (
         <div className="card p-5 bg-success-soft animate-fade-in text-center">

@@ -39,7 +39,7 @@ export async function PATCH(
       data: {
         endedAt,
         duration,
-        reflection: parsed.data.reflection ?? undefined,
+        reflection: parsed.data.reflection,
       },
       select: {
         id: true,

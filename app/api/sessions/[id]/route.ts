@@ -23,13 +23,33 @@ export async function PATCH(
 
     const session = await prisma.session.findFirst({
       where: { id: params.id, userId },
-      select: { id: true, startedAt: true, endedAt: true, taskId: true },
+      select: {
+        id: true,
+        startedAt: true,
+        endedAt: true,
+        duration: true,
+        reflection: true,
+        taskId: true,
+      },
     });
     if (!session) {
       return NextResponse.json({ error: "Session not found" }, { status: 404 });
     }
 
-    const endedAt = session.endedAt ?? new Date();
+    // Idempotent finish: if a prior PATCH already closed this session,
+    // return the existing record without re-running the update or the
+    // TaskProgress upsert. Prevents double-counting on retry / double-click.
+    if (session.endedAt) {
+      return NextResponse.json({
+        session: {
+          ...session,
+          startedAt: session.startedAt.toISOString(),
+          endedAt: session.endedAt.toISOString(),
+        },
+      });
+    }
+
+    const endedAt = new Date();
     const duration = Math.max(
       0,
       Math.round((endedAt.getTime() - session.startedAt.getTime()) / 1000)

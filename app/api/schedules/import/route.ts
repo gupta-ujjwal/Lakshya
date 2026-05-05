@@ -2,11 +2,20 @@ import { NextRequest, NextResponse } from "next/server";
 import { ImportScheduleSchema } from "@/lib/api/schedules/schemas";
 import { importSchedule } from "@/lib/api/schedules/ingest";
 import { getCurrentUserId } from "@/lib/api/auth";
+import { checkContentLength, MAX_IMPORT_BYTES } from "@/lib/api/http/limits";
 
 export async function POST(request: NextRequest) {
   try {
+    const sizeCheck = checkContentLength(
+      request.headers.get("content-length"),
+      MAX_IMPORT_BYTES
+    );
+    if (!sizeCheck.ok) {
+      return NextResponse.json({ error: sizeCheck.error }, { status: 413 });
+    }
+
     const body = await request.json();
-    
+
     const validation = ImportScheduleSchema.safeParse(body);
     if (!validation.success) {
       return NextResponse.json(

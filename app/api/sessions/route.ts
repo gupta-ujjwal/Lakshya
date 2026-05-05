@@ -23,6 +23,35 @@ export async function POST(request: NextRequest) {
 
     const focusMinutes = parsed.data.focusMinutes ?? DEFAULT_FOCUS_MINUTES;
 
+    // Reject concurrent starts: a double-click or a second tab must not
+    // create a parallel Session row. The client can call GET /api/sessions/active
+    // to recover the existing one.
+    const open = await prisma.session.findFirst({
+      where: { userId, endedAt: null },
+      orderBy: { startedAt: "desc" },
+      select: {
+        id: true,
+        startedAt: true,
+        taskId: true,
+        task: { select: { id: true, title: true, subject: true } },
+      },
+    });
+    if (open) {
+      return NextResponse.json(
+        {
+          error: "Session already active",
+          session: {
+            id: open.id,
+            startedAt: open.startedAt.toISOString(),
+            taskId: open.taskId,
+            focusMinutes,
+          },
+          task: open.task,
+        },
+        { status: 409 }
+      );
+    }
+
     const schedule = await prisma.schedule.findFirst({
       where: { userId },
       orderBy: { createdAt: "desc" },

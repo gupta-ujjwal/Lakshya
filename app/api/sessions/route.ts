@@ -7,6 +7,11 @@ import {
   DEFAULT_FOCUS_MINUTES,
 } from "@/lib/api/sessions/schemas";
 import { pickNextTaskForToday, NextTask } from "@/lib/api/sessions/nextTask";
+import {
+  SESSION_OPEN_SELECT,
+  SESSION_OPEN_WITH_TASK_SELECT,
+  formatOpenSession,
+} from "@/lib/api/sessions/serialize";
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,31 +28,20 @@ export async function POST(request: NextRequest) {
 
     const focusMinutes = parsed.data.focusMinutes ?? DEFAULT_FOCUS_MINUTES;
 
-    // Reject concurrent starts: a double-click or a second tab must not
-    // create a parallel Session row. The client can call GET /api/sessions/active
-    // to recover the existing one.
+    // 409 with the existing session embedded so the client can recover
+    // without a second round-trip to GET /api/sessions/active.
     const open = await prisma.session.findFirst({
       where: { userId, endedAt: null },
       orderBy: { startedAt: "desc" },
-      select: {
-        id: true,
-        startedAt: true,
-        taskId: true,
-        focusMinutes: true,
-        task: { select: { id: true, title: true, subject: true } },
-      },
+      select: SESSION_OPEN_WITH_TASK_SELECT,
     });
     if (open) {
+      const { task: openTask, ...openSession } = open;
       return NextResponse.json(
         {
           error: "Session already active",
-          session: {
-            id: open.id,
-            startedAt: open.startedAt.toISOString(),
-            taskId: open.taskId,
-            focusMinutes: open.focusMinutes,
-          },
-          task: open.task,
+          session: formatOpenSession(openSession),
+          task: openTask,
         },
         { status: 409 }
       );
@@ -86,16 +80,11 @@ export async function POST(request: NextRequest) {
         startedAt: new Date(),
         focusMinutes,
       },
-      select: { id: true, startedAt: true, taskId: true, focusMinutes: true },
+      select: SESSION_OPEN_SELECT,
     });
 
     return NextResponse.json({
-      session: {
-        id: session.id,
-        startedAt: session.startedAt.toISOString(),
-        taskId: session.taskId,
-        focusMinutes: session.focusMinutes,
-      },
+      session: formatOpenSession(session),
       task,
     });
   } catch (error) {

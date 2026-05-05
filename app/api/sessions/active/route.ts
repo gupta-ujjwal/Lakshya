@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/api/auth";
+import {
+  SESSION_OPEN_WITH_TASK_SELECT,
+  formatOpenSession,
+} from "@/lib/api/sessions/serialize";
 
 export async function GET(request: NextRequest) {
   try {
@@ -9,27 +13,17 @@ export async function GET(request: NextRequest) {
     const session = await prisma.session.findFirst({
       where: { userId, endedAt: null },
       orderBy: { startedAt: "desc" },
-      select: {
-        id: true,
-        startedAt: true,
-        taskId: true,
-        focusMinutes: true,
-        task: { select: { id: true, title: true, subject: true } },
-      },
+      select: SESSION_OPEN_WITH_TASK_SELECT,
     });
 
     if (!session) {
       return NextResponse.json({ session: null });
     }
 
+    const { task, ...open } = session;
     return NextResponse.json({
-      session: {
-        id: session.id,
-        startedAt: session.startedAt.toISOString(),
-        taskId: session.taskId,
-        focusMinutes: session.focusMinutes,
-      },
-      task: session.task,
+      session: formatOpenSession(open),
+      task,
     });
   } catch (error) {
     console.error("Active session error:", error);

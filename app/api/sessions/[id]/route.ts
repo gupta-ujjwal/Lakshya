@@ -4,36 +4,10 @@ import { getCurrentUserId } from "@/lib/api/auth";
 import { startOfDay } from "@/lib/api/dates";
 import { EndSessionSchema } from "@/lib/api/sessions/schemas";
 import { PROGRESS_COMPLETED } from "@/lib/api/progress/schemas";
-
-const SESSION_SELECT = {
-  id: true,
-  startedAt: true,
-  endedAt: true,
-  duration: true,
-  focusMinutes: true,
-  reflection: true,
-  taskId: true,
-} as const;
-
-interface SessionRecord {
-  id: string;
-  startedAt: Date;
-  endedAt: Date | null;
-  duration: number | null;
-  focusMinutes: number;
-  reflection: string | null;
-  taskId: string | null;
-}
-
-function sessionResponse(s: SessionRecord) {
-  return {
-    session: {
-      ...s,
-      startedAt: s.startedAt.toISOString(),
-      endedAt: s.endedAt?.toISOString() ?? null,
-    },
-  };
-}
+import {
+  SESSION_CLOSED_SELECT,
+  formatClosedSession,
+} from "@/lib/api/sessions/serialize";
 
 export async function PATCH(
   request: NextRequest,
@@ -53,17 +27,16 @@ export async function PATCH(
 
     const session = await prisma.session.findFirst({
       where: { id: params.id, userId },
-      select: SESSION_SELECT,
+      select: SESSION_CLOSED_SELECT,
     });
     if (!session) {
       return NextResponse.json({ error: "Session not found" }, { status: 404 });
     }
 
-    // Idempotent finish: if a prior PATCH already closed this session,
-    // return the existing record without re-running the update or the
-    // TaskProgress upsert. Prevents double-counting on retry / double-click.
+    // Idempotent on retry / double-click — re-running the upsert would
+    // double-write TaskProgress and clobber duration with a later snapshot.
     if (session.endedAt) {
-      return NextResponse.json(sessionResponse(session));
+      return NextResponse.json(formatClosedSession(session));
     }
 
     const endedAt = new Date();
@@ -79,7 +52,7 @@ export async function PATCH(
         duration,
         reflection: parsed.data.reflection,
       },
-      select: SESSION_SELECT,
+      select: SESSION_CLOSED_SELECT,
     });
 
     const progressDate = startOfDay(new Date());
@@ -100,7 +73,7 @@ export async function PATCH(
 
     const [updated] = await Promise.all([sessionUpdate, completion]);
 
-    return NextResponse.json(sessionResponse(updated));
+    return NextResponse.json(formatClosedSession(updated));
   } catch (error) {
     console.error("End session error:", error);
     return NextResponse.json(

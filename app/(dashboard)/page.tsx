@@ -4,11 +4,13 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { formatDateLong } from "@/lib/format";
+import { DaysLeftHero } from "@/components/DaysLeftHero";
 
 interface Schedule {
   id: string;
   title: string;
   targetDate: string;
+  hoursPerDay: number;
 }
 
 interface Task {
@@ -201,6 +203,12 @@ export default function DashboardPage() {
           </svg>
         </Link>
       </header>
+
+      <DaysLeftHero
+        title={schedule.title}
+        targetDate={schedule.targetDate}
+        hoursPerDay={schedule.hoursPerDay}
+      />
 
       {upNext ? (
         <div className="card p-5 bg-gradient-to-br from-accent/10 to-accent/5 animate-fade-in">

@@ -63,6 +63,14 @@ test.describe("Dashboard Page", () => {
       await expect(daysNumber).toBeVisible();
     });
 
+    test("renders Days-left hero with effort framing", async ({ page }) => {
+      const hero = page.getByTestId("days-left-hero");
+      await expect(hero).toBeVisible();
+      await expect(hero).toContainText("days until");
+      await expect(hero).toContainText("study hours left");
+      await expect(hero).toContainText("hrs/day");
+    });
+
     test("displays Today's Progress section", async ({ page }) => {
       await expect(page.locator("text=Today's Progress")).toBeVisible();
       await expect(page.locator("text=%")).toBeVisible();

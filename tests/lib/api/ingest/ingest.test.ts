@@ -281,8 +281,8 @@ describe("Schedule Import", () => {
         try {
           return await callback(tx);
         } finally {
-          tx.user.upsert = originalUpsert;
-          tx.schedule.create = originalCreate;
+          tx.user.upsert = originalUpsert as typeof tx.user.upsert;
+          tx.schedule.create = originalCreate as typeof tx.schedule.create;
         }
       });
 

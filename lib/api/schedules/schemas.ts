@@ -30,6 +30,7 @@ export const ImportScheduleSchema = z.object({
     })
     .transform((val) => new Date(`${val}T00:00:00.000Z`)),
   cycleLengthDays: z.number().int().min(1).max(366),
+  hoursPerDay: z.number().min(0.5).max(24).optional(),
   timetable: z.array(TimetableDaySchema).min(1),
 });
 

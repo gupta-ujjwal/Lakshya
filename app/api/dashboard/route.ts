@@ -6,6 +6,17 @@ import { getCurrentUserId } from "@/lib/api/auth";
 
 const STREAK_LOOKBACK_DAYS = 30;
 const ADHERENCE_WINDOW_DAYS = 7;
+const DEFAULT_HOURS_PER_DAY = 6;
+
+function readHoursPerDay(data: unknown): number {
+  if (data && typeof data === "object" && "hoursPerDay" in data) {
+    const value = (data as { hoursPerDay: unknown }).hoursPerDay;
+    if (typeof value === "number" && value > 0 && value <= 24) {
+      return value;
+    }
+  }
+  return DEFAULT_HOURS_PER_DAY;
+}
 
 function dateKey(date: Date): string {
   return startOfDay(date).toISOString().split("T")[0];
@@ -105,6 +116,7 @@ export async function GET(request: NextRequest) {
         title: schedule.title,
         targetDate: schedule.targetDate.toISOString().split("T")[0],
         createdAt: schedule.createdAt.toISOString(),
+        hoursPerDay: readHoursPerDay(schedule.data),
       },
       stats: {
         streak,

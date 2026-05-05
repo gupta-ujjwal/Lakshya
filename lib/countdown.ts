@@ -2,6 +2,8 @@ export type UrgencyLevel = "calm" | "focus" | "urgent" | "critical" | "past";
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
+// Both sides are bucketed to UTC midnight so the result is a calendar-day
+// diff that doesn't shift when "now" crosses local hours during the day.
 export function daysUntil(dateString: string): number {
   const target = new Date(dateString);
   const now = new Date();

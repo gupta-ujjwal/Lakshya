@@ -72,19 +72,17 @@ export async function PATCH(
       },
     });
 
+    const progressDate = startOfDay(new Date());
     const completion =
       parsed.data.markTaskComplete && session.taskId
         ? prisma.taskProgress.upsert({
             where: {
-              taskId_date: {
-                taskId: session.taskId,
-                date: startOfDay(new Date()),
-              },
+              taskId_date: { taskId: session.taskId, date: progressDate },
             },
             create: {
               taskId: session.taskId,
               status: PROGRESS_COMPLETED,
-              date: startOfDay(new Date()),
+              date: progressDate,
             },
             update: { status: PROGRESS_COMPLETED },
           })

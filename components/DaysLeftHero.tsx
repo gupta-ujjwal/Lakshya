@@ -12,7 +12,6 @@ interface HeroTone {
   gradient: string;
   ring: string;
   hours: string;
-  badge: string;
 }
 
 const tones: Record<UrgencyLevel, HeroTone> = {
@@ -20,31 +19,26 @@ const tones: Record<UrgencyLevel, HeroTone> = {
     gradient: "from-accent via-accent to-accent-hover",
     ring: "ring-accent/30",
     hours: "bg-white/15 text-white",
-    badge: "bg-white/20 text-white",
   },
   focus: {
     gradient: "from-accent via-accent-hover to-[#1E7DE0]",
     ring: "ring-accent/40",
     hours: "bg-white/15 text-white",
-    badge: "bg-white/20 text-white",
   },
   urgent: {
     gradient: "from-warning via-[#FF8500] to-[#FF7B00]",
     ring: "ring-warning/40",
     hours: "bg-white/20 text-white",
-    badge: "bg-white/25 text-white",
   },
   critical: {
     gradient: "from-danger via-[#E22A20] to-[#D7261C]",
     ring: "ring-danger/50",
     hours: "bg-white/20 text-white",
-    badge: "bg-white/25 text-white",
   },
   past: {
     gradient: "from-bg-tertiary via-bg-secondary to-bg-tertiary",
     ring: "ring-border",
     hours: "bg-bg-secondary text-text-secondary",
-    badge: "bg-bg-secondary text-text-muted",
   },
 };
 

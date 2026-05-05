@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { PROGRESS_COMPLETED } from "@/lib/api/progress/schemas";
 import { HoursPerDaySchema } from "@/lib/api/schedules/schemas";
-import { startOfDay } from "@/lib/api/dates";
+import { startOfDay, nextDay } from "@/lib/api/dates";
 import { getCurrentUserId } from "@/lib/api/auth";
 
 const STREAK_LOOKBACK_DAYS = 30;
@@ -57,8 +57,7 @@ export async function GET(request: NextRequest) {
     });
 
     const today = startOfDay(new Date());
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrow = nextDay(today);
 
     const adherenceWindowStart = new Date(today);
     adherenceWindowStart.setDate(

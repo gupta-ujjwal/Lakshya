@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { nextDay } from "@/lib/api/dates";
 
 export interface NextTask {
   id: string;
@@ -13,8 +14,7 @@ export async function pickNextTaskForToday(
   scheduleId: string,
   today: Date
 ): Promise<NextTask | null> {
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
+  const tomorrow = nextDay(today);
 
   const candidates = await prisma.task.findMany({
     where: {

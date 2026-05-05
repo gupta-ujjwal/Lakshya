@@ -28,40 +28,38 @@ export function DaysLeftHero({ title, targetDate, hoursPerDay }: DaysLeftHeroPro
   return (
     <section
       data-testid="days-left-hero"
-      className={`relative overflow-hidden rounded-md bg-gradient-to-br ${tone.gradient} ring-1 ${tone.ring} shadow-md animate-fade-in`}
+      className={`relative overflow-hidden rounded-md bg-gradient-to-br ${tone.gradient} ring-1 ${tone.ring} shadow-md animate-fade-in px-5 pt-5 pb-4`}
       aria-label={`${numberDisplay} ${headline}`}
     >
-      <div className="px-5 pt-5 pb-4">
-        <p
-          className={`text-[11px] font-semibold uppercase tracking-[0.14em] mb-1 ${tone.eyebrow}`}
-        >
-          {isPast ? "Target passed" : "Countdown"}
-        </p>
+      <p
+        className={`text-[11px] font-semibold uppercase tracking-[0.14em] mb-1 ${tone.eyebrow}`}
+      >
+        {isPast ? "Target passed" : "Countdown"}
+      </p>
 
-        <div className="flex items-baseline gap-3">
-          <span
-            className={`text-6xl font-display font-extrabold leading-none tabular-nums tracking-tight ${tone.number}`}
-          >
-            {numberDisplay}
-          </span>
-          <span
-            className={`text-base font-semibold leading-tight ${tone.headline}`}
-          >
-            {headline}
+      <div className="flex items-baseline gap-3">
+        <span
+          className={`text-6xl font-display font-extrabold leading-none tabular-nums tracking-tight ${tone.number}`}
+        >
+          {numberDisplay}
+        </span>
+        <span
+          className={`text-base font-semibold leading-tight ${tone.headline}`}
+        >
+          {headline}
+        </span>
+      </div>
+
+      {!isPast && (
+        <div
+          className={`mt-4 inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-semibold ${tone.hours}`}
+        >
+          <span aria-hidden>⏱</span>
+          <span className="tabular-nums">
+            {remainingDays} × {hoursPerDay} hrs/day = {hoursRemaining} study hours left
           </span>
         </div>
-
-        {!isPast && (
-          <div
-            className={`mt-4 inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-semibold ${tone.hours}`}
-          >
-            <span aria-hidden>⏱</span>
-            <span className="tabular-nums">
-              {remainingDays} × {hoursPerDay} hrs/day = {hoursRemaining} study hours left
-            </span>
-          </div>
-        )}
-      </div>
+      )}
     </section>
   );
 }

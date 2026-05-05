@@ -33,6 +33,7 @@ export async function POST(request: NextRequest) {
         id: true,
         startedAt: true,
         taskId: true,
+        focusMinutes: true,
         task: { select: { id: true, title: true, subject: true } },
       },
     });
@@ -44,7 +45,7 @@ export async function POST(request: NextRequest) {
             id: open.id,
             startedAt: open.startedAt.toISOString(),
             taskId: open.taskId,
-            focusMinutes,
+            focusMinutes: open.focusMinutes,
           },
           task: open.task,
         },
@@ -83,8 +84,9 @@ export async function POST(request: NextRequest) {
         userId,
         taskId: task?.id ?? null,
         startedAt: new Date(),
+        focusMinutes,
       },
-      select: { id: true, startedAt: true, taskId: true },
+      select: { id: true, startedAt: true, taskId: true, focusMinutes: true },
     });
 
     return NextResponse.json({
@@ -92,7 +94,7 @@ export async function POST(request: NextRequest) {
         id: session.id,
         startedAt: session.startedAt.toISOString(),
         taskId: session.taskId,
-        focusMinutes,
+        focusMinutes: session.focusMinutes,
       },
       task,
     });

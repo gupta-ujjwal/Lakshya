@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/api/auth";
-import { DEFAULT_FOCUS_MINUTES } from "@/lib/api/sessions/schemas";
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,6 +13,7 @@ export async function GET(request: NextRequest) {
         id: true,
         startedAt: true,
         taskId: true,
+        focusMinutes: true,
         task: { select: { id: true, title: true, subject: true } },
       },
     });
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
         id: session.id,
         startedAt: session.startedAt.toISOString(),
         taskId: session.taskId,
-        focusMinutes: DEFAULT_FOCUS_MINUTES,
+        focusMinutes: session.focusMinutes,
       },
       task: session.task,
     });

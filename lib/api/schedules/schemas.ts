@@ -14,6 +14,8 @@ export const TimetableDaySchema = z.object({
 
 export type TimetableDay = z.infer<typeof TimetableDaySchema>;
 
+export const HoursPerDaySchema = z.number().min(0.5).max(24);
+
 const DATE_STRING_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
 const isValidDateString = (val: string): boolean => {
@@ -30,7 +32,7 @@ export const ImportScheduleSchema = z.object({
     })
     .transform((val) => new Date(`${val}T00:00:00.000Z`)),
   cycleLengthDays: z.number().int().min(1).max(366),
-  hoursPerDay: z.number().min(0.5).max(24).optional(),
+  hoursPerDay: HoursPerDaySchema.optional(),
   timetable: z.array(TimetableDaySchema).min(1),
 });
 

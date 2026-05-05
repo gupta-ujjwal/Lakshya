@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { PROGRESS_COMPLETED } from "@/lib/api/progress/schemas";
+import { HoursPerDaySchema } from "@/lib/api/schedules/schemas";
 import { startOfDay } from "@/lib/api/dates";
 import { getCurrentUserId } from "@/lib/api/auth";
 
@@ -10,10 +11,10 @@ const DEFAULT_HOURS_PER_DAY = 6;
 
 function readHoursPerDay(data: unknown): number {
   if (data && typeof data === "object" && "hoursPerDay" in data) {
-    const value = (data as { hoursPerDay: unknown }).hoursPerDay;
-    if (typeof value === "number" && value > 0 && value <= 24) {
-      return value;
-    }
+    const parsed = HoursPerDaySchema.safeParse(
+      (data as { hoursPerDay: unknown }).hoursPerDay
+    );
+    if (parsed.success) return parsed.data;
   }
   return DEFAULT_HOURS_PER_DAY;
 }

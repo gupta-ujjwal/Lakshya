@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/api/auth";
 import { startOfDay } from "@/lib/api/dates";
 import { EndSessionSchema } from "@/lib/api/sessions/schemas";
+import { PROGRESS_COMPLETED } from "@/lib/api/progress/schemas";
 
 export async function PATCH(
   request: NextRequest,
@@ -55,8 +56,8 @@ export async function PATCH(
       const today = startOfDay(new Date());
       await prisma.taskProgress.upsert({
         where: { taskId_date: { taskId: session.taskId, date: today } },
-        create: { taskId: session.taskId, status: "completed", date: today },
-        update: { status: "completed" },
+        create: { taskId: session.taskId, status: PROGRESS_COMPLETED, date: today },
+        update: { status: PROGRESS_COMPLETED },
       });
     }
 

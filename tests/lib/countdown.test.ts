@@ -23,6 +23,13 @@ describe("countdown", () => {
     it("returns negative for past dates", () => {
       expect(daysUntil("2026-05-01T00:00:00.000Z")).toBe(-4);
     });
+
+    it("ignores time-of-day on the now side", () => {
+      vi.setSystemTime(new Date("2026-05-05T23:59:00.000Z"));
+      expect(daysUntil("2026-05-06T00:00:00.000Z")).toBe(1);
+      vi.setSystemTime(new Date("2026-05-05T00:00:00.000Z"));
+      expect(daysUntil("2026-05-06T00:00:00.000Z")).toBe(1);
+    });
   });
 
   describe("urgencyLevel", () => {

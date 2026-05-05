@@ -5,7 +5,17 @@ const MS_PER_DAY = 1000 * 60 * 60 * 24;
 export function daysUntil(dateString: string): number {
   const target = new Date(dateString);
   const now = new Date();
-  return Math.ceil((target.getTime() - now.getTime()) / MS_PER_DAY);
+  const targetUtc = Date.UTC(
+    target.getUTCFullYear(),
+    target.getUTCMonth(),
+    target.getUTCDate()
+  );
+  const nowUtc = Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate()
+  );
+  return Math.round((targetUtc - nowUtc) / MS_PER_DAY);
 }
 
 export function urgencyLevel(days: number): UrgencyLevel {

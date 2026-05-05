@@ -2,8 +2,9 @@
 // `experimental.serverActions.bodySizeLimit` from next.config.js — that
 // setting only applies to Server Actions. To bound POST bodies on regular
 // route handlers we read Content-Length ourselves before parsing.
-
-export const MAX_IMPORT_BYTES = 1_048_576; // 1 MiB
+//
+// The cap is a per-route product knob; callers pass their own value. This
+// file owns the mechanism (parse, compare, format error), not the policy.
 
 export interface BodyLimitFailure {
   ok: false;

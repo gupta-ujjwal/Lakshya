@@ -1,5 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { checkContentLength, MAX_IMPORT_BYTES } from "@/lib/api/http/limits";
+import { checkContentLength } from "@/lib/api/http/limits";
+
+const ONE_MIB = 1_048_576;
 
 describe("checkContentLength", () => {
   it("passes when header is missing", () => {
@@ -31,11 +33,11 @@ describe("checkContentLength", () => {
     expect(checkContentLength("not-a-number", 100).ok).toBe(true);
   });
 
-  it("rejects 5MB against the import cap", () => {
-    expect(checkContentLength("5242880", MAX_IMPORT_BYTES).ok).toBe(false);
+  it("rejects 5MiB against a 1MiB cap", () => {
+    expect(checkContentLength("5242880", ONE_MIB).ok).toBe(false);
   });
 
-  it("accepts 1MB exactly against the import cap", () => {
-    expect(checkContentLength(String(MAX_IMPORT_BYTES), MAX_IMPORT_BYTES).ok).toBe(true);
+  it("accepts a body equal to the cap", () => {
+    expect(checkContentLength(String(ONE_MIB), ONE_MIB).ok).toBe(true);
   });
 });

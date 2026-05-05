@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { ImportScheduleSchema } from "@/lib/api/schedules/schemas";
 import { importSchedule } from "@/lib/api/schedules/ingest";
 import { getCurrentUserId } from "@/lib/api/auth";
-import { checkContentLength, MAX_IMPORT_BYTES } from "@/lib/api/http/limits";
+import { checkContentLength } from "@/lib/api/http/limits";
+
+const MAX_IMPORT_BYTES = 1_048_576; // 1 MiB
 
 export async function POST(request: NextRequest) {
   try {

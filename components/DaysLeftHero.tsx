@@ -9,6 +9,12 @@ interface DaysLeftHeroProps {
   hoursPerDay: number;
 }
 
+function buildHeadline(days: number, title: string): string {
+  if (days < 0) return `day${Math.abs(days) === 1 ? "" : "s"} past target`;
+  if (days === 0) return "the day is here";
+  return `day${days === 1 ? "" : "s"} until ${title}`;
+}
+
 export function DaysLeftHero({ title, targetDate, hoursPerDay }: DaysLeftHeroProps) {
   const days = daysUntil(targetDate);
   const level = urgencyLevel(days);
@@ -16,12 +22,8 @@ export function DaysLeftHero({ title, targetDate, hoursPerDay }: DaysLeftHeroPro
   const isPast = days < 0;
   const remainingDays = Math.max(0, days);
   const hoursRemaining = Math.round(remainingDays * hoursPerDay);
-  const numberDisplay = isPast ? Math.abs(days) : days;
-  const headline = isPast
-    ? `day${Math.abs(days) === 1 ? "" : "s"} past target`
-    : days === 0
-    ? "the day is here"
-    : `day${days === 1 ? "" : "s"} until ${title}`;
+  const numberDisplay = Math.abs(days);
+  const headline = buildHeadline(days, title);
 
   return (
     <section

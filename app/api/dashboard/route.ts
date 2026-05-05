@@ -9,6 +9,9 @@ const STREAK_LOOKBACK_DAYS = 30;
 const ADHERENCE_WINDOW_DAYS = 7;
 const DEFAULT_HOURS_PER_DAY = 6;
 
+// Read-side defensiveness: ImportScheduleSchema enforces the range at write
+// time, so a parse failure here means corrupted data — fall back rather than
+// surface a user-facing error.
 function readHoursPerDay(data: unknown): number {
   if (data && typeof data === "object" && "hoursPerDay" in data) {
     const parsed = HoursPerDaySchema.safeParse(

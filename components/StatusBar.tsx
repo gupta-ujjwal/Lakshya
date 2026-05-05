@@ -24,23 +24,18 @@ interface UrgencyTone {
   border: string;
 }
 
+const accentTone: UrgencyTone = {
+  gradient: "from-accent to-accent-hover",
+  text: "text-white",
+  subtext: "text-white/85",
+  progressTrack: "bg-white/20",
+  progressFill: "bg-white",
+  border: "border-accent/40",
+};
+
 const tones: Record<UrgencyLevel, UrgencyTone> = {
-  calm: {
-    gradient: "from-accent to-accent-hover",
-    text: "text-white",
-    subtext: "text-white/85",
-    progressTrack: "bg-white/20",
-    progressFill: "bg-white",
-    border: "border-accent/40",
-  },
-  focus: {
-    gradient: "from-accent to-accent-hover",
-    text: "text-white",
-    subtext: "text-white/85",
-    progressTrack: "bg-white/20",
-    progressFill: "bg-white",
-    border: "border-accent/40",
-  },
+  calm: accentTone,
+  focus: accentTone,
   urgent: {
     gradient: "from-warning to-[#FF7B00]",
     text: "text-white",

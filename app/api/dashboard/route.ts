@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { PROGRESS_COMPLETED } from "@/lib/api/progress/schemas";
-import { startOfDay } from "@/lib/api/utils";
+import { startOfDay } from "@/lib/api/dates";
+import { getCurrentUserId } from "@/lib/api/auth";
 
 const STREAK_LOOKBACK_DAYS = 30;
 const ADHERENCE_WINDOW_DAYS = 7;
@@ -26,7 +27,7 @@ function computeStreak(completionDates: Set<string>): number {
 
 export async function GET(request: NextRequest) {
   try {
-    const userId = request.headers.get("x-user-id") || "anonymous";
+    const userId = getCurrentUserId(request);
 
     const schedule = await prisma.schedule.findFirst({
       where: { userId },
@@ -117,7 +118,7 @@ export async function GET(request: NextRequest) {
         subject: task.subject,
         targetDate: task.targetDate.toISOString().split("T")[0],
         priority: task.priority,
-        completed: completedTodayIds.has(task.id),
+        completedToday: completedTodayIds.has(task.id),
       })),
     });
   } catch (error) {

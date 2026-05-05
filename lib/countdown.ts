@@ -1,23 +1,16 @@
+import { startOfDay } from "@/lib/api/dates";
+
 export type UrgencyLevel = "calm" | "focus" | "urgent" | "critical" | "past";
 
-const MS_PER_DAY = 1000 * 60 * 60 * 24;
+const MS_PER_DAY = 86_400_000;
 
-// Both sides are bucketed to UTC midnight so the result is a calendar-day
-// diff that doesn't shift when "now" crosses local hours during the day.
+// Both sides are bucketed to UTC midnight (via startOfDay) so the result
+// is a calendar-day diff that doesn't shift when "now" crosses local
+// hours during the day.
 export function daysUntil(dateString: string): number {
-  const target = new Date(dateString);
-  const now = new Date();
-  const targetUtc = Date.UTC(
-    target.getUTCFullYear(),
-    target.getUTCMonth(),
-    target.getUTCDate()
-  );
-  const nowUtc = Date.UTC(
-    now.getUTCFullYear(),
-    now.getUTCMonth(),
-    now.getUTCDate()
-  );
-  return Math.round((targetUtc - nowUtc) / MS_PER_DAY);
+  const targetMs = startOfDay(new Date(dateString)).getTime();
+  const nowMs = startOfDay(new Date()).getTime();
+  return Math.round((targetMs - nowMs) / MS_PER_DAY);
 }
 
 export function urgencyLevel(days: number): UrgencyLevel {

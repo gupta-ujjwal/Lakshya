@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { PROGRESS_COMPLETED } from "@/lib/api/progress/schemas";
 import { HoursPerDaySchema } from "@/lib/api/schedules/schemas";
-import { startOfDay, nextDay } from "@/lib/api/dates";
+import { startOfDay, nextDay, addDays } from "@/lib/api/dates";
 import { getCurrentUserId } from "@/lib/api/auth";
 
 const STREAK_LOOKBACK_DAYS = 30;
@@ -23,14 +23,13 @@ function dateKey(date: Date): string {
 
 function computeStreak(completionDates: Set<string>): number {
   let streak = 0;
-  const cursor = startOfDay(new Date());
-  const todayKey = dateKey(cursor);
-  if (!completionDates.has(todayKey)) {
-    cursor.setDate(cursor.getDate() - 1);
+  let cursor = startOfDay(new Date());
+  if (!completionDates.has(dateKey(cursor))) {
+    cursor = addDays(cursor, -1);
   }
   while (completionDates.has(dateKey(cursor)) && streak < STREAK_LOOKBACK_DAYS) {
     streak++;
-    cursor.setDate(cursor.getDate() - 1);
+    cursor = addDays(cursor, -1);
   }
   return streak;
 }
@@ -58,16 +57,8 @@ export async function GET(request: NextRequest) {
 
     const today = startOfDay(new Date());
     const tomorrow = nextDay(today);
-
-    const adherenceWindowStart = new Date(today);
-    adherenceWindowStart.setDate(
-      adherenceWindowStart.getDate() - (ADHERENCE_WINDOW_DAYS - 1)
-    );
-
-    const streakWindowStart = new Date(today);
-    streakWindowStart.setDate(
-      streakWindowStart.getDate() - STREAK_LOOKBACK_DAYS
-    );
+    const adherenceWindowStart = addDays(today, -(ADHERENCE_WINDOW_DAYS - 1));
+    const streakWindowStart = addDays(today, -STREAK_LOOKBACK_DAYS);
 
     const recentProgress = await prisma.taskProgress.findMany({
       where: {

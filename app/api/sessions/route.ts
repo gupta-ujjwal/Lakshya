@@ -7,6 +7,11 @@ import {
   DEFAULT_FOCUS_MINUTES,
 } from "@/lib/api/sessions/schemas";
 import { pickNextTaskForToday, NextTask } from "@/lib/api/sessions/nextTask";
+import {
+  SESSION_OPEN_SELECT,
+  SESSION_OPEN_WITH_TASK_SELECT,
+  formatOpenSession,
+} from "@/lib/api/sessions/serialize";
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,11 +28,35 @@ export async function POST(request: NextRequest) {
 
     const focusMinutes = parsed.data.focusMinutes ?? DEFAULT_FOCUS_MINUTES;
 
-    const schedule = await prisma.schedule.findFirst({
-      where: { userId },
-      orderBy: { createdAt: "desc" },
-      select: { id: true },
-    });
+    // Open-session check and schedule lookup are independent reads — fan
+    // them out so the success path saves a round-trip; rejection paths
+    // discard the unused schedule (one cheap select).
+    const [open, schedule] = await Promise.all([
+      prisma.session.findFirst({
+        where: { userId, endedAt: null },
+        orderBy: { startedAt: "desc" },
+        select: SESSION_OPEN_WITH_TASK_SELECT,
+      }),
+      prisma.schedule.findFirst({
+        where: { userId },
+        orderBy: { createdAt: "desc" },
+        select: { id: true },
+      }),
+    ]);
+
+    // 409 first: with the existing session embedded so the client can
+    // recover without a second round-trip to GET /api/sessions/active.
+    if (open) {
+      const { task: openTask, ...openSession } = open;
+      return NextResponse.json(
+        {
+          error: "Session already active",
+          session: formatOpenSession(openSession),
+          task: openTask,
+        },
+        { status: 409 }
+      );
+    }
     if (!schedule) {
       return NextResponse.json({ error: "No schedule found" }, { status: 404 });
     }
@@ -54,17 +83,13 @@ export async function POST(request: NextRequest) {
         userId,
         taskId: task?.id ?? null,
         startedAt: new Date(),
+        focusMinutes,
       },
-      select: { id: true, startedAt: true, taskId: true },
+      select: SESSION_OPEN_SELECT,
     });
 
     return NextResponse.json({
-      session: {
-        id: session.id,
-        startedAt: session.startedAt.toISOString(),
-        taskId: session.taskId,
-        focusMinutes,
-      },
+      session: formatOpenSession(session),
       task,
     });
   } catch (error) {

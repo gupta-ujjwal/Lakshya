@@ -4,6 +4,10 @@ import { getCurrentUserId } from "@/lib/api/auth";
 import { startOfDay } from "@/lib/api/dates";
 import { EndSessionSchema } from "@/lib/api/sessions/schemas";
 import { PROGRESS_COMPLETED } from "@/lib/api/progress/schemas";
+import {
+  SESSION_CLOSED_SELECT,
+  formatClosedSession,
+} from "@/lib/api/sessions/serialize";
 
 export async function PATCH(
   request: NextRequest,
@@ -23,13 +27,19 @@ export async function PATCH(
 
     const session = await prisma.session.findFirst({
       where: { id: params.id, userId },
-      select: { id: true, startedAt: true, endedAt: true, taskId: true },
+      select: SESSION_CLOSED_SELECT,
     });
     if (!session) {
       return NextResponse.json({ error: "Session not found" }, { status: 404 });
     }
 
-    const endedAt = session.endedAt ?? new Date();
+    // Idempotent on retry / double-click — re-running the upsert would
+    // double-write TaskProgress and clobber duration with a later snapshot.
+    if (session.endedAt) {
+      return NextResponse.json(formatClosedSession(session));
+    }
+
+    const endedAt = new Date();
     const duration = Math.max(
       0,
       Math.round((endedAt.getTime() - session.startedAt.getTime()) / 1000)
@@ -42,29 +52,20 @@ export async function PATCH(
         duration,
         reflection: parsed.data.reflection,
       },
-      select: {
-        id: true,
-        startedAt: true,
-        endedAt: true,
-        duration: true,
-        reflection: true,
-        taskId: true,
-      },
+      select: SESSION_CLOSED_SELECT,
     });
 
+    const progressDate = startOfDay(new Date());
     const completion =
       parsed.data.markTaskComplete && session.taskId
         ? prisma.taskProgress.upsert({
             where: {
-              taskId_date: {
-                taskId: session.taskId,
-                date: startOfDay(new Date()),
-              },
+              taskId_date: { taskId: session.taskId, date: progressDate },
             },
             create: {
               taskId: session.taskId,
               status: PROGRESS_COMPLETED,
-              date: startOfDay(new Date()),
+              date: progressDate,
             },
             update: { status: PROGRESS_COMPLETED },
           })
@@ -72,13 +73,7 @@ export async function PATCH(
 
     const [updated] = await Promise.all([sessionUpdate, completion]);
 
-    return NextResponse.json({
-      session: {
-        ...updated,
-        startedAt: updated.startedAt.toISOString(),
-        endedAt: updated.endedAt?.toISOString() ?? null,
-      },
-    });
+    return NextResponse.json(formatClosedSession(updated));
   } catch (error) {
     console.error("End session error:", error);
     return NextResponse.json(

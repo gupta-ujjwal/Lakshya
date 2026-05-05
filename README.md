@@ -154,13 +154,18 @@ API:
 - `POST /api/sessions` — start a session. Body: `{ taskId?, focusMinutes? }`.
   When `taskId` is omitted, the server picks the next incomplete task for
   today (by priority, then creation order). Defaults to a 25-minute focus.
+  Returns `409` if the user already has an open session — the client should
+  recover via `GET /api/sessions/active`.
+- `GET /api/sessions/active` — return the user's currently-open session
+  (`endedAt IS NULL`) or `{ session: null }`. Used by the widget to rehydrate
+  after a page reload mid-timer.
 - `PATCH /api/sessions/:id` — end a session. Body: `{ reflection?, markTaskComplete? }`.
   Reflection is one of `💪 🙂 😩`. When `markTaskComplete` is `true` and the
   session was bound to a task, today's `TaskProgress` is upserted to
-  `completed`.
+  `completed`. Idempotent: if the session is already closed, returns the
+  existing record without re-upserting.
 
 ## Known Limitations
 
 - No authentication (Phase 1)
-- Sessions don't survive a page reload mid-timer (Phase 2 polish)
 - No business logic beyond the daily-loop ignition (Phase 1)

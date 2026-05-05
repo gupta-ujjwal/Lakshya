@@ -61,17 +61,18 @@ model TaskProgress {
 }
 
 model Session {
-  id         String    @id @default(cuid())
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  userId     String
-  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  taskId     String?
-  task       Task?     @relation(fields: [taskId], references: [id], onDelete: SetNull)
-  startedAt  DateTime
-  endedAt    DateTime?
-  duration   Int?
-  reflection String?
+  id           String    @id @default(cuid())
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  taskId       String?
+  task         Task?     @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  startedAt    DateTime
+  endedAt      DateTime?
+  duration     Int?
+  focusMinutes Int       @default(25)
+  reflection   String?
 
   @@index([userId, startedAt(sort: Desc)])
 }

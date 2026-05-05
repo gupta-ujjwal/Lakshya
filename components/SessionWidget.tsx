@@ -28,6 +28,21 @@ const REFLECTION_OPTIONS: ReadonlyArray<{
   { emoji: "😩", label: "Struggled" },
 ];
 
+interface ActiveSessionResponse {
+  session: {
+    id: string;
+    startedAt: string;
+    taskId: string | null;
+    focusMinutes: number;
+  } | null;
+  task?: TaskPreview | null;
+}
+
+interface StartSessionResponse {
+  session: { id: string; startedAt: string; focusMinutes: number };
+  task: TaskPreview | null;
+}
+
 function formatRemaining(seconds: number): string {
   const safe = Math.max(0, seconds);
   const m = Math.floor(safe / 60);
@@ -46,6 +61,49 @@ export function SessionWidget({ task, onSessionFinished }: SessionWidgetProps) {
   const [starting, setStarting] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Surface non-2xx and network failures so a silent recovery miss doesn't
+  // leave the user staring at an idle widget while their Session row stays
+  // open on the server.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/sessions/active");
+        if (cancelled) return;
+        if (!res.ok) {
+          setError(`Could not recover session (HTTP ${res.status})`);
+          return;
+        }
+        const data = (await res.json()) as ActiveSessionResponse;
+        if (cancelled || !data.session) return;
+        const totalSeconds = data.session.focusMinutes * 60;
+        const startedMs = new Date(data.session.startedAt).getTime();
+        const target = startedMs + totalSeconds * 1000;
+        setSessionId(data.session.id);
+        setActiveTask(data.task ?? null);
+        if (Date.now() >= target) {
+          setRemaining(0);
+          setCompletedNaturally(true);
+          setPhase("reflect");
+          return;
+        }
+        setEndsAt(target);
+        setRemaining(Math.round((target - Date.now()) / 1000));
+        setPhase("active");
+      } catch (err) {
+        if (cancelled) return;
+        setError(
+          err instanceof Error
+            ? `Could not recover session: ${err.message}`
+            : "Could not recover session"
+        );
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (phase !== "active" || endsAt === null) return;
@@ -74,16 +132,14 @@ export function SessionWidget({ task, onSessionFinished }: SessionWidgetProps) {
         body: JSON.stringify(task ? { taskId: task.id } : {}),
       });
       if (!res.ok) throw new Error("Could not start session");
-      const data = (await res.json()) as {
-        session: { id: string; focusMinutes: number };
-        task: TaskPreview | null;
-      };
+      const data = (await res.json()) as StartSessionResponse;
       const totalSeconds = data.session.focusMinutes * 60;
+      const startedMs = new Date(data.session.startedAt).getTime();
       setSessionId(data.session.id);
       setActiveTask(data.task);
       setRemaining(totalSeconds);
       setCompletedNaturally(false);
-      setEndsAt(Date.now() + totalSeconds * 1000);
+      setEndsAt(startedMs + totalSeconds * 1000);
       setPhase("active");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to start");

@@ -35,7 +35,7 @@ export async function PATCH(
       Math.round((endedAt.getTime() - session.startedAt.getTime()) / 1000)
     );
 
-    const updated = await prisma.session.update({
+    const sessionUpdate = prisma.session.update({
       where: { id: session.id },
       data: {
         endedAt,
@@ -52,14 +52,25 @@ export async function PATCH(
       },
     });
 
-    if (parsed.data.markTaskComplete && session.taskId) {
-      const today = startOfDay(new Date());
-      await prisma.taskProgress.upsert({
-        where: { taskId_date: { taskId: session.taskId, date: today } },
-        create: { taskId: session.taskId, status: PROGRESS_COMPLETED, date: today },
-        update: { status: PROGRESS_COMPLETED },
-      });
-    }
+    const completion =
+      parsed.data.markTaskComplete && session.taskId
+        ? prisma.taskProgress.upsert({
+            where: {
+              taskId_date: {
+                taskId: session.taskId,
+                date: startOfDay(new Date()),
+              },
+            },
+            create: {
+              taskId: session.taskId,
+              status: PROGRESS_COMPLETED,
+              date: startOfDay(new Date()),
+            },
+            update: { status: PROGRESS_COMPLETED },
+          })
+        : Promise.resolve(null);
+
+    const [updated] = await Promise.all([sessionUpdate, completion]);
 
     return NextResponse.json({
       session: {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   DEFAULT_FOCUS_MINUTES,
   SessionReflection,
@@ -40,17 +40,17 @@ export function SessionWidget({ task, onSessionFinished }: SessionWidgetProps) {
   const [phase, setPhase] = useState<Phase>("idle");
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [activeTask, setActiveTask] = useState<TaskPreview | null>(null);
+  const [endsAt, setEndsAt] = useState<number | null>(null);
   const [remaining, setRemaining] = useState(focusSeconds);
   const [completedNaturally, setCompletedNaturally] = useState(false);
   const [starting, setStarting] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const endsAtRef = useRef<number | null>(null);
 
   useEffect(() => {
-    if (phase !== "active" || endsAtRef.current === null) return;
+    if (phase !== "active" || endsAt === null) return;
     const tick = () => {
-      const left = Math.round((endsAtRef.current! - Date.now()) / 1000);
+      const left = Math.round((endsAt - Date.now()) / 1000);
       if (left <= 0) {
         setRemaining(0);
         setCompletedNaturally(true);
@@ -62,7 +62,7 @@ export function SessionWidget({ task, onSessionFinished }: SessionWidgetProps) {
     tick();
     const id = window.setInterval(tick, 1000);
     return () => window.clearInterval(id);
-  }, [phase]);
+  }, [phase, endsAt]);
 
   async function startSession() {
     setError(null);
@@ -83,7 +83,7 @@ export function SessionWidget({ task, onSessionFinished }: SessionWidgetProps) {
       setActiveTask(data.task);
       setRemaining(totalSeconds);
       setCompletedNaturally(false);
-      endsAtRef.current = Date.now() + totalSeconds * 1000;
+      setEndsAt(Date.now() + totalSeconds * 1000);
       setPhase("active");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to start");
@@ -114,7 +114,7 @@ export function SessionWidget({ task, onSessionFinished }: SessionWidgetProps) {
       setPhase("idle");
       setSessionId(null);
       setActiveTask(null);
-      endsAtRef.current = null;
+      setEndsAt(null);
       onSessionFinished?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save");

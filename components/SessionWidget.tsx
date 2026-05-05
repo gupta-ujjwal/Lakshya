@@ -62,20 +62,17 @@ export function SessionWidget({ task, onSessionFinished }: SessionWidgetProps) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Rehydrate any open session on mount so a page reload during a focus
-  // block resumes the timer (or jumps to reflect if the block has elapsed)
-  // instead of orphaning the Session row. A 404 means "no open session" —
-  // silent idle is correct. Other failures (auth, 5xx, network) surface so
-  // the user knows their session may not have been recovered.
+  // Surface non-2xx and network failures so a silent recovery miss doesn't
+  // leave the user staring at an idle widget while their Session row stays
+  // open on the server.
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
         const res = await fetch("/api/sessions/active");
+        if (cancelled) return;
         if (!res.ok) {
-          if (!cancelled && res.status !== 404) {
-            setError(`Could not recover session (HTTP ${res.status})`);
-          }
+          setError(`Could not recover session (HTTP ${res.status})`);
           return;
         }
         const data = (await res.json()) as ActiveSessionResponse;
@@ -89,11 +86,11 @@ export function SessionWidget({ task, onSessionFinished }: SessionWidgetProps) {
           setRemaining(0);
           setCompletedNaturally(true);
           setPhase("reflect");
-        } else {
-          setEndsAt(target);
-          setRemaining(Math.round((target - Date.now()) / 1000));
-          setPhase("active");
+          return;
         }
+        setEndsAt(target);
+        setRemaining(Math.round((target - Date.now()) / 1000));
+        setPhase("active");
       } catch (err) {
         if (cancelled) return;
         setError(

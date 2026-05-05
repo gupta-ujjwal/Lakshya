@@ -2,65 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { formatDateShortYear } from "@/lib/format";
-import {
-  daysUntil,
-  journeyProgress,
-  urgencyLevel,
-  type UrgencyLevel,
-} from "@/lib/countdown";
+import { daysUntil, journeyProgress, urgencyLevel } from "@/lib/countdown";
+import { statusBarTones } from "@/lib/urgency-tones";
 
 interface ScheduleSummary {
   title: string;
   targetDate: string;
   createdAt: string;
 }
-
-interface UrgencyTone {
-  gradient: string;
-  text: string;
-  subtext: string;
-  progressTrack: string;
-  progressFill: string;
-  border: string;
-}
-
-const accentTone: UrgencyTone = {
-  gradient: "from-accent to-accent-hover",
-  text: "text-white",
-  subtext: "text-white/85",
-  progressTrack: "bg-white/20",
-  progressFill: "bg-white",
-  border: "border-accent/40",
-};
-
-const tones: Record<UrgencyLevel, UrgencyTone> = {
-  calm: accentTone,
-  focus: accentTone,
-  urgent: {
-    gradient: "from-warning to-[#FF7B00]",
-    text: "text-white",
-    subtext: "text-white/90",
-    progressTrack: "bg-white/25",
-    progressFill: "bg-white",
-    border: "border-warning/50",
-  },
-  critical: {
-    gradient: "from-danger to-[#D7261C]",
-    text: "text-white",
-    subtext: "text-white/90",
-    progressTrack: "bg-white/25",
-    progressFill: "bg-white",
-    border: "border-danger/60",
-  },
-  past: {
-    gradient: "from-bg-tertiary to-bg-secondary",
-    text: "text-text-secondary",
-    subtext: "text-text-muted",
-    progressTrack: "bg-bg-tertiary",
-    progressFill: "bg-text-muted",
-    border: "border-border",
-  },
-};
 
 export function StatusBar() {
   const [schedule, setSchedule] = useState<ScheduleSummary | null>(null);
@@ -79,7 +28,7 @@ export function StatusBar() {
   }
 
   const days = daysUntil(schedule.targetDate);
-  const tone = tones[urgencyLevel(days)];
+  const tone = statusBarTones[urgencyLevel(days)];
   const progress = journeyProgress(schedule.createdAt, schedule.targetDate);
   const isPast = days < 0;
   const countdownNumber = isPast ? Math.abs(days) : days;

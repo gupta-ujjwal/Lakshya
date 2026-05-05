@@ -1,6 +1,7 @@
 "use client";
 
-import { daysUntil, urgencyLevel, type UrgencyLevel } from "@/lib/countdown";
+import { daysUntil, urgencyLevel } from "@/lib/countdown";
+import { heroTones } from "@/lib/urgency-tones";
 
 interface DaysLeftHeroProps {
   title: string;
@@ -8,44 +9,10 @@ interface DaysLeftHeroProps {
   hoursPerDay: number;
 }
 
-interface HeroTone {
-  gradient: string;
-  ring: string;
-  hours: string;
-}
-
-const tones: Record<UrgencyLevel, HeroTone> = {
-  calm: {
-    gradient: "from-accent via-accent to-accent-hover",
-    ring: "ring-accent/30",
-    hours: "bg-white/15 text-white",
-  },
-  focus: {
-    gradient: "from-accent via-accent-hover to-[#1E7DE0]",
-    ring: "ring-accent/40",
-    hours: "bg-white/15 text-white",
-  },
-  urgent: {
-    gradient: "from-warning via-[#FF8500] to-[#FF7B00]",
-    ring: "ring-warning/40",
-    hours: "bg-white/20 text-white",
-  },
-  critical: {
-    gradient: "from-danger via-[#E22A20] to-[#D7261C]",
-    ring: "ring-danger/50",
-    hours: "bg-white/20 text-white",
-  },
-  past: {
-    gradient: "from-bg-tertiary via-bg-secondary to-bg-tertiary",
-    ring: "ring-border",
-    hours: "bg-bg-secondary text-text-secondary",
-  },
-};
-
 export function DaysLeftHero({ title, targetDate, hoursPerDay }: DaysLeftHeroProps) {
   const days = daysUntil(targetDate);
   const level = urgencyLevel(days);
-  const tone = tones[level];
+  const tone = heroTones[level];
   const isPast = days < 0;
   const remainingDays = Math.max(0, days);
   const hoursRemaining = Math.round(remainingDays * hoursPerDay);

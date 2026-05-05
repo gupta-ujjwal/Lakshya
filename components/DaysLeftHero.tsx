@@ -22,7 +22,6 @@ export function DaysLeftHero({ title, targetDate, hoursPerDay }: DaysLeftHeroPro
     : days === 0
     ? "the day is here"
     : `day${days === 1 ? "" : "s"} until ${title}`;
-  const isMuted = level === "past";
 
   return (
     <section
@@ -33,7 +32,7 @@ export function DaysLeftHero({ title, targetDate, hoursPerDay }: DaysLeftHeroPro
       <div className="px-5 pt-5 pb-4">
         <p
           className={`text-[11px] font-semibold uppercase tracking-[0.14em] mb-1 ${
-            isMuted ? "text-text-muted" : "text-white/85"
+            isPast ? "text-text-muted" : "text-white/85"
           }`}
         >
           {isPast ? "Target passed" : "Countdown"}
@@ -42,14 +41,14 @@ export function DaysLeftHero({ title, targetDate, hoursPerDay }: DaysLeftHeroPro
         <div className="flex items-baseline gap-3">
           <span
             className={`text-6xl font-display font-extrabold leading-none tabular-nums tracking-tight ${
-              isMuted ? "text-text-secondary" : "text-white"
+              isPast ? "text-text-secondary" : "text-white"
             }`}
           >
             {numberDisplay}
           </span>
           <span
             className={`text-base font-semibold leading-tight ${
-              isMuted ? "text-text-secondary" : "text-white/95"
+              isPast ? "text-text-secondary" : "text-white/95"
             }`}
           >
             {headline}

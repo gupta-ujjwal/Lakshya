@@ -6,6 +6,7 @@ import {
   StartSessionSchema,
   DEFAULT_FOCUS_MINUTES,
 } from "@/lib/api/sessions/schemas";
+import { pickNextTaskForToday, NextTask } from "@/lib/api/sessions/nextTask";
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,10 +33,8 @@ export async function POST(request: NextRequest) {
     }
 
     const today = startOfDay(new Date());
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
 
-    let task: { id: string; title: string; subject: string } | null = null;
+    let task: NextTask | null = null;
 
     if (parsed.data.taskId) {
       const found = await prisma.task.findFirst({
@@ -47,25 +46,7 @@ export async function POST(request: NextRequest) {
       }
       task = found;
     } else {
-      const candidates = await prisma.task.findMany({
-        where: {
-          scheduleId: schedule.id,
-          targetDate: { gte: today, lt: tomorrow },
-        },
-        orderBy: [{ priority: "desc" }, { createdAt: "asc" }],
-        select: {
-          id: true,
-          title: true,
-          subject: true,
-          progress: { where: { date: today }, select: { status: true } },
-        },
-      });
-      const next = candidates.find(
-        (t) => !t.progress.some((p) => p.status === "completed")
-      );
-      if (next) {
-        task = { id: next.id, title: next.title, subject: next.subject };
-      }
+      task = await pickNextTaskForToday(schedule.id, today);
     }
 
     const session = await prisma.session.create({

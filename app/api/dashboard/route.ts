@@ -13,13 +13,8 @@ const DEFAULT_HOURS_PER_DAY = 6;
 // time, so a parse failure here means corrupted data — fall back rather than
 // surface a user-facing error.
 function readHoursPerDay(data: unknown): number {
-  if (data && typeof data === "object" && "hoursPerDay" in data) {
-    const parsed = HoursPerDaySchema.safeParse(
-      (data as { hoursPerDay: unknown }).hoursPerDay
-    );
-    if (parsed.success) return parsed.data;
-  }
-  return DEFAULT_HOURS_PER_DAY;
+  const raw = (data as { hoursPerDay?: unknown } | null)?.hoursPerDay;
+  return HoursPerDaySchema.safeParse(raw).data ?? DEFAULT_HOURS_PER_DAY;
 }
 
 function dateKey(date: Date): string {

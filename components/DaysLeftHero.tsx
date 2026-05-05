@@ -31,25 +31,19 @@ export function DaysLeftHero({ title, targetDate, hoursPerDay }: DaysLeftHeroPro
     >
       <div className="px-5 pt-5 pb-4">
         <p
-          className={`text-[11px] font-semibold uppercase tracking-[0.14em] mb-1 ${
-            isPast ? "text-text-muted" : "text-white/85"
-          }`}
+          className={`text-[11px] font-semibold uppercase tracking-[0.14em] mb-1 ${tone.eyebrow}`}
         >
           {isPast ? "Target passed" : "Countdown"}
         </p>
 
         <div className="flex items-baseline gap-3">
           <span
-            className={`text-6xl font-display font-extrabold leading-none tabular-nums tracking-tight ${
-              isPast ? "text-text-secondary" : "text-white"
-            }`}
+            className={`text-6xl font-display font-extrabold leading-none tabular-nums tracking-tight ${tone.number}`}
           >
             {numberDisplay}
           </span>
           <span
-            className={`text-base font-semibold leading-tight ${
-              isPast ? "text-text-secondary" : "text-white/95"
-            }`}
+            className={`text-base font-semibold leading-tight ${tone.headline}`}
           >
             {headline}
           </span>

@@ -4,7 +4,16 @@ export interface HeroTone {
   gradient: string;
   ring: string;
   hours: string;
+  eyebrow: string;
+  number: string;
+  headline: string;
 }
+
+const onColorText = {
+  eyebrow: "text-white/85",
+  number: "text-white",
+  headline: "text-white/95",
+};
 
 export interface StatusBarTone {
   gradient: string;
@@ -20,26 +29,33 @@ export const heroTones: Record<UrgencyLevel, HeroTone> = {
     gradient: "from-accent via-accent to-accent-hover",
     ring: "ring-accent/30",
     hours: "bg-white/15 text-white",
+    ...onColorText,
   },
   focus: {
     gradient: "from-accent via-accent-hover to-[#1E7DE0]",
     ring: "ring-accent/40",
     hours: "bg-white/15 text-white",
+    ...onColorText,
   },
   urgent: {
     gradient: "from-warning via-[#FF8500] to-[#FF7B00]",
     ring: "ring-warning/40",
     hours: "bg-white/20 text-white",
+    ...onColorText,
   },
   critical: {
     gradient: "from-danger via-[#E22A20] to-[#D7261C]",
     ring: "ring-danger/50",
     hours: "bg-white/20 text-white",
+    ...onColorText,
   },
   past: {
     gradient: "from-bg-tertiary via-bg-secondary to-bg-tertiary",
     ring: "ring-border",
     hours: "bg-bg-secondary text-text-secondary",
+    eyebrow: "text-text-muted",
+    number: "text-text-secondary",
+    headline: "text-text-secondary",
   },
 };
 

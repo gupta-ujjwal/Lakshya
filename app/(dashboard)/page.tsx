@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { formatDateLong } from "@/lib/format";
 import { DaysLeftHero } from "@/components/DaysLeftHero";
+import { SessionWidget } from "@/components/SessionWidget";
 
 interface Schedule {
   id: string;
@@ -87,17 +88,28 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [pendingTaskIds, setPendingTaskIds] = useState<Set<string>>(new Set());
 
+  async function refreshDashboard() {
+    try {
+      const response = await fetch("/api/dashboard");
+      if (!response.ok) return;
+      const data = await response.json();
+      setSchedule(data.schedule);
+      setTasks(data.tasks || []);
+      setStats(data.stats || null);
+    } catch {
+      // Silent: refresh failures are not user-actionable; the prior state is still valid.
+    }
+  }
+
   useEffect(() => {
-    async function fetchData() {
+    async function loadInitial() {
       try {
         const response = await fetch("/api/dashboard");
         if (response.status === 404) {
           router.push("/import");
           return;
         }
-        if (!response.ok) {
-          throw new Error("Failed to fetch dashboard data");
-        }
+        if (!response.ok) throw new Error("Failed to fetch dashboard data");
         const data = await response.json();
         setSchedule(data.schedule);
         setTasks(data.tasks || []);
@@ -108,8 +120,7 @@ export default function DashboardPage() {
         setLoading(false);
       }
     }
-
-    fetchData();
+    loadInitial();
   }, [router]);
 
   async function toggleTaskComplete(task: Task) {
@@ -211,22 +222,10 @@ export default function DashboardPage() {
       />
 
       {upNext ? (
-        <div className="card p-5 bg-gradient-to-br from-accent/10 to-accent/5 animate-fade-in">
-          <p className="text-xs font-semibold text-accent uppercase tracking-wide mb-2">
-            Up Next
-          </p>
-          <h2 className="text-lg font-display font-semibold text-text-primary leading-snug">
-            {upNext.title}
-          </h2>
-          <p className="text-sm text-text-secondary mt-1">{upNext.subject}</p>
-          <button
-            onClick={() => toggleTaskComplete(upNext)}
-            disabled={pendingTaskIds.has(upNext.id)}
-            className="mt-4 w-full h-12 rounded-md bg-accent text-white font-semibold text-base active:scale-[0.98] transition-all disabled:opacity-60"
-          >
-            Mark complete
-          </button>
-        </div>
+        <SessionWidget
+          task={{ id: upNext.id, title: upNext.title, subject: upNext.subject }}
+          onSessionFinished={refreshDashboard}
+        />
       ) : todaysTasks.length > 0 ? (
         <div className="card p-5 bg-success-soft animate-fade-in text-center">
           <p className="text-2xl mb-1" aria-hidden>🎉</p>

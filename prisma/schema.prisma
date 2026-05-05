@@ -42,6 +42,7 @@ model Task {
   targetDate   DateTime
   priority     Int            @default(0)
   progress     TaskProgress[]
+  sessions     Session[]
 
   @@index([scheduleId, targetDate, priority])
 }
@@ -60,12 +61,17 @@ model TaskProgress {
 }
 
 model Session {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  startedAt DateTime
-  endedAt   DateTime?
-  duration  Int?
+  id         String    @id @default(cuid())
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  taskId     String?
+  task       Task?     @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  startedAt  DateTime
+  endedAt    DateTime?
+  duration   Int?
+  reflection String?
+
+  @@index([userId, startedAt(sort: Desc)])
 }

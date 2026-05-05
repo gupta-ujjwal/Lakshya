@@ -138,10 +138,29 @@ The five core models are:
 - **Schedule** — a target exam schedule with tasks
 - **Task** — a single study task within a schedule
 - **TaskProgress** — daily progress log for a task
-- **Session** — tracks study session duration
+- **Session** — a focus block (Pomodoro) tied to an optional Task, with `startedAt`/`endedAt`/`duration` and an end-of-session reflection emoji
+
+## Sessions
+
+The dashboard's **Up Next** card includes a **Start Session** button — the
+single-click ignition for the daily loop. It picks the highest-priority
+incomplete task for today, opens a 25-minute focus timer, and writes a
+`Session` row (`startedAt`, `endedAt`, `duration`, optional `reflection`).
+Finishing the timer naturally marks the linked task complete via
+`TaskProgress`; stopping early just closes the session.
+
+API:
+
+- `POST /api/sessions` — start a session. Body: `{ taskId?, focusMinutes? }`.
+  When `taskId` is omitted, the server picks the next incomplete task for
+  today (by priority, then creation order). Defaults to a 25-minute focus.
+- `PATCH /api/sessions/:id` — end a session. Body: `{ reflection?, markTaskComplete? }`.
+  Reflection is one of `💪 🙂 😩`. When `markTaskComplete` is `true` and the
+  session was bound to a task, today's `TaskProgress` is upserted to
+  `completed`.
 
 ## Known Limitations
 
 - No authentication (Phase 1)
-- No UI beyond "Hello Lakshya" (Phase 1)
-- No business logic (Phase 1)
+- Sessions don't survive a page reload mid-timer (Phase 2 polish)
+- No business logic beyond the daily-loop ignition (Phase 1)

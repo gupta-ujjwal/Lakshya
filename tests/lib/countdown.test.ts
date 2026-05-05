@@ -39,11 +39,13 @@ describe("countdown", () => {
     });
 
     it("focus when 30-59 days", () => {
+      expect(urgencyLevel(59)).toBe("focus");
       expect(urgencyLevel(45)).toBe("focus");
       expect(urgencyLevel(30)).toBe("focus");
     });
 
     it("urgent when 14-29 days", () => {
+      expect(urgencyLevel(29)).toBe("urgent");
       expect(urgencyLevel(20)).toBe("urgent");
       expect(urgencyLevel(14)).toBe("urgent");
     });

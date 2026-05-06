@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { db } from "@/db";
 import type {
   ScheduleRecord,
@@ -7,6 +8,19 @@ import type {
 } from "@/db";
 
 export const EXPORT_VERSION = 1;
+
+// When bumping EXPORT_VERSION, add a per-version migration branch in
+// parsePayload before bulkAdd. Do not add new tables to importAll
+// without incrementing the version — bulkAdd of an unknown table
+// would silently no-op.
+const ExportPayloadSchema = z.object({
+  version: z.literal(EXPORT_VERSION),
+  exportedAt: z.string().optional(),
+  schedules: z.array(z.unknown()),
+  tasks: z.array(z.unknown()),
+  taskProgress: z.array(z.unknown()),
+  sessions: z.array(z.unknown()),
+});
 
 export interface ExportPayload {
   version: number;
@@ -78,29 +92,29 @@ export async function clearAll(): Promise<void> {
 }
 
 function parsePayload(raw: unknown): ExportPayload {
-  if (!raw || typeof raw !== "object") {
+  if (raw === null || typeof raw !== "object") {
     throw new Error("Invalid export: not an object");
   }
-  const p = raw as Partial<ExportPayload>;
-  if (p.version !== EXPORT_VERSION) {
+  const versioned = raw as { version?: unknown };
+  if (versioned.version !== undefined && versioned.version !== EXPORT_VERSION) {
     throw new Error(
-      `Unsupported export version ${String(p.version)} (expected ${EXPORT_VERSION})`,
+      `Unsupported export version ${String(versioned.version)} (expected ${EXPORT_VERSION})`,
     );
   }
-  if (
-    !Array.isArray(p.schedules) ||
-    !Array.isArray(p.tasks) ||
-    !Array.isArray(p.taskProgress) ||
-    !Array.isArray(p.sessions)
-  ) {
-    throw new Error("Invalid export: missing required collections");
+  const result = ExportPayloadSchema.safeParse(raw);
+  if (!result.success) {
+    throw new Error(
+      `Invalid export: missing required collections (${result.error.issues
+        .map((i) => i.path.join(".") || "root")
+        .join(", ")})`,
+    );
   }
   return {
     version: EXPORT_VERSION,
-    exportedAt: p.exportedAt ?? new Date().toISOString(),
-    schedules: p.schedules,
-    tasks: p.tasks,
-    taskProgress: p.taskProgress,
-    sessions: p.sessions,
+    exportedAt: result.data.exportedAt ?? new Date().toISOString(),
+    schedules: result.data.schedules as ScheduleRecord[],
+    tasks: result.data.tasks as TaskRecord[],
+    taskProgress: result.data.taskProgress as TaskProgressRecord[],
+    sessions: result.data.sessions as SessionRecord[],
   };
 }

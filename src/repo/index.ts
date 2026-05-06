@@ -1,8 +1,7 @@
 export { importSchedule, getLatestSchedule } from "./schedules";
 export type { ImportResult } from "./schedules";
 
-export { listTasks, recordTaskProgress, pickNextTaskForToday } from "./tasks";
-export type { TaskListItem, TaskStatus } from "./tasks";
+export { recordTaskProgress } from "./tasks";
 
 export { startSession, endSession, getActiveSession } from "./sessions";
 export type { ActiveSession, StartSessionResult } from "./sessions";

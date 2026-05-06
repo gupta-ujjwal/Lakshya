@@ -4,61 +4,6 @@ import {
   PROGRESS_COMPLETED,
   type TaskProgressStatus,
 } from "@/domain/progress";
-import { getLatestSchedule } from "./schedules";
-
-export type TaskStatus = "pending" | "completed" | "overdue";
-
-export interface TaskListItem {
-  id: string;
-  title: string;
-  subject: string;
-  targetDate: string;
-  priority: number;
-  status: TaskStatus;
-}
-
-export async function listTasks(): Promise<TaskListItem[] | null> {
-  const schedule = await getLatestSchedule();
-  if (!schedule) return null;
-
-  const [tasks, completed] = await Promise.all([
-    db.tasks
-      .where("scheduleId")
-      .equals(schedule.id)
-      .sortBy("targetDate")
-      .then((rows) =>
-        rows.sort((a, b) =>
-          a.targetDate === b.targetDate
-            ? a.priority - b.priority
-            : a.targetDate.localeCompare(b.targetDate),
-        ),
-      ),
-    db.taskProgress.where("status").equals(PROGRESS_COMPLETED).toArray(),
-  ]);
-
-  // Scope progress to this schedule's tasks. getDashboard does the same
-  // (dashboard.ts:73) — the divergence would surface as stale progress
-  // bleeding through if a future code path imports a new schedule
-  // without clearing prior data first.
-  const scheduleTaskIds = new Set(tasks.map((t) => t.id));
-  const completedIds = new Set(
-    completed.filter((p) => scheduleTaskIds.has(p.taskId)).map((p) => p.taskId),
-  );
-  const todayKey = today();
-
-  return tasks.map((task) => ({
-    id: task.id,
-    title: task.title,
-    subject: task.subject,
-    targetDate: task.targetDate,
-    priority: task.priority,
-    status: completedIds.has(task.id)
-      ? "completed"
-      : task.targetDate < todayKey
-        ? "overdue"
-        : "pending",
-  }));
-}
 
 export async function recordTaskProgress(
   taskId: string,

@@ -36,7 +36,14 @@ export async function listTasks(): Promise<TaskListItem[] | null> {
     db.taskProgress.where("status").equals(PROGRESS_COMPLETED).toArray(),
   ]);
 
-  const completedIds = new Set(completed.map((p) => p.taskId));
+  // Scope progress to this schedule's tasks. getDashboard does the same
+  // (dashboard.ts:73) — the divergence would surface as stale progress
+  // bleeding through if a future code path imports a new schedule
+  // without clearing prior data first.
+  const scheduleTaskIds = new Set(tasks.map((t) => t.id));
+  const completedIds = new Set(
+    completed.filter((p) => scheduleTaskIds.has(p.taskId)).map((p) => p.taskId),
+  );
   const todayKey = today();
 
   return tasks.map((task) => ({

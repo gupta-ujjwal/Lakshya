@@ -5,6 +5,13 @@ import {
   type ImportScheduleInput,
 } from "@/domain/schedule";
 
+// The repo assumes a single active schedule per device: getDashboard,
+// startSession, and pickNextTaskForToday all resolve their context via
+// getLatestSchedule(). Multi-schedule support requires parameterizing
+// those three functions with a scheduleId and removing
+// getLatestSchedule as the implicit context resolver. Schedule rows
+// already carry their own id, so no DB migration is needed.
+
 export interface ImportResult {
   scheduleId: string;
   taskCount: number;

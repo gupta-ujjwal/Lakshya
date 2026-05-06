@@ -1,0 +1,85 @@
+import { db, newId, nowIso, type TaskProgressRecord } from "@/db";
+import { today } from "@/lib/dates";
+import {
+  PROGRESS_COMPLETED,
+  type TaskProgressStatus,
+} from "@/domain/progress";
+
+export async function recordTaskProgress(
+  taskId: string,
+  status: TaskProgressStatus,
+  notes?: string,
+): Promise<TaskProgressRecord> {
+  // The find-then-add path races against a concurrent tab: both reads
+  // miss, both adds attempt, and the &[taskId+date] unique index throws
+  // ConstraintError on the loser. Wrapping in a Dexie rw transaction
+  // serializes the read-modify-write — IndexedDB is single-threaded
+  // within a transaction.
+  return db.transaction("rw", db.tasks, db.taskProgress, async () => {
+    const task = await db.tasks.get(taskId);
+    if (!task) throw new Error("Task not found");
+
+    const dateKey = today();
+    const existing = await db.taskProgress
+      .where("[taskId+date]")
+      .equals([taskId, dateKey])
+      .first();
+
+    const now = nowIso();
+    if (existing) {
+      const updated: TaskProgressRecord = {
+        ...existing,
+        status,
+        notes: notes ?? existing.notes,
+        updatedAt: now,
+      };
+      await db.taskProgress.put(updated);
+      return updated;
+    }
+
+    const record: TaskProgressRecord = {
+      id: newId(),
+      taskId,
+      date: dateKey,
+      status,
+      notes: notes ?? null,
+      createdAt: now,
+      updatedAt: now,
+    };
+    await db.taskProgress.add(record);
+    return record;
+  });
+}
+
+export async function pickNextTaskForToday(scheduleId: string): Promise<{
+  id: string;
+  title: string;
+  subject: string;
+} | null> {
+  const todayKey = today();
+  const [candidates, completed] = await Promise.all([
+    db.tasks
+      .where("[scheduleId+targetDate]")
+      .equals([scheduleId, todayKey])
+      .toArray(),
+    db.taskProgress
+      .where("date")
+      .equals(todayKey)
+      .and((p) => p.status === PROGRESS_COMPLETED)
+      .toArray(),
+  ]);
+  if (candidates.length === 0) return null;
+
+  // Highest priority first; ties broken by createdAt asc for stability.
+  candidates.sort((a, b) =>
+    a.priority === b.priority
+      ? a.createdAt.localeCompare(b.createdAt)
+      : b.priority - a.priority,
+  );
+
+  const completedIds = new Set(completed.map((p) => p.taskId));
+  const next = candidates.find((t) => !completedIds.has(t.id));
+  return next
+    ? { id: next.id, title: next.title, subject: next.subject }
+    : null;
+}

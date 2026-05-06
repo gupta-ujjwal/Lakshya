@@ -1,0 +1,166 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg-primary: #FFFFFF;
+    --bg-secondary: #F7F8FA;
+    --bg-tertiary: #EBEDF0;
+    --text-primary: #1C1E21;
+    --text-secondary: #5C636E;
+    --text-muted: #8B929A;
+    --accent: #2AABFF;
+    --accent-hover: #1A9AEE;
+    --accent-soft: rgba(42, 171, 255, 0.12);
+    --success: #34C759;
+    --success-soft: rgba(52, 199, 89, 0.12);
+    --warning: #FF9500;
+    --warning-soft: rgba(255, 149, 0, 0.12);
+    --danger: #FF3B30;
+    --danger-soft: rgba(255, 59, 48, 0.12);
+    --border: #E5E7EB;
+    --border-strong: #D0D2D5;
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.16);
+    --radius-sm: 0.5rem;
+    --radius-md: 0.75rem;
+    --radius-lg: 1rem;
+    --radius-xl: 1rem;
+  }
+
+  .dark {
+    --bg-primary: #1C1E21;
+    --bg-secondary: #2C2E31;
+    --bg-tertiary: #3A3C3F;
+    --text-primary: #FFFFFF;
+    --text-secondary: #A1A1A6;
+    --text-muted: #636366;
+    --accent: #2AABFF;
+    --accent-hover: #4DBFFF;
+    --accent-soft: rgba(42, 171, 255, 0.2);
+    --success: #30D158;
+    --success-soft: rgba(48, 209, 88, 0.2);
+    --warning: #FF9F0A;
+    --warning-soft: rgba(255, 159, 10, 0.2);
+    --danger: #FF453A;
+    --danger-soft: rgba(255, 69, 58, 0.2);
+    --border: #3A3C3F;
+    --border-strong: #4A4C4F;
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.24);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.32);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.48);
+  }
+
+  html {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-bg-primary text-text-primary;
+    min-height: 100dvh;
+    overscroll-behavior: none;
+  }
+
+  * {
+    @apply border-border;
+  }
+}
+
+@layer components {
+  .focus-ring {
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2;
+  }
+
+  .btn-primary {
+    @apply h-12 w-full rounded-md bg-accent text-white font-semibold text-base;
+    @apply transition-all duration-150 ease-out;
+    @apply active:scale-[0.98];
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2;
+  }
+
+  .btn-secondary {
+    @apply h-12 w-full rounded-md bg-bg-secondary text-text-primary;
+    @apply font-semibold text-base border border-border;
+    @apply transition-all duration-150 ease-out;
+    @apply active:scale-[0.98];
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2;
+  }
+
+  .card {
+    @apply rounded-md bg-bg-secondary p-4;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .card-elevated {
+    @apply rounded-lg bg-bg-secondary p-4;
+    box-shadow: var(--shadow-md);
+  }
+
+  .input {
+    @apply h-12 w-full rounded-md bg-bg-primary text-text-primary;
+    @apply border border-border px-3;
+    @apply placeholder:text-text-muted;
+    @apply focus:outline-none focus:ring-2 focus:ring-accent focus:ring-opacity-50;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2;
+    @apply transition-all duration-150;
+  }
+
+  .nav-item {
+    @apply flex flex-col items-center justify-center gap-1 px-4 py-2;
+    @apply text-text-muted transition-colors duration-150;
+    @apply active:scale-95;
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2;
+    @apply rounded-lg;
+  }
+
+  .nav-item.active {
+    @apply text-accent;
+  }
+
+  .progress-bar {
+    @apply h-2 rounded-full bg-bg-tertiary overflow-hidden;
+  }
+
+  .progress-bar-fill {
+    @apply h-full rounded-full bg-success transition-all duration-300 ease-out;
+  }
+
+  .skeleton {
+    @apply animate-pulse bg-bg-tertiary rounded;
+  }
+
+  .skeleton-text {
+    @apply skeleton h-4 w-full;
+  }
+
+  .skeleton-title {
+    @apply skeleton h-6 w-3/4;
+  }
+
+  .skeleton-card {
+    @apply card p-4 space-y-3;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+
+  .animate-pulse {
+    animation: none;
+  }
+}
+
+@layer utilities {
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+}

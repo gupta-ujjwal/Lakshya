@@ -1,44 +1,18 @@
 import { defineConfig } from "vitest/config";
-import path from "path";
+import react from "@vitejs/plugin-react";
+import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
+  plugins: [react(), tsconfigPaths()],
   test: {
-    environment: "node",
+    environment: "jsdom",
     globals: true,
-    include: [
-      "__tests__/**/*.test.ts",
-      "tests/lib/**/*.test.ts",
-    ],
-    exclude: [
-      "node_modules/**",
-      "tests/e2e/**",
-      "tests/helpers/**",
-      "tests/mocks/**",
-      "tests/index.test.ts",
-      "__tests__/**",
-      "**/*.d.ts",
-      "**/*.config.ts",
-      ".next/**",
-    ],
+    include: ["tests/**/*.test.ts", "tests/**/*.test.tsx"],
+    setupFiles: ["tests/setup.ts"],
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],
-      exclude: [
-        "node_modules/**",
-        "tests/**",
-        "__tests__/**",
-        "**/*.d.ts",
-        "**/*.config.ts",
-        ".next/**",
-      ],
+      exclude: ["node_modules/**", "tests/**", "**/*.d.ts", "**/*.config.ts"],
     },
-  },
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "."),
-    },
-  },
-  esbuild: {
-    target: "node20",
   },
 });

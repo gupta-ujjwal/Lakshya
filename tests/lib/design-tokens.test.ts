@@ -6,7 +6,7 @@ describe("Design Token Compliance", () => {
   describe("Border Radius Tokens", () => {
     it("matches spec: --radius-sm should be 0.5rem (8px)", () => {
       const css = readFileSync(
-        join(process.cwd(), "app/globals.css"),
+        join(process.cwd(), "src/globals.css"),
         "utf-8"
       );
       const smMatch = css.match(/--radius-sm:\s*([\d.]+)rem/);
@@ -17,7 +17,7 @@ describe("Design Token Compliance", () => {
 
     it("matches spec: --radius-md should be 0.75rem (12px)", () => {
       const css = readFileSync(
-        join(process.cwd(), "app/globals.css"),
+        join(process.cwd(), "src/globals.css"),
         "utf-8"
       );
       const mdMatch = css.match(/--radius-md:\s*([\d.]+)rem/);
@@ -28,7 +28,7 @@ describe("Design Token Compliance", () => {
 
     it("matches spec: --radius-lg should be 1rem (16px)", () => {
       const css = readFileSync(
-        join(process.cwd(), "app/globals.css"),
+        join(process.cwd(), "src/globals.css"),
         "utf-8"
       );
       const lgMatch = css.match(/--radius-lg:\s*([\d.]+)rem/);

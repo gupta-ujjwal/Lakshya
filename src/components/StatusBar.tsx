@@ -12,7 +12,12 @@ export function StatusBar() {
       .then((data) => {
         if (data?.schedule) setSchedule(data.schedule);
       })
-      .catch(() => {});
+      .catch(() => {
+        // Best-effort: the StatusBar is decorative chrome above every
+        // page. If IndexedDB is unavailable (Safari private mode, OS
+        // sandbox), the placeholder bar at line 22 is the right
+        // fallback — better than blocking page render with an alert.
+      });
   }, []);
 
   if (!schedule) {

@@ -1,166 +1,132 @@
 # Lakshya
 
-A lightweight, mobile-first web dashboard where a student uploads their study schedule (JSON) and a target exam date, then tracks daily progress against it.
+A mobile-first study dashboard where a student uploads their schedule (JSON) and a target exam date, then tracks daily progress against it. **Runs entirely in the browser** — no server, no database, no account. All data lives in IndexedDB on the user's device.
 
-## Tech Stack
+## Tech stack
 
-- **Framework:** Next.js 15 (App Router)
-- **Database:** PostgreSQL 16 via Prisma ORM
+- **Build:** Vite + React 18 + TypeScript
+- **Routing:** react-router-dom (HashRouter, for friction-free GitHub Pages hosting)
+- **Storage:** Dexie over IndexedDB
 - **Styling:** Tailwind CSS
-- **Shell:** Nix + devenv
-- **Package Manager:** pnpm
-
-## Prerequisites
-
-- Nix 2.21+ with flakes enabled
-- direnv (optional but recommended)
+- **Tests:** Vitest + jsdom + fake-indexeddb
+- **Package manager:** pnpm
 
 ## Setup
 
-### 1. Clone & Enter
-
-```bash
-git clone https://github.com/gupta-ujjwal/Lakshya
-cd Lakshya
-```
-
-### 2. Enable direnv (optional)
-
-```bash
-direnv allow
-```
-
-This automatically loads the dev shell when you cd into the project.
-
-### 3. Alternative: Manual Nix Shell
-
-```bash
-nix develop
-```
-
-### 4. Start PostgreSQL
-
-```bash
-devenv up
-```
-
-This starts PostgreSQL on port 5432 with a database named `lakshya`.
-
-### 5. Install Dependencies
-
 ```bash
 pnpm install
-```
-
-### 6. Copy Environment File
-
-```bash
-cp .env.example .env
-```
-
-### 7. Push Schema to Database
-
-```bash
-pnpm db:push
-```
-
-This creates the database schema without running migrations (use `pnpm db:migrate` for tracked migrations).
-
-### 8. Generate Prisma Client
-
-```bash
-pnpm db:generate
-```
-
-### 9. Start Development Server
-
-```bash
 pnpm dev
 ```
 
-Visit [http://localhost:3000](http://localhost:3000) — you should see "Hello Lakshya".
+Visit http://localhost:3000.
 
-## Database Commands
+## Common commands
 
-| Command          | Description                    |
-|------------------|--------------------------------|
-| `pnpm db:push`   | Push schema to database        |
-| `pnpm db:generate` | Regenerate Prisma client     |
-| `pnpm db:migrate` | Run migrations                 |
-| `pnpm db:studio` | Open Prisma Studio             |
+| Command          | Description                                      |
+|------------------|--------------------------------------------------|
+| `pnpm dev`       | Start the Vite dev server                        |
+| `pnpm build`     | Type-check and build a production bundle (dist/) |
+| `pnpm preview`   | Serve the production build locally               |
+| `pnpm test`      | Run the unit + repo test suites                  |
+| `pnpm typecheck` | `tsc --noEmit`                                   |
+| `pnpm lint`      | ESLint                                           |
 
-## Type Checking
+## Deploying to GitHub Pages
 
-```bash
-pnpm typecheck
+The router uses `HashRouter`, so a refresh on `/import` (URL: `…/#/import`) doesn't 404 on Pages.
+
+Drop this workflow into `.github/workflows/deploy-pages.yml` in the GitHub web UI (or push it from a token with `workflow` scope). It builds `dist/` on every push to `main` and injects `VITE_BASE=/<repo>/` so assets resolve under the project-site URL `https://<user>.github.io/<repo>/`. For a custom domain or user/org root site, override `VITE_BASE=/`.
+
+```yaml
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 9 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+        env:
+          VITE_BASE: /${{ github.event.repository.name }}/
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: dist }
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
 ```
 
-## Testing
-
-Unit tests:
-
-```bash
-pnpm test
-```
-
-E2e tests:
-
-```bash
-pnpm install
-pnpm exec playwright install --with-deps
-pnpm test:e2e
-```
-
-E2e tests run against a dev server that starts automatically via `webServer` config.
-
-## Project Structure
+## Project structure
 
 ```
-lakshya/
-├── app/               # Next.js App Router pages
-│   ├── layout.tsx     # Root layout
-│   └── page.tsx       # Home page ("Hello Lakshya")
-├── components/        # React components
-├── lib/              # Utility code (Prisma client)
-├── prisma/
-│   └── schema.prisma  # Database schema (5 models)
-├── devenv.nix        # Devenv configuration
-├── flake.nix         # Nix flake configuration
-├── .envrc            # Direnv configuration
-└── .env.example      # Environment variable template
+src/
+├── main.tsx              Vite entrypoint
+├── App.tsx               Router + theme provider
+├── globals.css           Tailwind layers + design tokens
+├── db.ts                 Dexie schema (single seam)
+├── pages/
+│   ├── DashboardLayout.tsx
+│   ├── Dashboard.tsx     Reads via repo, exports/imports JSON
+│   └── Import.tsx        Validates JSON via Zod, calls importSchedule
+├── components/           DaysLeftHero, SessionWidget, StatusBar, …
+├── domain/               Zod schemas + pure functions
+│   ├── schedule.ts
+│   ├── session.ts        Discriminated-union Session (open | closed)
+│   ├── progress.ts
+│   └── ingest.ts         generateTasksFromSchedule (pure)
+├── repo/                 Domain operations over Dexie
+│   ├── schedules.ts      importSchedule, getLatestSchedule
+│   ├── tasks.ts          listTasks, recordTaskProgress, pickNextTaskForToday
+│   ├── sessions.ts       startSession, endSession, getActiveSession
+│   ├── dashboard.ts      getDashboard (streak, adherence, overdue)
+│   └── serialize.ts      exportAll, importAll, clearAll
+└── lib/                  countdown, format, dates, urgency-tones, theme-context
 ```
 
-## Data Models
+## Data model
 
-The five core models are:
+Stored in IndexedDB:
 
-- **User** — a study tracker account
-- **Schedule** — a target exam schedule with tasks
-- **Task** — a single study task within a schedule
-- **TaskProgress** — daily progress log for a task
-- **Session** — a focus block (Pomodoro) tied to an optional Task, with `startedAt`/`endedAt`/`duration` and an end-of-session reflection emoji
+- **Schedule** — title, target date, raw imported JSON, hours/day
+- **Task** — title, subject, target date (YYYY-MM-DD), priority
+- **TaskProgress** — `(taskId, date)` unique; status pending/completed
+- **Session** — discriminated union: `{ state: "open" }` while active, `{ state: "closed", endedAt, duration, reflection }` once ended
+
+Dates are ISO date strings (`YYYY-MM-DD`) at storage boundaries; Dates only appear inside computation. There is no `User` concept — one device, one user.
+
+## Backup & restore
+
+Lakshya is per-device. The dashboard's "Your data" card has **Export JSON**, **Import JSON**, and **Erase all data** buttons. Export early, restore on a new browser, and you keep your streak.
 
 ## Sessions
 
-The dashboard's **Up Next** card includes a **Start Session** button — the
-single-click ignition for the daily loop. It picks the highest-priority
-incomplete task for today, opens a 25-minute focus timer, and writes a
-`Session` row (`startedAt`, `endedAt`, `duration`, optional `reflection`).
-Finishing the timer naturally marks the linked task complete via
-`TaskProgress`; stopping early just closes the session.
+The **Up Next** card on the dashboard includes a **Start Session** button. It picks the highest-priority incomplete task for today, opens a 25-minute focus timer, and writes an open `Session` row. Finishing the timer naturally marks the linked task complete via `TaskProgress`; stopping early just closes the session. A discriminated union enforces the open/closed state at the type level — no nullable `endedAt`/`duration` parallel fields.
 
-API:
+## What was Phase 0
 
-- `POST /api/sessions` — start a session. Body: `{ taskId?, focusMinutes? }`.
-  When `taskId` is omitted, the server picks the next incomplete task for
-  today (by priority, then creation order). Defaults to a 25-minute focus.
-- `PATCH /api/sessions/:id` — end a session. Body: `{ reflection?, markTaskComplete? }`.
-  Reflection is one of `💪 🙂 😩`. When `markTaskComplete` is `true` and the
-  session was bound to a task, today's `TaskProgress` is upserted to
-  `completed`.
-
-## Known Limitations
-
-- No authentication (Phase 1)
-- Sessions don't survive a page reload mid-timer (Phase 2 polish)
-- No business logic beyond the daily-loop ignition (Phase 1)
+Earlier versions of this app ran on Next.js + Postgres + Prisma with a fake-auth header. That whole stack is now gone. The migration commit is intentionally large because the move from server-backed to local-first touches every data-fetching call site. Phase 2 is PWA (service worker + manifest + offline app shell).

@@ -57,10 +57,17 @@ export async function pickNextTaskForToday(scheduleId: string): Promise<{
   subject: string;
 } | null> {
   const todayKey = today();
-  const candidates = await db.tasks
-    .where("[scheduleId+targetDate]")
-    .equals([scheduleId, todayKey])
-    .toArray();
+  const [candidates, completed] = await Promise.all([
+    db.tasks
+      .where("[scheduleId+targetDate]")
+      .equals([scheduleId, todayKey])
+      .toArray(),
+    db.taskProgress
+      .where("date")
+      .equals(todayKey)
+      .and((p) => p.status === PROGRESS_COMPLETED)
+      .toArray(),
+  ]);
   if (candidates.length === 0) return null;
 
   // Highest priority first; ties broken by createdAt asc for stability.
@@ -70,13 +77,7 @@ export async function pickNextTaskForToday(scheduleId: string): Promise<{
       : b.priority - a.priority,
   );
 
-  const completed = await db.taskProgress
-    .where("date")
-    .equals(todayKey)
-    .and((p) => p.status === PROGRESS_COMPLETED)
-    .toArray();
   const completedIds = new Set(completed.map((p) => p.taskId));
-
   const next = candidates.find((t) => !completedIds.has(t.id));
   return next
     ? { id: next.id, title: next.title, subject: next.subject }

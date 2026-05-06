@@ -1,7 +1,17 @@
 import Dexie, { type Table } from "dexie";
 import type { ImportScheduleInput } from "@/domain/schedule";
-import type { TaskProgressRecord } from "@/domain/progress";
+import type { TaskProgressStatus } from "@/domain/progress";
 import type { OpenSession, ClosedSession } from "@/domain/session";
+
+export interface TaskProgressRecord {
+  id: string;
+  taskId: string;
+  date: string;
+  status: TaskProgressStatus;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export interface ScheduleRecord {
   id: string;

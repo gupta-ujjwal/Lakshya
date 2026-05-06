@@ -1,6 +1,10 @@
 import { db } from "@/db";
-import type { ScheduleRecord, TaskRecord, SessionRecord } from "@/db";
-import type { TaskProgressRecord } from "@/domain/progress";
+import type {
+  ScheduleRecord,
+  TaskRecord,
+  SessionRecord,
+  TaskProgressRecord,
+} from "@/db";
 
 export const EXPORT_VERSION = 1;
 

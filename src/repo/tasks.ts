@@ -1,8 +1,7 @@
-import { db, newId, nowIso } from "@/db";
+import { db, newId, nowIso, type TaskProgressRecord } from "@/db";
 import { today } from "@/lib/dates";
 import {
   PROGRESS_COMPLETED,
-  type TaskProgressRecord,
   type TaskProgressStatus,
 } from "@/domain/progress";
 import { getLatestSchedule } from "./schedules";

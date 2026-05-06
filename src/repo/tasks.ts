@@ -58,38 +58,45 @@ export async function recordTaskProgress(
   status: TaskProgressStatus,
   notes?: string,
 ): Promise<TaskProgressRecord> {
-  const task = await db.tasks.get(taskId);
-  if (!task) throw new Error("Task not found");
+  // The find-then-add path races against a concurrent tab: both reads
+  // miss, both adds attempt, and the &[taskId+date] unique index throws
+  // ConstraintError on the loser. Wrapping in a Dexie rw transaction
+  // serializes the read-modify-write — IndexedDB is single-threaded
+  // within a transaction.
+  return db.transaction("rw", db.tasks, db.taskProgress, async () => {
+    const task = await db.tasks.get(taskId);
+    if (!task) throw new Error("Task not found");
 
-  const dateKey = today();
-  const existing = await db.taskProgress
-    .where("[taskId+date]")
-    .equals([taskId, dateKey])
-    .first();
+    const dateKey = today();
+    const existing = await db.taskProgress
+      .where("[taskId+date]")
+      .equals([taskId, dateKey])
+      .first();
 
-  const now = nowIso();
-  if (existing) {
-    const updated: TaskProgressRecord = {
-      ...existing,
+    const now = nowIso();
+    if (existing) {
+      const updated: TaskProgressRecord = {
+        ...existing,
+        status,
+        notes: notes ?? existing.notes,
+        updatedAt: now,
+      };
+      await db.taskProgress.put(updated);
+      return updated;
+    }
+
+    const record: TaskProgressRecord = {
+      id: newId(),
+      taskId,
+      date: dateKey,
       status,
-      notes: notes ?? existing.notes,
+      notes: notes ?? null,
+      createdAt: now,
       updatedAt: now,
     };
-    await db.taskProgress.put(updated);
-    return updated;
-  }
-
-  const record: TaskProgressRecord = {
-    id: newId(),
-    taskId,
-    date: dateKey,
-    status,
-    notes: notes ?? null,
-    createdAt: now,
-    updatedAt: now,
-  };
-  await db.taskProgress.add(record);
-  return record;
+    await db.taskProgress.add(record);
+    return record;
+  });
 }
 
 export async function pickNextTaskForToday(scheduleId: string): Promise<{

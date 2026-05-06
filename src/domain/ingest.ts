@@ -1,4 +1,4 @@
-import { toDateKey } from "@/lib/dates";
+import { fromDateKey, toDateKey } from "@/lib/dates";
 import type { ImportScheduleInput } from "./schedule";
 
 export const MAX_DAYS = 730;
@@ -10,20 +10,15 @@ export interface GeneratedTask {
   priority: number;
 }
 
-function startOfUtcDay(d: Date): Date {
-  return new Date(
-    Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()),
-  );
-}
-
 export function generateTasksFromSchedule(
   input: ImportScheduleInput,
   startDate: Date = new Date(),
 ): GeneratedTask[] {
-  // Both sides bucket to UTC midnight so the day count is a calendar diff,
-  // not a sub-day timestamp diff that would produce off-by-one runs.
-  const start = startOfUtcDay(startDate);
-  const target = new Date(`${input.targetDate}T00:00:00.000Z`);
+  // Both sides bucket to UTC midnight (via toDateKey → fromDateKey) so the
+  // day count is a calendar diff, not a sub-day timestamp diff that would
+  // produce off-by-one runs.
+  const start = fromDateKey(toDateKey(startDate));
+  const target = fromDateKey(input.targetDate);
   if (target < start) return [];
 
   const msPerDay = 86_400_000;

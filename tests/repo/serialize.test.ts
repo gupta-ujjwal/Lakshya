@@ -1,12 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { db } from "@/db";
-import {
-  EXPORT_VERSION,
-  exportAll,
-  importAll,
-  importSchedule,
-} from "@/repo";
+import { EXPORT_VERSION, exportAll, importAll, importSchedule } from "@/repo";
 import type { ImportScheduleInput } from "@/domain/schedule";
+import { clearDb } from "../helpers";
 
 const sampleInput: ImportScheduleInput = {
   title: "Plan",
@@ -17,15 +12,6 @@ const sampleInput: ImportScheduleInput = {
     { dayNumber: 1, slots: [{ subject: "Math" }] },
   ],
 };
-
-async function clearDb() {
-  await Promise.all([
-    db.schedules.clear(),
-    db.tasks.clear(),
-    db.taskProgress.clear(),
-    db.sessions.clear(),
-  ]);
-}
 
 describe("export/import round trip", () => {
   beforeEach(async () => {

@@ -3,15 +3,7 @@ import { db } from "@/db";
 import { getDashboard, importSchedule, recordTaskProgress } from "@/repo";
 import { PROGRESS_COMPLETED } from "@/domain/progress";
 import type { ImportScheduleInput } from "@/domain/schedule";
-
-async function clearDb() {
-  await Promise.all([
-    db.schedules.clear(),
-    db.tasks.clear(),
-    db.taskProgress.clear(),
-    db.sessions.clear(),
-  ]);
-}
+import { clearDb } from "../helpers";
 
 const sampleInput: ImportScheduleInput = {
   title: "Plan",

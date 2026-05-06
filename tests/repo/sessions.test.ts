@@ -7,6 +7,7 @@ import {
   startSession,
 } from "@/repo";
 import type { ImportScheduleInput } from "@/domain/schedule";
+import { clearDb } from "../helpers";
 
 const sampleInput: ImportScheduleInput = {
   title: "Plan",
@@ -17,15 +18,6 @@ const sampleInput: ImportScheduleInput = {
     { dayNumber: 1, slots: [{ subject: "Math" }, { subject: "Physics" }] },
   ],
 };
-
-async function clearDb() {
-  await Promise.all([
-    db.schedules.clear(),
-    db.tasks.clear(),
-    db.taskProgress.clear(),
-    db.sessions.clear(),
-  ]);
-}
 
 function expectOk<T extends { ok: boolean }>(
   result: T,

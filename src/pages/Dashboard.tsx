@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { downloadJson } from "@/lib/download";
 import { formatDateLong } from "@/lib/format";
 import { today } from "@/lib/dates";
 import { DaysLeftHero } from "@/components/DaysLeftHero";
@@ -105,16 +106,7 @@ export function DashboardPage() {
   async function handleExport() {
     setDataMessage(null);
     try {
-      const payload = await exportAll();
-      const blob = new Blob([JSON.stringify(payload, null, 2)], {
-        type: "application/json",
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `lakshya-${today()}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
+      downloadJson(`lakshya-${today()}.json`, await exportAll());
       setDataMessage("Exported.");
     } catch (err) {
       setDataMessage(err instanceof Error ? err.message : "Export failed");

@@ -5,6 +5,7 @@ import {
   ImportScheduleSchema,
   type ImportScheduleInput,
 } from "@/domain/schedule";
+import { downloadJson } from "@/lib/download";
 import { importSchedule } from "@/repo";
 
 type UploadState =
@@ -35,18 +36,6 @@ function formatTimeAgo(date: Date, now: number = Date.now()): string {
   if (minutes < 60) return `${minutes} minute${minutes !== 1 ? "s" : ""} ago`;
   if (hours < 24) return `${hours} hour${hours !== 1 ? "s" : ""} ago`;
   return `${Math.floor(hours / 24)} days ago`;
-}
-
-function downloadJson(filename: string, value: unknown) {
-  const blob = new Blob([JSON.stringify(value, null, 2)], {
-    type: "application/json",
-  });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
 }
 
 export function ImportPage() {

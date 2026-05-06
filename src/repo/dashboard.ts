@@ -75,9 +75,16 @@ export async function getDashboard(): Promise<Dashboard | null> {
   const completedTodayIds = new Set(
     scopedProgress.filter((p) => p.date === todayKey).map((p) => p.taskId),
   );
+
+  // Streak axis: "did I sit down on day D" — keyed by progress.date,
+  // ignores which task. A single completion any day flips the day "on."
   const completionDates = new Set(scopedProgress.map((p) => p.date));
   const streak = computeStreak(completionDates);
 
+  // Adherence axis: "did I hit tasks scheduled in the window" — keyed by
+  // task.targetDate, joins back via taskId. Intentionally a different
+  // axis from streak: "showed up" and "kept the plan" are different
+  // signals.
   const windowTasks = tasks.filter(
     (t) =>
       t.targetDate >= adherenceWindowStart && t.targetDate <= todayKey,

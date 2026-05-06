@@ -38,6 +38,18 @@ function formatTimeAgo(date: Date, now: number = Date.now()): string {
   return `${Math.floor(hours / 24)} days ago`;
 }
 
+const DROP_ZONE_BASE =
+  "relative border-2 border-dashed rounded-2xl p-6 text-center transition-all duration-200 cursor-pointer";
+
+const DROP_ZONE_BY_STATE: Record<UploadState, string> = {
+  idle: "border-border bg-bg-secondary hover:border-accent",
+  dragging: "border-accent bg-accent-soft",
+  "file-selected": "border-success bg-success-soft/30",
+  uploading: "bg-bg-secondary cursor-not-allowed",
+  success: "bg-bg-secondary",
+  error: "border-danger bg-danger-soft/30",
+};
+
 export function ImportPage() {
   const [uploadState, setUploadState] = useState<UploadState>("idle");
   const [file, setFile] = useState<FileInfo | null>(null);

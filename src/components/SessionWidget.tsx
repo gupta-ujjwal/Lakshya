@@ -4,12 +4,7 @@ import {
   type SessionReflection,
   type TaskPreview,
 } from "@/domain/session";
-import {
-  endSession,
-  getActiveSession,
-  startSession,
-  SessionAlreadyActiveError,
-} from "@/repo";
+import { endSession, getActiveSession, startSession } from "@/repo";
 
 interface SessionWidgetProps {
   task: TaskPreview | null;
@@ -102,6 +97,20 @@ export function SessionWidget({ task, onSessionFinished }: SessionWidgetProps) {
     setStarting(true);
     try {
       const result = await startSession(task ? { taskId: task.id } : {});
+      if (!result.ok) {
+        // Two-tab case: another tab opened a session. Adopt it instead
+        // of failing — same recovery path /api/sessions had via 409.
+        const totalSeconds = result.existing.session.focusMinutes * 60;
+        const startedMs = new Date(result.existing.session.startedAt).getTime();
+        setSessionId(result.existing.session.id);
+        setActiveTask(result.existing.task);
+        setRemaining(
+          Math.max(0, totalSeconds - Math.round((Date.now() - startedMs) / 1000)),
+        );
+        setEndsAt(startedMs + totalSeconds * 1000);
+        setPhase("active");
+        return;
+      }
       const totalSeconds = result.session.focusMinutes * 60;
       const startedMs = new Date(result.session.startedAt).getTime();
       setSessionId(result.session.id);
@@ -111,19 +120,6 @@ export function SessionWidget({ task, onSessionFinished }: SessionWidgetProps) {
       setEndsAt(startedMs + totalSeconds * 1000);
       setPhase("active");
     } catch (err) {
-      // If the user opened two tabs and pressed Start in both, recover by
-      // adopting the existing open session — the same path /api/sessions
-      // returned via 409+session before this migration.
-      if (err instanceof SessionAlreadyActiveError) {
-        const totalSeconds = err.active.session.focusMinutes * 60;
-        const startedMs = new Date(err.active.session.startedAt).getTime();
-        setSessionId(err.active.session.id);
-        setActiveTask(err.active.task);
-        setRemaining(Math.max(0, totalSeconds - Math.round((Date.now() - startedMs) / 1000)));
-        setEndsAt(startedMs + totalSeconds * 1000);
-        setPhase("active");
-        return;
-      }
       setError(err instanceof Error ? err.message : "Failed to start");
     } finally {
       setStarting(false);

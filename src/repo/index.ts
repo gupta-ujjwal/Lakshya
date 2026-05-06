@@ -4,13 +4,8 @@ export type { ImportResult } from "./schedules";
 export { listTasks, recordTaskProgress, pickNextTaskForToday } from "./tasks";
 export type { TaskListItem, TaskStatus } from "./tasks";
 
-export {
-  startSession,
-  endSession,
-  getActiveSession,
-  SessionAlreadyActiveError,
-} from "./sessions";
-export type { ActiveSession } from "./sessions";
+export { startSession, endSession, getActiveSession } from "./sessions";
+export type { ActiveSession, StartSessionResult } from "./sessions";
 
 export { getDashboard } from "./dashboard";
 export type {

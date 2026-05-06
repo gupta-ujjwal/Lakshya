@@ -28,19 +28,15 @@ export async function getActiveSession(): Promise<ActiveSession | null> {
   return { session, task };
 }
 
-export class SessionAlreadyActiveError extends Error {
-  constructor(
-    public active: ActiveSession,
-  ) {
-    super("Session already active");
-  }
-}
+export type StartSessionResult =
+  | { ok: true; session: OpenSession; task: TaskPreview | null }
+  | { ok: false; reason: "already-active"; existing: ActiveSession };
 
 export async function startSession(
   input: StartSessionInput = {},
-): Promise<{ session: OpenSession; task: TaskPreview | null }> {
+): Promise<StartSessionResult> {
   const existing = await getActiveSession();
-  if (existing) throw new SessionAlreadyActiveError(existing);
+  if (existing) return { ok: false, reason: "already-active", existing };
 
   const schedule = await getLatestSchedule();
   if (!schedule) throw new Error("No schedule found");
@@ -65,7 +61,7 @@ export async function startSession(
     createdAt: nowIso(),
   };
   await db.sessions.add(session);
-  return { session, task };
+  return { ok: true, session, task };
 }
 
 export async function endSession(

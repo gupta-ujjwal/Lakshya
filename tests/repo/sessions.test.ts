@@ -4,7 +4,6 @@ import {
   endSession,
   getActiveSession,
   importSchedule,
-  SessionAlreadyActiveError,
   startSession,
 } from "@/repo";
 import type { ImportScheduleInput } from "@/domain/schedule";
@@ -28,6 +27,12 @@ async function clearDb() {
   ]);
 }
 
+function expectOk<T extends { ok: boolean }>(
+  result: T,
+): asserts result is Extract<T, { ok: true }> {
+  if (!result.ok) throw new Error("expected ok=true result");
+}
+
 describe("session lifecycle", () => {
   beforeEach(async () => {
     // toFake: ['Date'] keeps microtask scheduling on real timers; Dexie
@@ -44,32 +49,30 @@ describe("session lifecycle", () => {
   });
 
   it("starts and recovers an open session", async () => {
-    const { session, task } = await startSession();
-    expect(session.state).toBe("open");
-    expect(task).not.toBeNull();
+    const result = await startSession();
+    expectOk(result);
+    expect(result.session.state).toBe("open");
+    expect(result.task).not.toBeNull();
     const active = await getActiveSession();
-    expect(active?.session.id).toBe(session.id);
+    expect(active?.session.id).toBe(result.session.id);
   });
 
-  it("rejects a second start with SessionAlreadyActiveError carrying the live session", async () => {
+  it("returns ok:false with the live session when one is already active", async () => {
     const first = await startSession();
-    await expect(startSession()).rejects.toBeInstanceOf(
-      SessionAlreadyActiveError,
-    );
-    try {
-      await startSession();
-    } catch (err) {
-      expect(err).toBeInstanceOf(SessionAlreadyActiveError);
-      expect((err as SessionAlreadyActiveError).active.session.id).toBe(
-        first.session.id,
-      );
+    expectOk(first);
+    const second = await startSession();
+    expect(second.ok).toBe(false);
+    if (!second.ok) {
+      expect(second.reason).toBe("already-active");
+      expect(second.existing.session.id).toBe(first.session.id);
     }
   });
 
   it("transitions an open session to closed via endSession", async () => {
-    const { session } = await startSession();
+    const result = await startSession();
+    expectOk(result);
     vi.advanceTimersByTime(60_000);
-    const closed = await endSession(session.id, { reflection: "💪" });
+    const closed = await endSession(result.session.id, { reflection: "💪" });
     expect(closed.state).toBe("closed");
     expect(closed.duration).toBe(60);
     expect(closed.reflection).toBe("💪");
@@ -77,24 +80,26 @@ describe("session lifecycle", () => {
   });
 
   it("is idempotent on repeated endSession", async () => {
-    const { session } = await startSession();
+    const result = await startSession();
+    expectOk(result);
     vi.advanceTimersByTime(60_000);
-    const first = await endSession(session.id, { reflection: "🙂" });
+    const first = await endSession(result.session.id, { reflection: "🙂" });
     vi.advanceTimersByTime(60_000);
-    const second = await endSession(session.id);
+    const second = await endSession(result.session.id);
     expect(second.endedAt).toBe(first.endedAt);
     expect(second.duration).toBe(first.duration);
     expect(second.reflection).toBe("🙂");
   });
 
   it("records task completion when markTaskComplete=true", async () => {
-    const { session, task } = await startSession();
-    expect(task).not.toBeNull();
+    const result = await startSession();
+    expectOk(result);
+    expect(result.task).not.toBeNull();
     vi.advanceTimersByTime(60_000);
-    await endSession(session.id, { markTaskComplete: true });
+    await endSession(result.session.id, { markTaskComplete: true });
     const progress = await db.taskProgress
       .where("taskId")
-      .equals(task!.id)
+      .equals(result.task!.id)
       .toArray();
     expect(progress).toHaveLength(1);
     expect(progress[0].status).toBe("completed");

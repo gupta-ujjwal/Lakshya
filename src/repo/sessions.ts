@@ -24,8 +24,15 @@ export async function getActiveSession(): Promise<ActiveSession | null> {
     .sortBy("startedAt");
   const session = open[0];
   if (!session || session.state !== "open") return null;
-  const task = await loadTaskPreview(session.taskId);
-  return { session, task };
+  // Task preview is independent of any other read; bundling here means
+  // future callers don't repeat the lookup.
+  const task = session.taskId ? await db.tasks.get(session.taskId) : null;
+  return {
+    session,
+    task: task
+      ? { id: task.id, title: task.title, subject: task.subject }
+      : null,
+  };
 }
 
 export type StartSessionResult =
@@ -103,12 +110,3 @@ export async function endSession(
   return closed;
 }
 
-async function loadTaskPreview(
-  taskId: string | null,
-): Promise<TaskPreview | null> {
-  if (!taskId) return null;
-  const task = await db.tasks.get(taskId);
-  return task
-    ? { id: task.id, title: task.title, subject: task.subject }
-    : null;
-}

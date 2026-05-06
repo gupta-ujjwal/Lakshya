@@ -241,19 +241,7 @@ export function ImportPage() {
                 ? "Uploading file"
                 : "Drop zone for JSON file upload"
             }
-            className={`relative border-2 border-dashed rounded-2xl p-6 text-center transition-all duration-200 cursor-pointer ${
-              uploadState === "uploading" ? "cursor-not-allowed" : ""
-            } ${
-              uploadState === "idle"
-                ? "border-border bg-bg-secondary hover:border-accent"
-                : uploadState === "dragging"
-                  ? "border-accent bg-accent-soft"
-                  : uploadState === "file-selected"
-                    ? "border-success bg-success-soft/30"
-                    : uploadState === "error"
-                      ? "border-danger bg-danger-soft/30"
-                      : "bg-bg-secondary"
-            }`}
+            className={`${DROP_ZONE_BASE} ${DROP_ZONE_BY_STATE[uploadState]}`}
           >
             <input
               id="file-input"

@@ -1,24 +1,33 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { formatDateShortYear } from "@/lib/format";
 import { daysUntil, journeyProgress, urgencyLevel } from "@/lib/countdown";
 import { statusBarTones } from "@/lib/urgency-tones";
 import { getDashboard, type DashboardSchedule } from "@/repo";
 
 export function StatusBar() {
+  const location = useLocation();
   const [schedule, setSchedule] = useState<DashboardSchedule | null>(null);
 
+  // Refetch on every route change: the layout doesn't remount when the
+  // user navigates from /import to /, so a once-on-mount fetch leaves
+  // the bar stuck on its empty-state placeholder after a fresh import.
   useEffect(() => {
+    let cancelled = false;
     getDashboard()
       .then((data) => {
-        if (data?.schedule) setSchedule(data.schedule);
+        if (!cancelled) setSchedule(data?.schedule ?? null);
       })
       .catch(() => {
         // Best-effort: the StatusBar is decorative chrome above every
         // page. If IndexedDB is unavailable (Safari private mode, OS
-        // sandbox), the placeholder bar at line 22 is the right
-        // fallback — better than blocking page render with an alert.
+        // sandbox), the placeholder bar below is the right fallback —
+        // better than blocking page render with an alert.
       });
-  }, []);
+    return () => {
+      cancelled = true;
+    };
+  }, [location.pathname]);
 
   if (!schedule) {
     return <div className="h-16 bg-bg-secondary border-b border-border" />;

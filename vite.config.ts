@@ -8,6 +8,25 @@ import tsconfigPaths from "vite-tsconfig-paths";
 export default defineConfig({
   base: process.env.VITE_BASE ?? "/",
   plugins: [react(), tsconfigPaths()],
-  server: { port: 3000 },
+  server: {
+    port: 3000,
+    // Exclude project dirs that aren't part of the Vite source tree from
+    // the file watcher. Without this, watching .direnv/ (Nix flake inputs,
+    // tens of thousands of files) blows past the default inotify limit
+    // and `pnpm dev` exits with ENOSPC before serving the first request.
+    watch: {
+      ignored: [
+        "**/.direnv/**",
+        "**/.devenv/**",
+        "**/apm_modules/**",
+        "**/wiki/**",
+        "**/tasks/**",
+        "**/life/**",
+        "**/memory/**",
+        "**/test-results/**",
+        "**/dist/**",
+      ],
+    },
+  },
   build: { outDir: "dist", sourcemap: true },
 });

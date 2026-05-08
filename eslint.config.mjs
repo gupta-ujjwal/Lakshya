@@ -2,13 +2,11 @@ import js from "@eslint/js";
 import tseslint from "typescript-eslint";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
-import nextConfig from "eslint-config-next";
 import globals from "globals";
 
 export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
-  ...nextConfig,
   {
     files: ["**/*.ts", "**/*.tsx"],
     plugins: {
@@ -32,12 +30,10 @@ export default tseslint.config(
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
       ],
       "@typescript-eslint/no-explicit-any": "warn",
-      "react-hooks/purity": "off",
-      "react-hooks/set-state-in-effect": "off",
     },
   },
   {
-    files: ["tests/**/*.ts", "tests/**/*.tsx", "__tests__/**/*.ts"],
+    files: ["tests/**/*.ts", "tests/**/*.tsx"],
     rules: {
       "react-hooks/rules-of-hooks": "off",
     },
@@ -45,14 +41,12 @@ export default tseslint.config(
   {
     ignores: [
       "node_modules/",
-      ".next/",
       "dist/",
       "build/",
       "coverage/",
-      "playwright-report/",
-      "test-results/",
-      "prisma/generated/",
       "*.config.ts",
+      "*.config.js",
+      "apm_modules/",
     ],
   }
 );

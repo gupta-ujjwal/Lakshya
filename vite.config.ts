@@ -39,7 +39,7 @@ export default defineConfig({
         // (in-app theme-color meta takes over), which is acceptable for
         // identity-on-icon vs. continuous-chrome.
         background_color: "#faf9f7",
-        theme_color: "#3b82f6",
+        theme_color: "#2AABFF",
         icons: [
           { src: "pwa-64x64.png", sizes: "64x64", type: "image/png" },
           { src: "pwa-192x192.png", sizes: "192x192", type: "image/png" },

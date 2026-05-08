@@ -1,10 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <!-- Brand-mark fill #3b82f6 intentionally matches manifest theme_color
-       in vite.config.ts so the OS splash tint and installed icon agree.
-       Update both when the brand accent changes. -->
-  <rect width="512" height="512" rx="96" fill="#3b82f6"/>
+  <!-- Brand-mark fill #2AABFF mirrors the accent token in
+       src/globals.css and manifest theme_color in vite.config.ts so
+       the installed icon, OS splash tint, and in-app accent agree.
+       Update all three together when the brand accent changes. -->
+  <rect width="512" height="512" rx="96" fill="#2AABFF"/>
   <circle cx="256" cy="256" r="180" fill="#fff"/>
-  <circle cx="256" cy="256" r="135" fill="#3b82f6"/>
+  <circle cx="256" cy="256" r="135" fill="#2AABFF"/>
   <circle cx="256" cy="256" r="90" fill="#fff"/>
   <circle cx="256" cy="256" r="45" fill="#ef4444"/>
 </svg>

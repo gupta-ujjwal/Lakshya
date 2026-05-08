@@ -32,6 +32,12 @@ export default defineConfig({
         // (browser chrome, media-conditional) and from globals.css design
         // tokens (in-app rendering). Three sites, three different roles —
         // do not source from one constant.
+        //
+        // The brand-blue value mirrors the icon's fill so the OS chrome
+        // matches the installed icon at install time. It does mean a
+        // brief blue→cream transition on Android when the app loads
+        // (in-app theme-color meta takes over), which is acceptable for
+        // identity-on-icon vs. continuous-chrome.
         background_color: "#faf9f7",
         theme_color: "#3b82f6",
         icons: [

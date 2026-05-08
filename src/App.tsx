@@ -10,7 +10,9 @@ import { ImportPage } from "@/pages/Import";
 export function App() {
   return (
     <ThemeProvider>
-      <HashRouter>
+      <HashRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+      >
         <Routes>
           <Route element={<LayoutOutlet />}>
             <Route path="/" element={<DashboardPage />} />

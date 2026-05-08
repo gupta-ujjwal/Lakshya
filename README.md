@@ -129,4 +129,14 @@ The **Up Next** card on the dashboard includes a **Start Session** button. It pi
 
 ## What was Phase 0
 
-Earlier versions of this app ran on Next.js + Postgres + Prisma with a fake-auth header. That whole stack is now gone. The migration commit is intentionally large because the move from server-backed to local-first touches every data-fetching call site. Phase 2 is PWA (service worker + manifest + offline app shell).
+Earlier versions of this app ran on Next.js + Postgres + Prisma with a fake-auth header. That whole stack is now gone. The migration commit is intentionally large because the move from server-backed to local-first touches every data-fetching call site.
+
+## Phase 2 — PWA
+
+The app installs to home screen, runs from cache, and survives offline. Built on `vite-plugin-pwa` (Workbox under the hood).
+
+- **Phase 2a (current):** manifest, icons, service worker, offline launch. `registerType: "prompt"` — new versions wait quietly until the next page load rather than ambushing an active focus session. No update banner UI yet.
+- **Phase 2b (next):** in-app "Update available" banner via `useRegisterSW`, suppressed while a session is active in `SessionWidget`.
+- **Phase 2c:** self-host fonts (`@fontsource/*`) so offline rendering matches online pixel-for-pixel; collapse the body-font path through `globals.css`.
+
+Phase 3 is the routing polish: swap `HashRouter` for `BrowserRouter` via the GitHub Pages `404.html` SPA-redirect trick to drop the `#/` from URLs. The SW's `navigateFallback` is already configured to support it.

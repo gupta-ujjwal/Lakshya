@@ -6,7 +6,9 @@ import { ImportPage } from "@/pages/Import";
 
 // HashRouter is the cheap fix for GitHub Pages: refreshing /import
 // otherwise 404s because Pages has no SPA fallback. The 404.html-redirect
-// trick keeps clean URLs but is a Phase 2 polish.
+// trick keeps clean URLs but is a Phase 3 item — not Phase 2 (PWA).
+// The SW's navigateFallback in vite.config.ts is set up to support that
+// switch; it's a no-op while HashRouter is active.
 export function App() {
   return (
     <ThemeProvider>

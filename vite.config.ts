@@ -48,9 +48,9 @@ export default defineConfig({
       },
       workbox: {
         // navigateFallback is a no-op while HashRouter is active
-        // (src/App.tsx:13) — every in-app navigation resolves as a request
-        // for "/" anyway. This becomes load-bearing if the BrowserRouter
-        // swap (Phase 3) ever lands.
+        // (App() in src/App.tsx) — every in-app navigation resolves as a
+        // request for "/" anyway. This becomes load-bearing if the
+        // BrowserRouter swap (Phase 3) ever lands.
         navigateFallback: "index.html",
         globPatterns: ["**/*.{js,css,html,svg,png,ico,woff2}"],
       },

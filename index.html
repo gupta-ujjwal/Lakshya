@@ -39,7 +39,11 @@
           var explicit = theme === "light" || theme === "dark";
           var resolved = explicit ? theme : (prefersDark ? "dark" : "light");
           if (resolved === "dark") document.documentElement.classList.add("dark");
-        } catch (e) {}
+        } catch (e) {
+          // localStorage and matchMedia can throw in private mode or
+          // sandboxed iframes. Theme is a paint hint, not state — drop
+          // to the default light theme rather than blocking page load.
+        }
       })();
     </script>
   </head>

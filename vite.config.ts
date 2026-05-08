@@ -17,11 +17,6 @@ export default defineConfig({
       // Without a banner UI in this phase, updates simply wait until the
       // user closes the tab — safe default. The banner lands in Phase 2b.
       registerType: "prompt",
-      includeAssets: [
-        "favicon.svg",
-        "favicon.ico",
-        "apple-touch-icon-180x180.png",
-      ],
       manifest: {
         name: "Lakshya — Study Tracker",
         short_name: "Lakshya",

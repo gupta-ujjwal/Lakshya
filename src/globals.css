@@ -28,6 +28,11 @@
     --radius-md: 0.75rem;
     --radius-lg: 1rem;
     --radius-xl: 1rem;
+
+    /* Bottom-nav height — used by DashboardLayout's nav (h-[var(...)])
+       and by chrome that sits above it (UpdateBanner) so they stay in
+       sync. Update once here when the nav grows or shrinks. */
+    --nav-height: 3.5rem;
   }
 
   .dark {

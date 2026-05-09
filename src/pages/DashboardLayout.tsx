@@ -9,7 +9,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       <StatusBar />
       <main className="max-w-lg mx-auto px-4 pt-4">{children}</main>
       <nav className="fixed bottom-0 left-0 right-0 bg-bg-secondary border-t border-border safe-area-bottom z-50">
-        <div className="max-w-lg mx-auto flex items-center justify-around h-14">
+        <div className="max-w-lg mx-auto flex items-center justify-around h-[var(--nav-height)]">
           {NAV_ITEMS.map((item) => (
             <NavLink
               key={item.href}

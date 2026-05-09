@@ -30,7 +30,7 @@ export function UpdateBanner() {
     <div
       role="status"
       aria-live="polite"
-      className="fixed inset-x-0 bottom-16 z-50 mx-auto flex max-w-lg justify-center px-4 pointer-events-none"
+      className="fixed inset-x-0 bottom-[var(--nav-height)] z-50 mx-auto flex max-w-lg justify-center px-4 pb-2 pointer-events-none"
     >
       {needRefresh && (
         <div className="card pointer-events-auto flex items-center justify-between gap-3 animate-fade-in shadow-md w-full">

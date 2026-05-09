@@ -39,8 +39,13 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["DM Sans", "system-ui", "-apple-system", "sans-serif"],
-        display: ["Plus Jakarta Sans", "system-ui", "-apple-system", "sans-serif"],
+        // The CSS variables (defined in src/globals.css alongside the
+        // @fontsource imports) carry the actual family + fallback stack.
+        // Keep these references pointing at the vars only — don't
+        // duplicate the fallback stack here, or a font swap would have
+        // to be made in two places.
+        sans: ["var(--font-sans)"],
+        display: ["var(--font-display)"],
       },
       borderRadius: {
         sm: "var(--radius-sm)",

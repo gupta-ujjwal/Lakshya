@@ -1,3 +1,14 @@
+/*
+ * Typography is self-hosted via @fontsource-variable — one woff2 per
+ * family covers the full weight axis, so any font-{weight} utility
+ * "just works" without a per-weight import audit. Files end up in
+ * dist/assets/ at build and are precached by the SW (see workbox
+ * globPatterns in vite.config.ts). Edit these imports together with
+ * --font-sans / --font-display below when changing the font system.
+ */
+@import "@fontsource-variable/dm-sans";
+@import "@fontsource-variable/plus-jakarta-sans";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -33,8 +44,18 @@
        and by chrome that sits above it (UpdateBanner) so they stay in
        sync. Update once here when the nav grows or shrinks. */
     --nav-height: 3.5rem;
+
+    /* Font families. Fallback stack lives here, not in tailwind.config —
+       Tailwind utilities reference var(--font-sans) verbatim. The
+       "Variable" suffix is the @fontsource-variable family name. */
+    --font-sans: "DM Sans Variable", system-ui, -apple-system, sans-serif;
+    --font-display: "Plus Jakarta Sans Variable", system-ui, -apple-system, sans-serif;
   }
 
+  /* The .dark block intentionally redeclares only colors and shadows —
+     fonts are theme-invariant. CSS custom property inheritance carries
+     --font-sans / --font-display from :root through .dark. If a future
+     design wants a dark-mode-specific display font, override it here. */
   .dark {
     --bg-primary: #1C1E21;
     --bg-secondary: #2C2E31;
@@ -59,7 +80,7 @@
   }
 
   html {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-family: var(--font-sans);
     -webkit-tap-highlight-color: transparent;
   }
 

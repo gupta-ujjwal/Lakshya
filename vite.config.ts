@@ -6,6 +6,13 @@ import { VitePWA } from "vite-plugin-pwa";
 // `base` is set so assets resolve under GitHub Pages project-site URLs
 // (`<user>.github.io/<repo>/`). For a custom domain or root host, override
 // with `VITE_BASE=/`. For local dev, the default `/` works.
+//
+// This value also flows through `import.meta.env.BASE_URL` into the
+// BrowserRouter's basename (src/App.tsx) — asset prefix and route
+// prefix happen to be the same string for vanilla deploys. They would
+// diverge under a reverse proxy that rewrites paths; in that case
+// introduce a separate VITE_ROUTER_BASE env var and thread it into
+// App.tsx instead of using import.meta.env.BASE_URL.
 export default defineConfig({
   base: process.env.VITE_BASE ?? "/",
   plugins: [
@@ -53,10 +60,11 @@ export default defineConfig({
         ],
       },
       workbox: {
-        // navigateFallback is a no-op while HashRouter is active
-        // (App() in src/App.tsx) — every in-app navigation resolves as a
-        // request for "/" anyway. This becomes load-bearing if the
-        // BrowserRouter swap (Phase 3) ever lands.
+        // navigateFallback is load-bearing under BrowserRouter
+        // (App() in src/App.tsx): a refresh on /Lakshya/import after
+        // the SW is installed is intercepted here and served from the
+        // precached index.html, bypassing the public/404.html redirect
+        // dance that handles the same case for fresh visits.
         navigateFallback: "index.html",
         globPatterns: ["**/*.{js,css,html,svg,png,ico,woff2}"],
       },

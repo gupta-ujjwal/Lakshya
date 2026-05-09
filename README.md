@@ -5,7 +5,7 @@ A mobile-first study dashboard where a student uploads their schedule (JSON) and
 ## Tech stack
 
 - **Build:** Vite + React 18 + TypeScript
-- **Routing:** react-router-dom (HashRouter, for friction-free GitHub Pages hosting)
+- **Routing:** react-router-dom (BrowserRouter; GitHub Pages SPA fallback via `public/404.html`)
 - **Storage:** Dexie over IndexedDB
 - **Styling:** Tailwind CSS
 - **Tests:** Vitest + jsdom + fake-indexeddb
@@ -33,9 +33,11 @@ Visit http://localhost:3000.
 
 ## Deploying to GitHub Pages
 
-The router uses `HashRouter`, so a refresh on `/import` (URL: `…/#/import`) doesn't 404 on Pages.
+URLs are clean (`https://<user>.github.io/<repo>/import`, no `#/`). A refresh or direct deep link works because `public/404.html` runs the [rafgraph](https://github.com/rafgraph/spa-github-pages) redirect — Pages serves it on any 404, the script encodes the path into a query string, and `index.html`'s decoder restores it before React mounts.
 
-Drop this workflow into `.github/workflows/deploy-pages.yml` in the GitHub web UI (or push it from a token with `workflow` scope). It builds `dist/` on every push to `main` and injects `VITE_BASE=/<repo>/` so assets resolve under the project-site URL `https://<user>.github.io/<repo>/`. For a custom domain or user/org root site, override `VITE_BASE=/`.
+> If you fork to a custom domain or user/org root site, flip `pathSegmentsToKeep` from `1` to `0` in `public/404.html` and override `VITE_BASE=/` in CI.
+
+Drop this workflow into `.github/workflows/deploy-pages.yml` in the GitHub web UI (or push it from a token with `workflow` scope). It builds `dist/` on every push to `main` and injects `VITE_BASE=/<repo>/` so assets resolve under the project-site URL `https://<user>.github.io/<repo>/`.
 
 ```yaml
 name: Deploy to GitHub Pages
@@ -137,6 +139,8 @@ The app installs to home screen, runs from cache, and survives offline. Built on
 
 - **Phase 2a:** manifest, icons, service worker, offline launch. `registerType: "prompt"` — new versions wait quietly until the next page load rather than ambushing an active focus session.
 - **Phase 2b:** in-app "Update available" banner via `useRegisterSW`. Mounted at the app root (above the router) because a SW update is a global signal. The "Update and reload" button is the destructive moment — `vite-plugin-pwa` auto-reloads the page after the new SW takes control, and the label names that consequence.
-- **Phase 2c (current):** self-host fonts via `@fontsource-variable/*` so offline rendering matches online pixel-for-pixel. `--font-sans` and `--font-display` CSS variables in `globals.css` are the single source of truth for typography; both Tailwind utilities and the `html` body-font rule reference the vars.
+- **Phase 2c:** self-host fonts via `@fontsource-variable/*` so offline rendering matches online pixel-for-pixel. `--font-sans` and `--font-display` CSS variables in `globals.css` are the single source of truth for typography; both Tailwind utilities and the `html` body-font rule reference the vars.
 
-Phase 3 is the routing polish: swap `HashRouter` for `BrowserRouter` via the GitHub Pages `404.html` SPA-redirect trick to drop the `#/` from URLs. The SW's `navigateFallback` is already configured to support it.
+## Phase 3 — Clean URLs
+
+`BrowserRouter` replaces `HashRouter`. URLs lose the `#/`. The GitHub Pages SPA fallback is implemented via `public/404.html` (encoder) + the small script in `index.html` `<head>` (decoder). After the SW installs, deep-link refreshes hit the precached `index.html` via the SW's `navigateFallback` and bypass the redirect entirely.

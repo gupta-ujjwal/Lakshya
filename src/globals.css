@@ -52,6 +52,10 @@
     --font-display: "Plus Jakarta Sans Variable", system-ui, -apple-system, sans-serif;
   }
 
+  /* The .dark block intentionally redeclares only colors and shadows —
+     fonts are theme-invariant. CSS custom property inheritance carries
+     --font-sans / --font-display from :root through .dark. If a future
+     design wants a dark-mode-specific display font, override it here. */
   .dark {
     --bg-primary: #1C1E21;
     --bg-secondary: #2C2E31;

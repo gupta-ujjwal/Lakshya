@@ -2,8 +2,20 @@
 <html lang="en" suppressHydrationWarning>
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="64x64" href="/pwa-64x64.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon-180x180.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Lakshya" />
+    <!--
+      theme-color here is the browser-chrome tint and is media-conditional.
+      Distinct from manifest theme_color in vite.config.ts (single value,
+      drives OS splash + task-switcher) and globals.css design tokens
+      (in-app surfaces). Three sites, three different roles — don't try
+      to source them from one constant.
+    -->
     <meta name="theme-color" content="#faf9f7" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#0f0f0f" media="(prefers-color-scheme: dark)" />
     <title>Lakshya | Study Tracker</title>
@@ -16,14 +28,22 @@
     <script>
       // Pre-hydration theme application — must run before React mounts to
       // prevent FOUC. Mirrors src/lib/theme-context.tsx; if you change the
-      // localStorage key or resolution rule, update both.
+      // localStorage key or resolution rule, update both. The recognized
+      // values are "light" | "dark" | "system" (matching readStoredTheme
+      // in theme-context.tsx); anything else falls through to the OS
+      // preference, same as "system".
       (function () {
         try {
           var theme = localStorage.getItem("theme");
           var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-          var resolved = theme === "light" || theme === "dark" ? theme : (prefersDark ? "dark" : "light");
+          var explicit = theme === "light" || theme === "dark";
+          var resolved = explicit ? theme : (prefersDark ? "dark" : "light");
           if (resolved === "dark") document.documentElement.classList.add("dark");
-        } catch (e) {}
+        } catch (e) {
+          // localStorage and matchMedia can throw in private mode or
+          // sandboxed iframes. Theme is a paint hint, not state — drop
+          // to the default light theme rather than blocking page load.
+        }
       })();
     </script>
   </head>

@@ -136,7 +136,7 @@ Earlier versions of this app ran on Next.js + Postgres + Prisma with a fake-auth
 The app installs to home screen, runs from cache, and survives offline. Built on `vite-plugin-pwa` (Workbox under the hood).
 
 - **Phase 2a:** manifest, icons, service worker, offline launch. `registerType: "prompt"` — new versions wait quietly until the next page load rather than ambushing an active focus session.
-- **Phase 2b (current):** in-app "Update available" banner via `useRegisterSW`. Mounted at the app root (above the router) because a SW update is a global signal. The "Update and reload" button is the destructive moment — `vite-plugin-pwa` auto-reloads the page after the new SW takes control, and the label names that consequence.
-- **Phase 2c:** self-host fonts so offline rendering matches online pixel-for-pixel; collapse the body-font path through `globals.css`.
+- **Phase 2b:** in-app "Update available" banner via `useRegisterSW`. Mounted at the app root (above the router) because a SW update is a global signal. The "Update and reload" button is the destructive moment — `vite-plugin-pwa` auto-reloads the page after the new SW takes control, and the label names that consequence.
+- **Phase 2c (current):** self-host fonts via `@fontsource-variable/*` so offline rendering matches online pixel-for-pixel. `--font-sans` and `--font-display` CSS variables in `globals.css` are the single source of truth for typography; both Tailwind utilities and the `html` body-font rule reference the vars.
 
 Phase 3 is the routing polish: swap `HashRouter` for `BrowserRouter` via the GitHub Pages `404.html` SPA-redirect trick to drop the `#/` from URLs. The SW's `navigateFallback` is already configured to support it.

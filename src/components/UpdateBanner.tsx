@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useRegisterSW } from "virtual:pwa-register/react";
 
 // Mounted at the app root (above HashRouter in App.tsx) because a SW
@@ -21,6 +22,9 @@ export function UpdateBanner() {
     needRefresh: [needRefresh, setNeedRefresh],
     updateServiceWorker,
   } = useRegisterSW();
+  // Track in-flight updates so a double-click can't race the page
+  // reload that vite-plugin-pwa fires on 'controlling'.
+  const [updating, setUpdating] = useState(false);
 
   return (
     <div
@@ -36,15 +40,20 @@ export function UpdateBanner() {
           <div className="flex gap-2">
             <button
               onClick={() => setNeedRefresh(false)}
-              className="text-sm font-medium text-text-secondary px-3 py-1.5 rounded-md hover:bg-bg-tertiary active:scale-[0.98] transition-all"
+              disabled={updating}
+              className="text-sm font-medium text-text-secondary px-3 py-1.5 rounded-md hover:bg-bg-tertiary active:scale-[0.98] transition-all disabled:opacity-60"
             >
               Later
             </button>
             <button
-              onClick={() => updateServiceWorker()}
-              className="text-sm font-semibold text-white bg-accent px-3 py-1.5 rounded-md hover:bg-accent-hover active:scale-[0.98] transition-all"
+              onClick={() => {
+                setUpdating(true);
+                updateServiceWorker();
+              }}
+              disabled={updating}
+              className="text-sm font-semibold text-white bg-accent px-3 py-1.5 rounded-md hover:bg-accent-hover active:scale-[0.98] transition-all disabled:opacity-60"
             >
-              Update and reload
+              {updating ? "Updating…" : "Update and reload"}
             </button>
           </div>
         </div>

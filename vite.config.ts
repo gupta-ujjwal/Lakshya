@@ -22,17 +22,20 @@ function patchSpaFallbackBase(): PluginOption {
     },
     closeBundle() {
       const file = resolve(outDir, "404.html");
+      let html: string;
       try {
-        const html = readFileSync(file, "utf-8");
-        const patched = html.replace(
-          /var pathSegmentsToKeep = \d+;/,
-          `var pathSegmentsToKeep = ${segments};`,
-        );
-        if (patched !== html) writeFileSync(file, patched);
-      } catch {
-        // 404.html is optional — projects can drop public/404.html and
-        // skip this whole code path.
+        html = readFileSync(file, "utf-8");
+      } catch (err) {
+        // 404.html is opt-in — drop public/404.html to disable. Other
+        // read errors should bubble; only ENOENT is "feature off."
+        if ((err as NodeJS.ErrnoException).code === "ENOENT") return;
+        throw err;
       }
+      const patched = html.replace(
+        /var pathSegmentsToKeep = \d+;/,
+        `var pathSegmentsToKeep = ${segments};`,
+      );
+      if (patched !== html) writeFileSync(file, patched);
     },
   };
 }

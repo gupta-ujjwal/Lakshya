@@ -35,7 +35,7 @@ Visit http://localhost:3000.
 
 URLs are clean (`https://<user>.github.io/<repo>/import`, no `#/`). A refresh or direct deep link works because `public/404.html` runs the [rafgraph](https://github.com/rafgraph/spa-github-pages) redirect — Pages serves it on any 404, the script encodes the path into a query string, and `index.html`'s decoder restores it before React mounts.
 
-> If you fork to a custom domain or user/org root site, flip `pathSegmentsToKeep` from `1` to `0` in `public/404.html` and override `VITE_BASE=/` in CI.
+> If you fork to a custom domain or user/org root site, override `VITE_BASE=/` in CI. A small Vite plugin (`patchSpaFallbackBase` in `vite.config.ts`) keeps `public/404.html`'s `pathSegmentsToKeep` in sync with the resolved base — no second edit required.
 
 Drop this workflow into `.github/workflows/deploy-pages.yml` in the GitHub web UI (or push it from a token with `workflow` scope). It builds `dist/` on every push to `main` and injects `VITE_BASE=/<repo>/` so assets resolve under the project-site URL `https://<user>.github.io/<repo>/`.
 

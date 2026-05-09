@@ -8,6 +8,9 @@
       // script redirects to /Lakshya/?/import and we run here to
       // restore the path before React mounts. Token is "?/" — must
       // match the encoder in public/404.html.
+      // Generic by design: handles nested routes (/foo/bar/baz),
+      // query params (~and~ escapes &), and fragment identifiers (#id)
+      // — future routing changes do not need to touch this.
       // https://github.com/rafgraph/spa-github-pages
       (function (l) {
         if (l.search[1] === '/') {

@@ -1,7 +1,41 @@
-import { defineConfig } from "vite";
+import { defineConfig, type PluginOption } from "vite";
+import { readFileSync, writeFileSync } from "node:fs";
+import { resolve } from "node:path";
 import react from "@vitejs/plugin-react";
 import tsconfigPaths from "vite-tsconfig-paths";
 import { VitePWA } from "vite-plugin-pwa";
+
+// Derive pathSegmentsToKeep in dist/404.html from the resolved Vite
+// base, so a fork that flips VITE_BASE doesn't have to remember to
+// touch public/404.html too. Vite copies public/ verbatim, so the
+// substitution lands in closeBundle (after vite-plugin-pwa has
+// finished writing dist/).
+function patchSpaFallbackBase(): PluginOption {
+  let outDir = "dist";
+  let segments = 1;
+  return {
+    name: "spa-fallback-base",
+    apply: "build",
+    configResolved(config) {
+      outDir = config.build.outDir;
+      segments = config.base.split("/").filter(Boolean).length;
+    },
+    closeBundle() {
+      const file = resolve(outDir, "404.html");
+      try {
+        const html = readFileSync(file, "utf-8");
+        const patched = html.replace(
+          /var pathSegmentsToKeep = \d+;/,
+          `var pathSegmentsToKeep = ${segments};`,
+        );
+        if (patched !== html) writeFileSync(file, patched);
+      } catch {
+        // 404.html is optional — projects can drop public/404.html and
+        // skip this whole code path.
+      }
+    },
+  };
+}
 
 // `base` is set so assets resolve under GitHub Pages project-site URLs
 // (`<user>.github.io/<repo>/`). For a custom domain or root host, override
@@ -18,6 +52,7 @@ export default defineConfig({
   plugins: [
     react(),
     tsconfigPaths(),
+    patchSpaFallbackBase(),
     VitePWA({
       // 'prompt' (not 'autoUpdate'): a silent reload mid-focus-session would
       // wipe the SessionWidget timer in src/components/SessionWidget.tsx.

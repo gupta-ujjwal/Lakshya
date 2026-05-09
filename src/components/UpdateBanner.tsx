@@ -1,0 +1,48 @@
+import { useRegisterSW } from "virtual:pwa-register/react";
+
+// Mounted at the app root (above HashRouter in App.tsx) because a SW
+// update is a global signal, not scoped to any route. The banner only
+// renders when a new SW has installed and is waiting — never on first
+// install or in dev (where vite-plugin-pwa's devOptions.enabled is
+// false, so the registration call no-ops and needRefresh stays false).
+//
+// Clicking "Update and reload" triggers updateServiceWorker(), which
+// posts SKIP_WAITING to the new SW; the lib then auto-reloads the
+// page when 'controlling' fires. The label names that consequence so
+// the user isn't surprised mid-session.
+export function UpdateBanner() {
+  const {
+    needRefresh: [needRefresh, setNeedRefresh],
+    updateServiceWorker,
+  } = useRegisterSW();
+
+  if (!needRefresh) return null;
+
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="fixed inset-x-0 bottom-16 z-50 mx-auto flex max-w-lg justify-center px-4 pointer-events-none"
+    >
+      <div className="card pointer-events-auto flex items-center justify-between gap-3 animate-fade-in shadow-md w-full">
+        <span className="text-sm font-medium text-text-primary">
+          Update available
+        </span>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setNeedRefresh(false)}
+            className="text-sm font-medium text-text-secondary px-3 py-1.5 rounded-md hover:bg-bg-tertiary active:scale-[0.98] transition-all"
+          >
+            Later
+          </button>
+          <button
+            onClick={() => updateServiceWorker()}
+            className="text-sm font-semibold text-white bg-accent px-3 py-1.5 rounded-md hover:bg-accent-hover active:scale-[0.98] transition-all"
+          >
+            Update and reload
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -1,20 +1,13 @@
 /*
- * Typography is self-hosted via @fontsource — woff2 files end up in
- * dist/assets/ at build time and are precached by the SW (see
- * vite.config.ts workbox.globPatterns). Edit these imports together with
+ * Typography is self-hosted via @fontsource-variable — one woff2 per
+ * family covers the full weight axis, so any font-{weight} utility
+ * "just works" without a per-weight import audit. Files end up in
+ * dist/assets/ at build and are precached by the SW (see workbox
+ * globPatterns in vite.config.ts). Edit these imports together with
  * --font-sans / --font-display below when changing the font system.
- *
- * Weight audit (matched against actual font-{weight} usage in components):
- * - DM Sans: 400 default, 500 medium, 600 semibold, 700 bold
- * - Plus Jakarta Sans (font-display): 600 semibold, 700 bold, 800 extrabold
  */
-@import "@fontsource/dm-sans/400.css";
-@import "@fontsource/dm-sans/500.css";
-@import "@fontsource/dm-sans/600.css";
-@import "@fontsource/dm-sans/700.css";
-@import "@fontsource/plus-jakarta-sans/600.css";
-@import "@fontsource/plus-jakarta-sans/700.css";
-@import "@fontsource/plus-jakarta-sans/800.css";
+@import "@fontsource-variable/dm-sans";
+@import "@fontsource-variable/plus-jakarta-sans";
 
 @tailwind base;
 @tailwind components;
@@ -53,9 +46,10 @@
     --nav-height: 3.5rem;
 
     /* Font families. Fallback stack lives here, not in tailwind.config —
-       Tailwind utilities reference var(--font-sans) verbatim. */
-    --font-sans: "DM Sans", system-ui, -apple-system, sans-serif;
-    --font-display: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+       Tailwind utilities reference var(--font-sans) verbatim. The
+       "Variable" suffix is the @fontsource-variable family name. */
+    --font-sans: "DM Sans Variable", system-ui, -apple-system, sans-serif;
+    --font-display: "Plus Jakarta Sans Variable", system-ui, -apple-system, sans-serif;
   }
 
   .dark {

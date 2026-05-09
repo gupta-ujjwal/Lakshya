@@ -1,5 +1,6 @@
 import { HashRouter, Outlet, Route, Routes } from "react-router-dom";
 import { ThemeProvider } from "@/lib/theme-context";
+import { UpdateBanner } from "@/components/UpdateBanner";
 import { DashboardLayout } from "@/pages/DashboardLayout";
 import { DashboardPage } from "@/pages/Dashboard";
 import { ImportPage } from "@/pages/Import";
@@ -12,6 +13,9 @@ import { ImportPage } from "@/pages/Import";
 export function App() {
   return (
     <ThemeProvider>
+      {/* UpdateBanner sits above the router because a SW update is a
+          global app signal, not scoped to any route's layout. */}
+      <UpdateBanner />
       <HashRouter
         future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
       >

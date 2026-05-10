@@ -189,6 +189,17 @@ export function DashboardPage() {
         hoursPerDay={schedule.hoursPerDay}
       />
 
+      {/*
+        Next-task selection hierarchy: scheduled-today (`upNext`, by
+        priority) wins over the first pinned-subject task (`focusTasks[0]`).
+        The user can't currently steer the timer to a specific pinned
+        task while scheduled-today still has work — they tap-to-toggle
+        completes in-list instead. If selection grows past two tiers
+        (subject rotation, time-of-day weighting, analytics), move the
+        choice into getDashboard's response (DashboardTask `upNextTask`
+        field) so the component stops branching here. Tracked as
+        deferred refactor #37.
+      */}
       {upNext ? (
         <SessionWidget
           task={{ id: upNext.id, title: upNext.title, subject: upNext.subject }}

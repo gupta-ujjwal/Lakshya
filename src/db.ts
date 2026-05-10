@@ -48,6 +48,18 @@ class LakshyaDB extends Dexie {
       taskProgress: "id, &[taskId+date], taskId, date",
       sessions: "id, startedAt, state",
     });
+    // v2: session timer becomes a stopwatch — `focusMinutes` is no
+    // longer a meaningful target. Strip it from rows on disk so the
+    // type (no `focusMinutes`) matches storage; old closed sessions
+    // keep their `duration`, which is the sole authoritative time.
+    this.version(2).upgrade((tx) =>
+      tx
+        .table("sessions")
+        .toCollection()
+        .modify((s) => {
+          delete s.focusMinutes;
+        }),
+    );
   }
 }
 

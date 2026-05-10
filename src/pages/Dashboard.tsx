@@ -1,15 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { downloadJson } from "@/lib/download";
 import { formatDateLong } from "@/lib/format";
-import { today } from "@/lib/dates";
 import { DaysLeftHero } from "@/components/DaysLeftHero";
 import { SessionWidget } from "@/components/SessionWidget";
+import { getPinnedSubjects, unpinSubject } from "@/lib/focus-pin";
 import {
-  clearAll,
-  exportAll,
   getDashboard,
-  importAll,
   PROGRESS_COMPLETED,
   PROGRESS_PENDING,
   recordTaskProgress,
@@ -17,24 +13,34 @@ import {
   type DashboardTask,
 } from "@/repo";
 
+const FOCUS_TASK_LIMIT = 10;
+
 function adherenceTone(pct: number): { color: string; label: string } {
   if (pct >= 85) return { color: "text-success", label: "On track" };
   if (pct >= 60) return { color: "text-warning", label: "Slipping" };
   return { color: "text-danger", label: "Behind" };
 }
 
+function formatHours(minutes: number): string {
+  if (minutes < 60) return `${minutes}m`;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return m === 0 ? `${h}h` : `${h}h ${m}m`;
+}
+
 export function DashboardPage() {
   const navigate = useNavigate();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [data, setData] = useState<Dashboard | null>(null);
+  const [pinnedSubjects, setPinnedSubjects] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pendingTaskIds, setPendingTaskIds] = useState<Set<string>>(new Set());
-  const [dataMessage, setDataMessage] = useState<string | null>(null);
 
   async function refresh() {
     try {
-      const d = await getDashboard();
+      const pins = getPinnedSubjects();
+      setPinnedSubjects(pins);
+      const d = await getDashboard({ pinnedSubjects: pins });
       if (d) setData(d);
     } catch {
       // Silent: refresh failures are not user-actionable; the prior state is still valid.
@@ -45,12 +51,14 @@ export function DashboardPage() {
     let cancelled = false;
     (async () => {
       try {
-        const d = await getDashboard();
+        const pins = getPinnedSubjects();
+        const d = await getDashboard({ pinnedSubjects: pins });
         if (cancelled) return;
         if (!d) {
           navigate("/import", { replace: true });
           return;
         }
+        setPinnedSubjects(pins);
         setData(d);
       } catch (err) {
         if (!cancelled) {
@@ -103,35 +111,9 @@ export function DashboardPage() {
     }
   }
 
-  async function handleExport() {
-    setDataMessage(null);
-    try {
-      downloadJson(`lakshya-${today()}.json`, await exportAll());
-      setDataMessage("Exported.");
-    } catch (err) {
-      setDataMessage(err instanceof Error ? err.message : "Export failed");
-    }
-  }
-
-  async function handleImportFile(file: File) {
-    setDataMessage(null);
-    try {
-      const text = await file.text();
-      const payload = JSON.parse(text);
-      await importAll(payload);
-      setDataMessage("Imported. Reloading…");
-      const d = await getDashboard();
-      setData(d);
-      if (!d) navigate("/import", { replace: true });
-    } catch (err) {
-      setDataMessage(err instanceof Error ? err.message : "Import failed");
-    }
-  }
-
-  async function handleClear() {
-    if (!confirm("Erase all local data? This cannot be undone.")) return;
-    await clearAll();
-    navigate("/import", { replace: true });
+  function handleUnpin(subject: string) {
+    unpinSubject(subject);
+    void refresh();
   }
 
   if (loading) {
@@ -161,8 +143,11 @@ export function DashboardPage() {
   if (!data) return null;
 
   const { schedule, stats, tasks } = data;
-  const todayKey = today();
-  const todaysTasks = tasks.filter((t) => t.targetDate === todayKey);
+
+  // Two render axes from one fetch (see DashboardTask.scheduledForToday
+  // / pinnedSubject). A pinned-subject task that's also scheduled for
+  // today appears in the scheduled list only — no double-listing.
+  const todaysTasks = tasks.filter((t) => t.scheduledForToday);
   const completedTodayCount = todaysTasks.filter((t) => t.completedToday).length;
   const progress =
     todaysTasks.length > 0
@@ -171,6 +156,14 @@ export function DashboardPage() {
   const upNext = todaysTasks
     .filter((t) => !t.completedToday)
     .sort((a, b) => b.priority - a.priority)[0];
+  const focusTasks = pinnedSubjects.length
+    ? tasks
+        .filter(
+          (t) =>
+            t.pinnedSubject && !t.scheduledForToday && !t.completedRecently,
+        )
+        .slice(0, FOCUS_TASK_LIMIT)
+    : [];
   const tone = adherenceTone(stats.adherence);
 
   return (
@@ -197,6 +190,15 @@ export function DashboardPage() {
           task={{ id: upNext.id, title: upNext.title, subject: upNext.subject }}
           onSessionFinished={refresh}
         />
+      ) : focusTasks.length > 0 ? (
+        <SessionWidget
+          task={{
+            id: focusTasks[0].id,
+            title: focusTasks[0].title,
+            subject: focusTasks[0].subject,
+          }}
+          onSessionFinished={refresh}
+        />
       ) : todaysTasks.length > 0 ? (
         <div className="card p-5 bg-success-soft animate-fade-in text-center">
           <p className="text-2xl mb-1" aria-hidden>🎉</p>
@@ -213,7 +215,7 @@ export function DashboardPage() {
             Nothing scheduled today
           </p>
           <p className="text-sm text-text-secondary mt-1">
-            Take a break or pull from the backlog
+            Pin a subject from the Subjects tab to study it today
           </p>
         </div>
       )}
@@ -257,127 +259,144 @@ export function DashboardPage() {
           <p className={`text-[10px] font-medium ${tone.color}`}>{tone.label}</p>
         </div>
         <div className="card p-3 text-center">
-          <p className="text-xl font-display font-bold text-text-primary leading-tight">
-            {completedTodayCount}/{todaysTasks.length}
+          <p
+            data-testid="total-hours-stat"
+            className="text-xl font-display font-bold text-text-primary leading-tight"
+          >
+            {formatHours(stats.totalStudyMinutes)}
           </p>
-          <p className="text-[11px] text-text-secondary mt-0.5">today</p>
-          <div className="progress-bar mt-1.5 h-1">
+          <p className="text-[11px] text-text-secondary mt-0.5">studied</p>
+        </div>
+      </div>
+
+      <div className="card p-5 animate-fade-in">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-semibold text-text-primary">
+            Today&apos;s Tasks
+          </h2>
+          <span className="text-xs text-text-muted tabular-nums">
+            {completedTodayCount}/{todaysTasks.length}
+          </span>
+        </div>
+        {todaysTasks.length > 0 && (
+          <div className="progress-bar h-1 mb-3">
             <div
               className="progress-bar-fill h-1"
               style={{ width: `${progress}%` }}
             />
           </div>
-        </div>
-      </div>
-
-      <div className="card p-5 animate-fade-in">
-        <h2 className="text-lg font-semibold text-text-primary mb-3">
-          Today&apos;s Tasks
-        </h2>
+        )}
         <div className="space-y-1.5">
           {todaysTasks.length === 0 && (
             <p className="text-sm text-text-muted text-center py-4">
               No tasks for today
             </p>
           )}
-          {todaysTasks.slice(0, 8).map((task) => {
-            const isPending = pendingTaskIds.has(task.id);
-            return (
-              <button
-                key={task.id}
-                onClick={() => toggleTaskComplete(task)}
-                disabled={isPending}
-                className="w-full flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-bg-tertiary/50 active:bg-bg-tertiary transition-colors text-left disabled:opacity-60"
-              >
-                <span
-                  className="w-11 h-11 -m-2 flex-shrink-0 flex items-center justify-center"
-                  aria-hidden
-                >
-                  <span
-                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                      task.completedToday
-                        ? "bg-success border-success text-white"
-                        : "border-border-strong"
-                    }`}
-                  >
-                    {task.completedToday && (
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
-                  </span>
-                </span>
-                <span className="flex-1 min-w-0">
-                  <span
-                    className={`block text-sm font-medium truncate ${
-                      task.completedToday ? "line-through text-text-muted" : "text-text-primary"
-                    }`}
-                  >
-                    {task.title}
-                  </span>
-                  <span className="block text-xs text-text-muted">
-                    {task.subject}
-                  </span>
-                </span>
-              </button>
-            );
-          })}
+          {todaysTasks.slice(0, 8).map((task) => (
+            <TaskRow
+              key={task.id}
+              task={task}
+              disabled={pendingTaskIds.has(task.id)}
+              onToggle={() => void toggleTaskComplete(task)}
+            />
+          ))}
         </div>
       </div>
 
-      <div className="card p-5 animate-fade-in">
-        <h2 className="text-lg font-semibold text-text-primary mb-1">
-          Your data
-        </h2>
-        <p className="text-xs text-text-secondary mb-3">
-          Lakshya runs entirely on this device. Export to back up; import to
-          restore on a new browser.
-        </p>
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            onClick={handleExport}
-            data-testid="export-button"
-            className="h-10 rounded-md bg-bg-tertiary text-sm font-medium text-text-primary active:scale-[0.98] transition-all"
-          >
-            Export JSON
-          </button>
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            data-testid="import-button"
-            className="h-10 rounded-md bg-bg-tertiary text-sm font-medium text-text-primary active:scale-[0.98] transition-all"
-          >
-            Import JSON
-          </button>
+      {focusTasks.length > 0 && (
+        <div
+          data-testid="focus-section"
+          className="card p-5 animate-fade-in border border-accent/30 bg-accent-soft/20"
+        >
+          <div className="flex items-start justify-between mb-3 gap-3">
+            <div>
+              <h2 className="text-lg font-semibold text-text-primary">
+                Today&apos;s focus
+              </h2>
+              <p className="text-xs text-text-muted mt-0.5">
+                Pinned: {pinnedSubjects.join(", ")}
+              </p>
+            </div>
+            <div className="flex flex-col gap-1">
+              {pinnedSubjects.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => handleUnpin(s)}
+                  className="text-[11px] font-medium text-accent hover:underline"
+                >
+                  Unpin {s}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            {focusTasks.map((task) => (
+              <TaskRow
+                key={task.id}
+                task={task}
+                disabled={pendingTaskIds.has(task.id)}
+                onToggle={() => void toggleTaskComplete(task)}
+                showDate
+              />
+            ))}
+          </div>
         </div>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="application/json,.json"
-          className="sr-only"
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f) handleImportFile(f);
-            e.target.value = "";
-          }}
-        />
-        <Link
-          to="/import"
-          className="mt-2 block text-center h-10 leading-10 rounded-md text-sm font-medium text-accent hover:bg-bg-tertiary/40 transition-colors"
-        >
-          Import a study schedule
+      )}
+
+      <p className="text-center text-xs text-text-muted pt-2">
+        <Link to="/import" className="hover:text-text-secondary hover:underline">
+          Manage data
         </Link>
-        <button
-          onClick={handleClear}
-          className="mt-2 w-full h-10 text-sm font-medium text-danger active:scale-[0.98] transition-all"
-        >
-          Erase all data
-        </button>
-        {dataMessage && (
-          <p className="mt-2 text-xs text-text-secondary text-center">
-            {dataMessage}
-          </p>
-        )}
-      </div>
+      </p>
     </div>
+  );
+}
+
+interface TaskRowProps {
+  task: DashboardTask;
+  disabled: boolean;
+  onToggle: () => void;
+  showDate?: boolean;
+}
+
+function TaskRow({ task, disabled, onToggle, showDate = false }: TaskRowProps) {
+  return (
+    <button
+      onClick={onToggle}
+      disabled={disabled}
+      className="w-full flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-bg-tertiary/50 active:bg-bg-tertiary transition-colors text-left disabled:opacity-60"
+    >
+      <span
+        className="w-11 h-11 -m-2 flex-shrink-0 flex items-center justify-center"
+        aria-hidden
+      >
+        <span
+          className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+            task.completedToday
+              ? "bg-success border-success text-white"
+              : "border-border-strong"
+          }`}
+        >
+          {task.completedToday && (
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+            </svg>
+          )}
+        </span>
+      </span>
+      <span className="flex-1 min-w-0">
+        <span
+          className={`block text-sm font-medium truncate ${
+            task.completedToday ? "line-through text-text-muted" : "text-text-primary"
+          }`}
+        >
+          {task.title}
+        </span>
+        <span className="block text-xs text-text-muted">
+          {task.subject}
+          {showDate ? ` · ${formatDateLong(task.targetDate)}` : ""}
+        </span>
+      </span>
+    </button>
   );
 }

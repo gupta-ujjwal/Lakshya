@@ -19,6 +19,7 @@ export interface DashboardStats {
   adherence: number;
   overdueCount: number;
   adherenceWindowDays: number;
+  totalStudyMinutes: number;
 }
 
 export interface DashboardTask {
@@ -27,13 +28,29 @@ export interface DashboardTask {
   subject: string;
   targetDate: string;
   priority: number;
+  // "Were you marked done for today?" — keyed on progress.date===today.
   completedToday: boolean;
+  // "Has this task ever been marked done in the recent window?" —
+  // approximation used by the focus-pin filter to avoid surfacing
+  // already-finished tasks. Window is `STREAK_LOOKBACK_DAYS` days,
+  // matching the streak/overdue queries below.
+  completedRecently: boolean;
+  // Today's two render axes, pre-computed so the page doesn't re-derive
+  // them: scheduled-for-today (`targetDate === today`) and pinned by
+  // the user's "study X today" focus list. Tasks may match both,
+  // either, or neither.
+  scheduledForToday: boolean;
+  pinnedSubject: boolean;
 }
 
 export interface Dashboard {
   schedule: DashboardSchedule;
   stats: DashboardStats;
   tasks: DashboardTask[];
+}
+
+export interface GetDashboardInput {
+  pinnedSubjects?: string[];
 }
 
 function computeStreak(completionDates: Set<string>): number {
@@ -47,7 +64,9 @@ function computeStreak(completionDates: Set<string>): number {
   return streak;
 }
 
-export async function getDashboard(): Promise<Dashboard | null> {
+export async function getDashboard(
+  input: GetDashboardInput = {},
+): Promise<Dashboard | null> {
   const schedule = await getLatestSchedule();
   if (!schedule) return null;
 
@@ -57,14 +76,16 @@ export async function getDashboard(): Promise<Dashboard | null> {
     todayKey,
     -(ADHERENCE_WINDOW_DAYS - 1),
   );
+  const pinnedSubjects = new Set(input.pinnedSubjects ?? []);
 
-  const [tasks, recentProgress] = await Promise.all([
+  const [tasks, recentProgress, closedSessions] = await Promise.all([
     db.tasks.where("scheduleId").equals(schedule.id).toArray(),
     db.taskProgress
       .where("date")
       .aboveOrEqual(streakWindowStart)
       .and((p) => p.status === PROGRESS_COMPLETED)
       .toArray(),
+    db.sessions.where("state").equals("closed").toArray(),
   ]);
 
   // Only progress tied to this schedule's tasks counts; a stale schedule's
@@ -102,10 +123,16 @@ export async function getDashboard(): Promise<Dashboard | null> {
       ? Math.round((windowCompletedCount / windowTasks.length) * 100)
       : 0;
 
-  const everCompletedIds = new Set(scopedProgress.map((p) => p.taskId));
+  const recentlyCompletedIds = new Set(scopedProgress.map((p) => p.taskId));
   const overdueCount = tasks.filter(
-    (t) => t.targetDate < todayKey && !everCompletedIds.has(t.id),
+    (t) => t.targetDate < todayKey && !recentlyCompletedIds.has(t.id),
   ).length;
+
+  const totalStudySeconds = closedSessions.reduce(
+    (sum, s) => (s.state === "closed" ? sum + s.duration : sum),
+    0,
+  );
+  const totalStudyMinutes = Math.round(totalStudySeconds / 60);
 
   tasks.sort((a, b) =>
     a.targetDate === b.targetDate
@@ -126,6 +153,7 @@ export async function getDashboard(): Promise<Dashboard | null> {
       adherence,
       overdueCount,
       adherenceWindowDays: ADHERENCE_WINDOW_DAYS,
+      totalStudyMinutes,
     },
     tasks: tasks.map((task) => ({
       id: task.id,
@@ -134,6 +162,47 @@ export async function getDashboard(): Promise<Dashboard | null> {
       targetDate: task.targetDate,
       priority: task.priority,
       completedToday: completedTodayIds.has(task.id),
+      completedRecently: recentlyCompletedIds.has(task.id),
+      scheduledForToday: task.targetDate === todayKey,
+      pinnedSubject: pinnedSubjects.has(task.subject),
     })),
   };
+}
+
+export interface OverallProgress {
+  total: number;
+  completed: number;
+}
+
+export async function getOverallProgress(): Promise<OverallProgress | null> {
+  const schedule = await getLatestSchedule();
+  if (!schedule) return null;
+  const tasks = await db.tasks
+    .where("scheduleId")
+    .equals(schedule.id)
+    .toArray();
+  const taskIds = new Set(tasks.map((t) => t.id));
+  // Latest-progress-per-task wins (mirrors getEffectiveStatus). Pulling
+  // all progress here is bounded by the schedule's task count; the
+  // table is keyed `&[taskId+date]` so per-task rows accumulate at one
+  // per day at most.
+  const allProgress = await db.taskProgress
+    .where("taskId")
+    .anyOf(Array.from(taskIds))
+    .toArray();
+  const latestByTask = new Map<
+    string,
+    { status: string; updatedAt: string }
+  >();
+  for (const p of allProgress) {
+    const prev = latestByTask.get(p.taskId);
+    if (!prev || p.updatedAt > prev.updatedAt) {
+      latestByTask.set(p.taskId, { status: p.status, updatedAt: p.updatedAt });
+    }
+  }
+  let completed = 0;
+  for (const entry of latestByTask.values()) {
+    if (entry.status === PROGRESS_COMPLETED) completed++;
+  }
+  return { total: tasks.length, completed };
 }

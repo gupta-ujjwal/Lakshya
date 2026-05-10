@@ -1,6 +1,5 @@
 import { db, newId, nowIso } from "@/db";
 import {
-  DEFAULT_FOCUS_MINUTES,
   type ClosedSession,
   type EndSessionInput,
   type OpenSession,
@@ -24,8 +23,6 @@ export async function getActiveSession(): Promise<ActiveSession | null> {
     .sortBy("startedAt");
   const session = open[0];
   if (!session || session.state !== "open") return null;
-  // Task preview is independent of any other read; bundling here means
-  // future callers don't repeat the lookup.
   const task = session.taskId ? await db.tasks.get(session.taskId) : null;
   return {
     session,
@@ -64,7 +61,6 @@ export async function startSession(
     state: "open",
     startedAt: nowIso(),
     taskId: task?.id ?? null,
-    focusMinutes: input.focusMinutes ?? DEFAULT_FOCUS_MINUTES,
     createdAt: nowIso(),
   };
   await db.sessions.add(session);
@@ -96,7 +92,6 @@ export async function endSession(
     endedAt,
     duration,
     taskId: existing.taskId,
-    focusMinutes: existing.focusMinutes,
     reflection: input.reflection ?? null,
     createdAt: existing.createdAt,
   };
@@ -109,4 +104,3 @@ export async function endSession(
 
   return closed;
 }
-

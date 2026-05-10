@@ -4,12 +4,14 @@ import { addDaysToKey, today } from "@/lib/dates";
 import { formatDateLong } from "@/lib/format";
 import { decodeTaskDate, TASK_DATE_PARAM } from "@/lib/task-date-param";
 import {
+  getOverallProgress,
   listSubjects,
   listTasks,
   PROGRESS_COMPLETED,
   PROGRESS_PENDING,
   recordTaskProgress,
   type DerivedTaskStatus,
+  type OverallProgress,
   type TaskWithProgress,
 } from "@/repo";
 
@@ -59,6 +61,7 @@ export function TasksPage() {
 
   const [tasks, setTasks] = useState<TaskWithProgress[] | null>(null);
   const [subjects, setSubjects] = useState<string[]>([]);
+  const [overall, setOverall] = useState<OverallProgress | null>(null);
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
 
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
@@ -73,9 +76,6 @@ export function TasksPage() {
     [effectiveRange, pinnedDate],
   );
 
-  // Mirror Dashboard.tsx's IIFE pattern: do the fetch inside the effect so
-  // the eslint react-hooks/set-state-in-effect rule (which flags
-  // useCallback-wrapped fetchers) sees a single self-contained body.
   useEffect(() => {
     let cancelled = false;
     void (async () => {
@@ -97,6 +97,20 @@ export function TasksPage() {
     };
   }, [statusFilter, subjectFilter, bounds.from, bounds.to]);
 
+  // Overall progress is filter-independent — fetch once on mount and
+  // refresh on toggle (see toggleTask). Re-fetching on every filter
+  // change would be wasted IndexedDB work.
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const o = await getOverallProgress();
+      if (!cancelled) setOverall(o);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   async function toggleTask(task: TaskWithProgress) {
     const next =
       task.status === "completed" ? PROGRESS_PENDING : PROGRESS_COMPLETED;
@@ -115,6 +129,10 @@ export function TasksPage() {
     );
     try {
       await recordTaskProgress(task.id, next);
+      // A toggle changes the overall completed count; refresh that
+      // bar so it doesn't drift from reality across user toggles.
+      const o = await getOverallProgress();
+      setOverall(o);
     } catch {
       // Roll back the optimistic flip.
       setTasks((prev) =>
@@ -129,12 +147,6 @@ export function TasksPage() {
         return n;
       });
     }
-  }
-
-  function toggleSubject(s: string) {
-    setSubjectFilter((prev) =>
-      prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s],
-    );
   }
 
   function clearPinnedDate() {
@@ -152,6 +164,17 @@ export function TasksPage() {
       </div>
     );
   }
+
+  const overallPct =
+    overall && overall.total > 0
+      ? Math.round((overall.completed / overall.total) * 100)
+      : 0;
+  const subjectFilterLabel =
+    subjectFilter.length === 0
+      ? "All subjects"
+      : subjectFilter.length === 1
+        ? subjectFilter[0]
+        : `${subjectFilter.length} subjects`;
 
   return (
     <div className="space-y-4 pb-6">
@@ -176,34 +199,66 @@ export function TasksPage() {
         )}
       </header>
 
-      {!pinnedDate && (
-        <FilterChips
-          options={DATE_RANGE_OPTIONS}
-          value={dateRange}
-          onChange={setDateRange}
-          label="Range"
-        />
+      {overall && overall.total > 0 && (
+        <div className="card p-4" data-testid="overall-progress">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs font-semibold uppercase tracking-wide text-text-muted">
+              Overall progress
+            </p>
+            <p className="text-xs text-text-muted tabular-nums">
+              {overall.completed}/{overall.total} · {overallPct}%
+            </p>
+          </div>
+          <div className="progress-bar h-2">
+            <div
+              className="progress-bar-fill h-2"
+              style={{ width: `${overallPct}%` }}
+            />
+          </div>
+        </div>
       )}
 
-      <FilterChips
-        options={STATUS_OPTIONS}
-        value={statusFilter}
-        onChange={setStatusFilter}
-        label="Status"
-      />
+      <div className="grid grid-cols-2 gap-2">
+        {!pinnedDate && (
+          <SelectFilter<DateRangeKey>
+            label="Range"
+            value={dateRange}
+            options={DATE_RANGE_OPTIONS}
+            onChange={setDateRange}
+          />
+        )}
+        <SelectFilter<StatusFilter>
+          label="Status"
+          value={statusFilter}
+          options={STATUS_OPTIONS}
+          onChange={setStatusFilter}
+        />
+      </div>
 
       {subjects.length > 0 && (
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-text-muted mb-2">
-            Subjects
-          </p>
-          <div className="flex flex-wrap gap-1.5">
+        <details
+          className="card p-3 group"
+          data-testid="subjects-filter"
+        >
+          <summary className="cursor-pointer flex items-center justify-between text-sm">
+            <span className="font-semibold text-text-primary">Subjects</span>
+            <span className="text-xs text-text-muted">
+              {subjectFilterLabel}
+            </span>
+          </summary>
+          <div className="flex flex-wrap gap-1.5 mt-3">
             {subjects.map((s) => {
               const active = subjectFilter.includes(s);
               return (
                 <button
                   key={s}
-                  onClick={() => toggleSubject(s)}
+                  onClick={() =>
+                    setSubjectFilter((prev) =>
+                      prev.includes(s)
+                        ? prev.filter((x) => x !== s)
+                        : [...prev, s],
+                    )
+                  }
                   className={`min-h-[32px] px-3 rounded-full text-xs font-medium border transition-colors ${
                     active
                       ? "bg-accent text-white border-accent"
@@ -223,7 +278,7 @@ export function TasksPage() {
               </button>
             )}
           </div>
-        </div>
+        </details>
       )}
 
       <div className="card p-3">
@@ -252,40 +307,34 @@ export function TasksPage() {
   );
 }
 
-interface FilterChipsProps<T extends string> {
-  options: ReadonlyArray<{ key: T; label: string }>;
-  value: T;
-  onChange: (next: T) => void;
+interface SelectFilterProps<T extends string> {
   label: string;
+  value: T;
+  options: ReadonlyArray<{ key: T; label: string }>;
+  onChange: (next: T) => void;
 }
 
-function FilterChips<T extends string>({
-  options,
-  value,
-  onChange,
+function SelectFilter<T extends string>({
   label,
-}: FilterChipsProps<T>) {
+  value,
+  options,
+  onChange,
+}: SelectFilterProps<T>) {
   return (
-    <div>
-      <p className="text-[11px] font-semibold uppercase tracking-wide text-text-muted mb-2">
-        {label}
-      </p>
-      <div className="flex flex-wrap gap-1.5">
+    <label className="block text-xs font-semibold uppercase tracking-wide text-text-muted">
+      {label}
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value as T)}
+        className="mt-1 w-full min-h-[44px] rounded-md border border-border bg-bg-secondary text-sm font-medium text-text-primary px-3 py-2 normal-case tracking-normal focus:outline-none focus:ring-2 focus:ring-accent/40"
+      >
         {options.map((opt) => (
-          <button
-            key={opt.key}
-            onClick={() => onChange(opt.key)}
-            className={`min-h-[32px] px-3 rounded-full text-xs font-medium border transition-colors ${
-              value === opt.key
-                ? "bg-accent text-white border-accent"
-                : "bg-bg-secondary text-text-secondary border-border hover:bg-bg-tertiary"
-            }`}
-          >
+          <option key={opt.key} value={opt.key}>
             {opt.label}
-          </button>
+          </option>
         ))}
-      </div>
-    </div>
+      </select>
+    </label>
   );
 }
 

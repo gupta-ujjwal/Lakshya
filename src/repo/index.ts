@@ -14,12 +14,14 @@ export type { CalendarDay, CalendarHeat } from "./calendar";
 export { startSession, endSession, getActiveSession } from "./sessions";
 export type { ActiveSession, StartSessionResult } from "./sessions";
 
-export { getDashboard } from "./dashboard";
+export { getDashboard, getOverallProgress } from "./dashboard";
 export type {
   Dashboard,
   DashboardSchedule,
   DashboardStats,
   DashboardTask,
+  GetDashboardInput,
+  OverallProgress,
 } from "./dashboard";
 
 export { exportAll, importAll, clearAll, EXPORT_VERSION } from "./serialize";

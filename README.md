@@ -93,10 +93,11 @@ src/
 ├── db.ts                 Dexie schema (single seam)
 ├── pages/
 │   ├── DashboardLayout.tsx
-│   ├── Dashboard.tsx     Reads via repo, exports/imports JSON
-│   ├── Tasks.tsx         Browse + filter all schedule tasks
+│   ├── Dashboard.tsx     Today's tasks, focus pin, stats, days-left hero
+│   ├── Tasks.tsx         Browse + filter all schedule tasks; overall progress
 │   ├── Calendar.tsx      Month grid with daily completion heat
-│   └── Import.tsx        Validates JSON via Zod, calls importSchedule
+│   ├── Subjects.tsx      Subject grid + per-subject detail with "study today" pin
+│   └── Import.tsx        Schedule import + data management (export/restore/erase)
 ├── components/           DaysLeftHero, SessionWidget, StatusBar, …
 ├── domain/               Zod schemas + pure functions
 │   ├── schedule.ts
@@ -107,10 +108,10 @@ src/
 │   ├── schedules.ts      importSchedule, getLatestSchedule
 │   ├── tasks.ts          listTasks, listSubjects, recordTaskProgress, pickNextTaskForToday
 │   ├── sessions.ts       startSession, endSession, getActiveSession
-│   ├── dashboard.ts      getDashboard (streak, adherence, overdue)
+│   ├── dashboard.ts      getDashboard, getOverallProgress
 │   ├── calendar.ts       getCalendarSummary (per-day heat for the month)
 │   └── serialize.ts      exportAll, importAll, clearAll
-└── lib/                  countdown, format, dates, urgency-tones, theme-context
+└── lib/                  countdown, format, dates, urgency-tones, theme-context, focus-pin
 ```
 
 ## Data model
@@ -126,11 +127,15 @@ Dates are ISO date strings (`YYYY-MM-DD`) at storage boundaries; Dates only appe
 
 ## Backup & restore
 
-Lakshya is per-device. The dashboard's "Your data" card has **Export JSON**, **Import JSON**, and **Erase all data** buttons. Export early, restore on a new browser, and you keep your streak.
+Lakshya is per-device. The Import page's "Manage data" panel has **Export JSON**, **Restore backup**, and **Erase all data**. Export early, restore on a new browser, and you keep your streak. The dashboard footer links straight there.
 
 ## Sessions
 
-The **Up Next** card on the dashboard includes a **Start Session** button. It picks the highest-priority incomplete task for today, opens a 25-minute focus timer, and writes an open `Session` row. Finishing the timer naturally marks the linked task complete via `TaskProgress`; stopping early just closes the session. A discriminated union enforces the open/closed state at the type level — no nullable `endedAt`/`duration` parallel fields.
+The **Up Next** card on the dashboard includes a **Start Session** button. It picks the highest-priority incomplete task for today, opens a stopwatch (counts up — no fixed target), and writes an open `Session` row. When the user stops the session, the reflection step has a "Mark this task as done" toggle (default on) and three emoji reflection buttons. The stored `duration` (seconds) is computed from elapsed time, never from a target. A discriminated union enforces the open/closed state at the type level — no nullable `endedAt`/`duration` parallel fields.
+
+## Subjects & focus pinning
+
+Every imported schedule produces a list of subjects (Anatomy, Pathology, …). The Subjects tab shows them as a list with letter-tile icons; tapping a subject opens its detail page with a per-subject progress bar, a **Study this subject today** pin, and the subject's tasks. Pinning a subject surfaces a "Today's focus" section on the dashboard alongside the schedule's tasks for today. Pins are stored in `localStorage` keyed on the day, so they auto-clear at midnight — `today` means today, not "until I remember to unpin."
 
 ## What was Phase 0
 

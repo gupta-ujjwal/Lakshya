@@ -7,7 +7,7 @@ import {
   recordTaskProgress,
   type TaskWithProgress,
 } from "@/repo";
-import { formatDateLong } from "@/lib/format";
+import { TaskListRow } from "@/components/TaskListRow";
 import {
   getPinnedSubjects,
   isSubjectPinned,
@@ -314,69 +314,15 @@ export function SubjectDetailPage() {
           </p>
         ) : (
           <ul className="divide-y divide-border">
-            {tasks.map((task) => {
-              const completed = task.status === "completed";
-              const overdue = task.status === "overdue";
-              return (
-                <li key={task.id}>
-                  <button
-                    onClick={() => void toggleTask(task)}
-                    disabled={pendingIds.has(task.id)}
-                    className="w-full flex items-center gap-3 py-3 px-2 -mx-2 rounded-lg hover:bg-bg-tertiary/50 transition-colors text-left disabled:opacity-60"
-                  >
-                    <span
-                      className="w-11 h-11 -m-2 flex-shrink-0 flex items-center justify-center"
-                      aria-hidden
-                    >
-                      <span
-                        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                          completed
-                            ? "bg-success border-success text-white"
-                            : overdue
-                              ? "border-danger"
-                              : "border-border-strong"
-                        }`}
-                      >
-                        {completed && (
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={3}
-                              d="M5 13l4 4L19 7"
-                            />
-                          </svg>
-                        )}
-                      </span>
-                    </span>
-                    <span className="flex-1 min-w-0">
-                      <span
-                        className={`block text-sm font-medium truncate ${
-                          completed
-                            ? "line-through text-text-muted"
-                            : "text-text-primary"
-                        }`}
-                      >
-                        {task.title}
-                      </span>
-                      <span className="block text-xs text-text-muted">
-                        {formatDateLong(task.targetDate)}
-                      </span>
-                    </span>
-                    {overdue && (
-                      <span className="text-[10px] font-semibold uppercase text-danger">
-                        Overdue
-                      </span>
-                    )}
-                  </button>
-                </li>
-              );
-            })}
+            {tasks.map((task) => (
+              <TaskListRow
+                key={task.id}
+                task={task}
+                disabled={pendingIds.has(task.id)}
+                onToggle={() => void toggleTask(task)}
+                hideSubject
+              />
+            ))}
           </ul>
         )}
       </div>

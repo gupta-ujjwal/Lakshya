@@ -140,6 +140,7 @@ function CalendarLegend() {
     { heat: "overdue", label: "Missed" },
     { heat: "todo", label: "Today" },
     { heat: "future", label: "Upcoming" },
+    { heat: "empty", label: "No tasks" },
   ];
   return (
     <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-[11px] text-text-secondary">

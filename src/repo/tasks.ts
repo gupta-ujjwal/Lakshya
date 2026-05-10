@@ -3,16 +3,24 @@ import {
   newId,
   nowIso,
   type TaskProgressRecord,
-  type TaskRecord,
 } from "@/db";
 import { today } from "@/lib/dates";
 import {
   PROGRESS_COMPLETED,
   type TaskProgressStatus,
 } from "@/domain/progress";
+import {
+  getEffectiveStatus,
+  type EffectiveTaskStatus,
+} from "@/domain/task-status";
 import { getLatestSchedule } from "./schedules";
 
-export type DerivedTaskStatus = "todo" | "completed" | "overdue";
+// `DerivedTaskStatus` is the UI-facing 3-value enum derived from the
+// stored `TaskProgressStatus` ("pending" | "completed") plus the date.
+// Both this page (Tasks) and the Calendar surface compute it via
+// `getEffectiveStatus()` in src/domain/task-status.ts — do not
+// re-implement the rule per page.
+export type DerivedTaskStatus = EffectiveTaskStatus;
 
 export interface TaskWithProgress {
   id: string;
@@ -122,10 +130,8 @@ export async function listTasks(
   if (!scheduleId) return [];
 
   const todayKey = today();
-  const [tasks, progress] = await Promise.all([
-    db.tasks.where("scheduleId").equals(scheduleId).toArray(),
-    fetchProgressForTasks(scheduleId),
-  ]);
+  const tasks = await db.tasks.where("scheduleId").equals(scheduleId).toArray();
+  const progress = await fetchProgressForTaskIds(tasks.map((t) => t.id));
 
   // Latest-progress-per-task wins. The taskProgress table is keyed
   // `&[taskId+date]`, so multiple rows per task are possible across
@@ -152,7 +158,7 @@ export async function listTasks(
     })
     .map((t) => {
       const p = progressByTask.get(t.id) ?? null;
-      const status = deriveStatus(t, p, todayKey);
+      const status = getEffectiveStatus(t, p, todayKey);
       return {
         id: t.id,
         title: t.title,
@@ -187,24 +193,12 @@ export async function listSubjects(scheduleId?: string): Promise<string[]> {
   return Array.from(new Set(tasks.map((t) => t.subject))).sort();
 }
 
-async function fetchProgressForTasks(
-  scheduleId: string,
+async function fetchProgressForTaskIds(
+  taskIds: string[],
 ): Promise<TaskProgressRecord[]> {
-  // Two-step rather than a join: Dexie can't index across tables. The
-  // taskProgress table doesn't carry scheduleId, so we collect taskIds
-  // from the schedule first, then ask taskProgress for matches.
-  const tasks = await db.tasks.where("scheduleId").equals(scheduleId).toArray();
-  const ids = tasks.map((t) => t.id);
-  if (ids.length === 0) return [];
-  return db.taskProgress.where("taskId").anyOf(ids).toArray();
-}
-
-function deriveStatus(
-  task: TaskRecord,
-  progress: TaskProgressRecord | null,
-  todayKey: string,
-): DerivedTaskStatus {
-  if (progress?.status === PROGRESS_COMPLETED) return "completed";
-  if (task.targetDate < todayKey) return "overdue";
-  return "todo";
+  // Two-step rather than a join: Dexie can't index across tables. Caller
+  // already has the task list, so we take the IDs and just ask
+  // taskProgress for matches — no second db.tasks fetch.
+  if (taskIds.length === 0) return [];
+  return db.taskProgress.where("taskId").anyOf(taskIds).toArray();
 }

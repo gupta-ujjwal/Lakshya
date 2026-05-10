@@ -36,11 +36,18 @@ export function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [pendingTaskIds, setPendingTaskIds] = useState<Set<string>>(new Set());
 
+  // One reader for both atoms. Mount and refresh both call here; the
+  // localStorage→repo bridge happens once per fetch instead of being
+  // reproduced at each call site.
+  async function load(): Promise<Dashboard | null> {
+    const pins = getPinnedSubjects();
+    setPinnedSubjects(pins);
+    return getDashboard({ pinnedSubjects: pins });
+  }
+
   async function refresh() {
     try {
-      const pins = getPinnedSubjects();
-      setPinnedSubjects(pins);
-      const d = await getDashboard({ pinnedSubjects: pins });
+      const d = await load();
       if (d) setData(d);
     } catch {
       // Silent: refresh failures are not user-actionable; the prior state is still valid.
@@ -51,14 +58,12 @@ export function DashboardPage() {
     let cancelled = false;
     (async () => {
       try {
-        const pins = getPinnedSubjects();
-        const d = await getDashboard({ pinnedSubjects: pins });
+        const d = await load();
         if (cancelled) return;
         if (!d) {
           navigate("/import", { replace: true });
           return;
         }
-        setPinnedSubjects(pins);
         setData(d);
       } catch (err) {
         if (!cancelled) {

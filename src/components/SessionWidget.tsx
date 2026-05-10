@@ -46,18 +46,28 @@ export function SessionWidget({ task, onSessionFinished }: SessionWidgetProps) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Pull the open-session state-set into one place so the three entry
+  // points (mount-recovery, fresh start, two-tab adoption) can't drift.
+  function adoptSession(
+    id: string,
+    startedAt: string,
+    adoptedTask: TaskPreview | null,
+  ) {
+    const ms = new Date(startedAt).getTime();
+    setSessionId(id);
+    setActiveTask(adoptedTask);
+    setStartedMs(ms);
+    setElapsed(Math.max(0, Math.round((Date.now() - ms) / 1000)));
+    setPhase("active");
+  }
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
         const active = await getActiveSession();
         if (cancelled || !active) return;
-        const ms = new Date(active.session.startedAt).getTime();
-        setSessionId(active.session.id);
-        setActiveTask(active.task ?? null);
-        setStartedMs(ms);
-        setElapsed(Math.max(0, Math.round((Date.now() - ms) / 1000)));
-        setPhase("active");
+        adoptSession(active.session.id, active.session.startedAt, active.task ?? null);
       } catch (err) {
         if (cancelled) return;
         setError(
@@ -88,23 +98,17 @@ export function SessionWidget({ task, onSessionFinished }: SessionWidgetProps) {
     try {
       const result = await startSession(task ? { taskId: task.id } : {});
       if (!result.ok) {
-        // Two-tab case: another tab opened a session. Adopt it instead
-        // of failing — same recovery path /api/sessions had via 409.
-        const ms = new Date(result.existing.session.startedAt).getTime();
-        setSessionId(result.existing.session.id);
-        setActiveTask(result.existing.task);
-        setStartedMs(ms);
-        setElapsed(Math.max(0, Math.round((Date.now() - ms) / 1000)));
-        setPhase("active");
+        // Two-tab adoption: another tab opened a session. Reuse it
+        // rather than fail — same recovery contract as the mount path.
+        adoptSession(
+          result.existing.session.id,
+          result.existing.session.startedAt,
+          result.existing.task,
+        );
         return;
       }
-      const ms = new Date(result.session.startedAt).getTime();
-      setSessionId(result.session.id);
-      setActiveTask(result.task);
-      setStartedMs(ms);
-      setElapsed(0);
       setMarkComplete(true);
-      setPhase("active");
+      adoptSession(result.session.id, result.session.startedAt, result.task);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to start");
     } finally {

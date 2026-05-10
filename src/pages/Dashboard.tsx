@@ -190,50 +190,15 @@ export function DashboardPage() {
       />
 
       {/*
-        Next-task selection hierarchy: scheduled-today (`upNext`, by
-        priority) wins over the first pinned-subject task (`focusTasks[0]`).
-        The user can't currently steer the timer to a specific pinned
-        task while scheduled-today still has work — they tap-to-toggle
-        completes in-list instead. If selection grows past two tiers
-        (subject rotation, time-of-day weighting, analytics), move the
-        choice into getDashboard's response (DashboardTask `upNextTask`
-        field) so the component stops branching here. Tracked as
-        deferred refactor #37.
+        Selection: scheduled-today wins over pinned-subject fallback.
+        When selection grows past two tiers, move it into getDashboard
+        (`upNextTask` field) — see issue #37.
       */}
-      {upNext ? (
-        <SessionWidget
-          task={{ id: upNext.id, title: upNext.title, subject: upNext.subject }}
-          onSessionFinished={refresh}
-        />
-      ) : focusTasks.length > 0 ? (
-        <SessionWidget
-          task={{
-            id: focusTasks[0].id,
-            title: focusTasks[0].title,
-            subject: focusTasks[0].subject,
-          }}
-          onSessionFinished={refresh}
-        />
-      ) : todaysTasks.length > 0 ? (
-        <div className="card p-5 bg-success-soft animate-fade-in text-center">
-          <p className="text-2xl mb-1" aria-hidden>🎉</p>
-          <p className="text-base font-semibold text-text-primary">
-            All caught up for today
-          </p>
-          <p className="text-sm text-text-secondary mt-1">
-            {todaysTasks.length} task{todaysTasks.length !== 1 ? "s" : ""} done
-          </p>
-        </div>
-      ) : (
-        <div className="card p-5 animate-fade-in text-center">
-          <p className="text-base font-semibold text-text-primary">
-            Nothing scheduled today
-          </p>
-          <p className="text-sm text-text-secondary mt-1">
-            Pin a subject from the Subjects tab to study it today
-          </p>
-        </div>
-      )}
+      <SessionSlot
+        sessionTask={upNext ?? focusTasks[0] ?? null}
+        scheduledTodayCount={todaysTasks.length}
+        onSessionFinished={refresh}
+      />
 
       {stats.overdueCount > 0 && (
         <div className="card flex items-center justify-between p-4 border border-danger/30 bg-danger-soft/50 animate-fade-in">
@@ -362,6 +327,54 @@ export function DashboardPage() {
         <Link to="/import" className="hover:text-text-secondary hover:underline">
           Manage data
         </Link>
+      </p>
+    </div>
+  );
+}
+
+interface SessionSlotProps {
+  sessionTask: DashboardTask | null;
+  scheduledTodayCount: number;
+  onSessionFinished: () => void;
+}
+
+function SessionSlot({
+  sessionTask,
+  scheduledTodayCount,
+  onSessionFinished,
+}: SessionSlotProps) {
+  if (sessionTask) {
+    return (
+      <SessionWidget
+        task={{
+          id: sessionTask.id,
+          title: sessionTask.title,
+          subject: sessionTask.subject,
+        }}
+        onSessionFinished={onSessionFinished}
+      />
+    );
+  }
+  if (scheduledTodayCount > 0) {
+    return (
+      <div className="card p-5 bg-success-soft animate-fade-in text-center">
+        <p className="text-2xl mb-1" aria-hidden>🎉</p>
+        <p className="text-base font-semibold text-text-primary">
+          All caught up for today
+        </p>
+        <p className="text-sm text-text-secondary mt-1">
+          {scheduledTodayCount} task{scheduledTodayCount !== 1 ? "s" : ""} done
+        </p>
+      </div>
+    );
+  }
+  return (
+    <div className="card p-5 animate-fade-in text-center">
+      <p className="text-base font-semibold text-text-primary">
+        Nothing scheduled today
+      </p>
+      <p className="text-sm text-text-secondary mt-1">
+        Pin a subject from the Subjects tab to study it today
       </p>
     </div>
   );

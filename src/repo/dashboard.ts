@@ -149,8 +149,10 @@ export async function getDashboard(
     (t) => t.targetDate < todayKey && !completedEverIds.has(t.id),
   ).length;
 
+  // closedSessions came from `.where("state").equals("closed")`, so
+  // every row's `state` is "closed" by construction.
   const totalStudySeconds = closedSessions.reduce(
-    (sum, s) => (s.state === "closed" ? sum + s.duration : sum),
+    (sum, s) => sum + (s.state === "closed" ? s.duration : 0),
     0,
   );
   const totalStudyMinutes = Math.round(totalStudySeconds / 60);

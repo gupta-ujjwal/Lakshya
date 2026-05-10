@@ -84,12 +84,8 @@ export async function getDashboard(
     db.sessions.where("state").equals("closed").toArray(),
   ]);
 
-  // One scoped progress fetch covers every axis below: streak (date
-  // window), adherence (date window), today (one date), and "ever
-  // completed" (latest-wins across all dates). Pulling all rows for
-  // the schedule's tasks is bounded — the table is keyed
-  // `&[taskId+date]` so per-task rows accumulate at one per day at
-  // most.
+  // One scoped progress fetch backs every axis below: streak,
+  // adherence, today, and "ever completed."
   const taskIds = tasks.map((t) => t.id);
   const allProgress = await db.taskProgress
     .where("taskId")
@@ -205,9 +201,6 @@ export async function getOverallProgress(): Promise<OverallProgress | null> {
     .equals(schedule.id)
     .toArray();
   const taskIds = tasks.map((t) => t.id);
-  // Pulling all progress for the schedule's tasks is bounded by the
-  // schedule's task count; the table is keyed `&[taskId+date]` so
-  // per-task rows accumulate at one per day at most.
   const allProgress = await db.taskProgress
     .where("taskId")
     .anyOf(taskIds)

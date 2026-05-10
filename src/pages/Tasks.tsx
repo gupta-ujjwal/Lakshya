@@ -130,8 +130,6 @@ export function TasksPage() {
     );
     try {
       await recordTaskProgress(task.id, next);
-      // A toggle changes the overall completed count; refresh that
-      // bar so it doesn't drift from reality across user toggles.
       const o = await getOverallProgress();
       setOverall(o);
     } catch {

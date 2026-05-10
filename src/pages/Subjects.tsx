@@ -15,9 +15,8 @@ import {
   unpinSubject,
 } from "@/lib/focus-pin";
 
-// Letter-tile icon: deterministic colour from a string hash so the
-// same subject renders the same swatch across views, with no curated
-// icon map to maintain. The first letter is the readable affordance.
+// Hash → HSL hue so the same subject gets the same swatch across
+// views without a curated icon map.
 function tileHue(subject: string): number {
   let hash = 0;
   for (let i = 0; i < subject.length; i++) {
@@ -59,10 +58,6 @@ export function SubjectsPage() {
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      // One listTasks call across the whole schedule, then a single
-      // group-by — N parallel calls were doing the same task×progress
-      // join N times. Order subjects alphabetically (matches the
-      // original listSubjects() contract).
       const all = await listTasks({});
       const byName = new Map<string, SubjectStat>();
       for (const t of all) {

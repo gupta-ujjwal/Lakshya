@@ -36,11 +36,8 @@ export function SessionWidget({ task, onSessionFinished }: SessionWidgetProps) {
   const [activeTask, setActiveTask] = useState<TaskPreview | null>(null);
   const [startedMs, setStartedMs] = useState<number | null>(null);
   const [elapsed, setElapsed] = useState(0);
-  // Default true: under stopwatch mode there's no "natural" end signal,
-  // so we presume "stopped because finished." The user can flip it on
-  // the reflection screen before saving — opt-out rather than opt-in.
-  // Switch to false-default if usage shows lots of "stop for a break"
-  // stops being silently miscounted as completions.
+  // Stopwatch has no "natural" end — default to "stopped because
+  // finished" and let the user opt out on the reflection screen.
   const [markComplete, setMarkComplete] = useState(true);
   const [starting, setStarting] = useState(false);
   const [saving, setSaving] = useState(false);

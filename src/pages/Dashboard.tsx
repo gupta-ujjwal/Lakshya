@@ -36,9 +36,6 @@ export function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [pendingTaskIds, setPendingTaskIds] = useState<Set<string>>(new Set());
 
-  // One reader for both atoms. Mount and refresh both call here; the
-  // localStorage→repo bridge happens once per fetch instead of being
-  // reproduced at each call site.
   async function load(): Promise<Dashboard | null> {
     const pins = getPinnedSubjects();
     setPinnedSubjects(pins);
@@ -149,9 +146,9 @@ export function DashboardPage() {
 
   const { schedule, stats, tasks } = data;
 
-  // Two render axes from one fetch (see DashboardTask.scheduledForToday
-  // / pinnedSubject). A pinned-subject task that's also scheduled for
-  // today appears in the scheduled list only — no double-listing.
+  // A pinned-subject task that's also scheduled for today appears in
+  // the scheduled list only — `!t.scheduledForToday` in the focus
+  // filter below dedupes.
   const todaysTasks = tasks.filter((t) => t.scheduledForToday);
   const completedTodayCount = todaysTasks.filter((t) => t.completedToday).length;
   const progress =

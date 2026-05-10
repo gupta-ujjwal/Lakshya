@@ -2,6 +2,7 @@ import { db } from "@/db";
 import { PROGRESS_COMPLETED } from "@/domain/progress";
 import { addDaysToKey, today } from "@/lib/dates";
 import { getLatestSchedule } from "./schedules";
+import { latestProgressPerTask } from "./tasks";
 
 const STREAK_LOOKBACK_DAYS = 30;
 const ADHERENCE_WINDOW_DAYS = 7;
@@ -181,28 +182,18 @@ export async function getOverallProgress(): Promise<OverallProgress | null> {
     .where("scheduleId")
     .equals(schedule.id)
     .toArray();
-  const taskIds = new Set(tasks.map((t) => t.id));
-  // Latest-progress-per-task wins (mirrors getEffectiveStatus). Pulling
-  // all progress here is bounded by the schedule's task count; the
-  // table is keyed `&[taskId+date]` so per-task rows accumulate at one
-  // per day at most.
+  const taskIds = tasks.map((t) => t.id);
+  // Pulling all progress for the schedule's tasks is bounded by the
+  // schedule's task count; the table is keyed `&[taskId+date]` so
+  // per-task rows accumulate at one per day at most.
   const allProgress = await db.taskProgress
     .where("taskId")
-    .anyOf(Array.from(taskIds))
+    .anyOf(taskIds)
     .toArray();
-  const latestByTask = new Map<
-    string,
-    { status: string; updatedAt: string }
-  >();
-  for (const p of allProgress) {
-    const prev = latestByTask.get(p.taskId);
-    if (!prev || p.updatedAt > prev.updatedAt) {
-      latestByTask.set(p.taskId, { status: p.status, updatedAt: p.updatedAt });
-    }
-  }
+  const latestByTask = latestProgressPerTask(allProgress);
   let completed = 0;
-  for (const entry of latestByTask.values()) {
-    if (entry.status === PROGRESS_COMPLETED) completed++;
+  for (const p of latestByTask.values()) {
+    if (p.status === PROGRESS_COMPLETED) completed++;
   }
   return { total: tasks.length, completed };
 }

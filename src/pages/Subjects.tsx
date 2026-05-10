@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
-  listSubjects,
   listTasks,
   PROGRESS_COMPLETED,
   PROGRESS_PENDING,
@@ -60,16 +59,22 @@ export function SubjectsPage() {
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      const names = await listSubjects();
-      // One listTasks per subject is N round-trips, but each is bounded
-      // (~20-100 tasks) and Dexie is in-process. Avoids re-implementing
-      // the task×progress join here.
-      const stats = await Promise.all(
-        names.map(async (subject) => {
-          const tasks = await listTasks({ subjects: [subject] });
-          const completed = tasks.filter((t) => t.status === "completed").length;
-          return { subject, total: tasks.length, completed };
-        }),
+      // One listTasks call across the whole schedule, then a single
+      // group-by — N parallel calls were doing the same task×progress
+      // join N times. Order subjects alphabetically (matches the
+      // original listSubjects() contract).
+      const all = await listTasks({});
+      const byName = new Map<string, SubjectStat>();
+      for (const t of all) {
+        const cur =
+          byName.get(t.subject) ??
+          { subject: t.subject, total: 0, completed: 0 };
+        cur.total += 1;
+        if (t.status === "completed") cur.completed += 1;
+        byName.set(t.subject, cur);
+      }
+      const stats = Array.from(byName.values()).sort((a, b) =>
+        a.subject.localeCompare(b.subject),
       );
       if (cancelled) return;
       setSubjects(stats);

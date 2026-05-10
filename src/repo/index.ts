@@ -1,7 +1,15 @@
 export { importSchedule, getLatestSchedule } from "./schedules";
 export type { ImportResult } from "./schedules";
 
-export { recordTaskProgress } from "./tasks";
+export { recordTaskProgress, listTasks, listSubjects } from "./tasks";
+export type {
+  TaskWithProgress,
+  ListTasksFilters,
+  DerivedTaskStatus,
+} from "./tasks";
+
+export { getCalendarSummary } from "./calendar";
+export type { CalendarDay, CalendarHeat } from "./calendar";
 
 export { startSession, endSession, getActiveSession } from "./sessions";
 export type { ActiveSession, StartSessionResult } from "./sessions";

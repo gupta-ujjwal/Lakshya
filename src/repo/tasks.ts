@@ -1,9 +1,48 @@
-import { db, newId, nowIso, type TaskProgressRecord } from "@/db";
+import {
+  db,
+  newId,
+  nowIso,
+  type TaskProgressRecord,
+} from "@/db";
 import { today } from "@/lib/dates";
 import {
   PROGRESS_COMPLETED,
   type TaskProgressStatus,
 } from "@/domain/progress";
+import {
+  getEffectiveStatus,
+  type EffectiveTaskStatus,
+} from "@/domain/task-status";
+import { getLatestSchedule } from "./schedules";
+
+// `DerivedTaskStatus` is the UI-facing 3-value enum derived from the
+// stored `TaskProgressStatus` ("pending" | "completed") plus the date.
+// Both this page (Tasks) and the Calendar surface compute it via
+// `getEffectiveStatus()` in src/domain/task-status.ts — do not
+// re-implement the rule per page.
+export type DerivedTaskStatus = EffectiveTaskStatus;
+
+export interface TaskWithProgress {
+  id: string;
+  title: string;
+  subject: string;
+  targetDate: string;
+  priority: number;
+  status: DerivedTaskStatus;
+  // The raw progress row, when present — gives the page access to the
+  // updatedAt timestamp without a second lookup.
+  progress: TaskProgressRecord | null;
+}
+
+export interface ListTasksFilters {
+  scheduleId?: string;
+  status?: DerivedTaskStatus | "all";
+  // empty array = unrestricted (matches Dexie .anyOf semantics).
+  subjects?: string[];
+  fromDate?: string;
+  toDate?: string;
+  minPriority?: number;
+}
 
 export async function recordTaskProgress(
   taskId: string,
@@ -82,4 +121,84 @@ export async function pickNextTaskForToday(scheduleId: string): Promise<{
   return next
     ? { id: next.id, title: next.title, subject: next.subject }
     : null;
+}
+
+export async function listTasks(
+  filters: ListTasksFilters = {},
+): Promise<TaskWithProgress[]> {
+  const scheduleId = filters.scheduleId ?? (await getLatestSchedule())?.id;
+  if (!scheduleId) return [];
+
+  const todayKey = today();
+  const tasks = await db.tasks.where("scheduleId").equals(scheduleId).toArray();
+  const progress = await fetchProgressForTaskIds(tasks.map((t) => t.id));
+
+  // Latest-progress-per-task wins. The taskProgress table is keyed
+  // `&[taskId+date]`, so multiple rows per task are possible across
+  // days. We surface the row whose updatedAt is newest as the task's
+  // current status.
+  const progressByTask = new Map<string, TaskProgressRecord>();
+  for (const p of progress) {
+    const prev = progressByTask.get(p.taskId);
+    if (!prev || p.updatedAt > prev.updatedAt) progressByTask.set(p.taskId, p);
+  }
+
+  const subjectAllowed = filters.subjects?.length
+    ? new Set(filters.subjects)
+    : null;
+
+  const enriched: TaskWithProgress[] = tasks
+    .filter((t) => {
+      if (subjectAllowed && !subjectAllowed.has(t.subject)) return false;
+      if (filters.fromDate && t.targetDate < filters.fromDate) return false;
+      if (filters.toDate && t.targetDate > filters.toDate) return false;
+      if (filters.minPriority !== undefined && t.priority < filters.minPriority)
+        return false;
+      return true;
+    })
+    .map((t) => {
+      const p = progressByTask.get(t.id) ?? null;
+      const status = getEffectiveStatus(t, p, todayKey);
+      return {
+        id: t.id,
+        title: t.title,
+        subject: t.subject,
+        targetDate: t.targetDate,
+        priority: t.priority,
+        status,
+        progress: p,
+      };
+    });
+
+  const filtered =
+    !filters.status || filters.status === "all"
+      ? enriched
+      : enriched.filter((t) => t.status === filters.status);
+
+  // Sort: priority desc, targetDate asc, title asc — stable tie-break.
+  filtered.sort((a, b) => {
+    if (a.priority !== b.priority) return b.priority - a.priority;
+    if (a.targetDate !== b.targetDate)
+      return a.targetDate.localeCompare(b.targetDate);
+    return a.title.localeCompare(b.title);
+  });
+
+  return filtered;
+}
+
+export async function listSubjects(scheduleId?: string): Promise<string[]> {
+  const id = scheduleId ?? (await getLatestSchedule())?.id;
+  if (!id) return [];
+  const tasks = await db.tasks.where("scheduleId").equals(id).toArray();
+  return Array.from(new Set(tasks.map((t) => t.subject))).sort();
+}
+
+async function fetchProgressForTaskIds(
+  taskIds: string[],
+): Promise<TaskProgressRecord[]> {
+  // Two-step rather than a join: Dexie can't index across tables. Caller
+  // already has the task list, so we take the IDs and just ask
+  // taskProgress for matches — no second db.tasks fetch.
+  if (taskIds.length === 0) return [];
+  return db.taskProgress.where("taskId").anyOf(taskIds).toArray();
 }

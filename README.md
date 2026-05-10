@@ -94,6 +94,8 @@ src/
 ├── pages/
 │   ├── DashboardLayout.tsx
 │   ├── Dashboard.tsx     Reads via repo, exports/imports JSON
+│   ├── Tasks.tsx         Browse + filter all schedule tasks
+│   ├── Calendar.tsx      Month grid with daily completion heat
 │   └── Import.tsx        Validates JSON via Zod, calls importSchedule
 ├── components/           DaysLeftHero, SessionWidget, StatusBar, …
 ├── domain/               Zod schemas + pure functions
@@ -103,9 +105,10 @@ src/
 │   └── ingest.ts         generateTasksFromSchedule (pure)
 ├── repo/                 Domain operations over Dexie
 │   ├── schedules.ts      importSchedule, getLatestSchedule
-│   ├── tasks.ts          listTasks, recordTaskProgress, pickNextTaskForToday
+│   ├── tasks.ts          listTasks, listSubjects, recordTaskProgress, pickNextTaskForToday
 │   ├── sessions.ts       startSession, endSession, getActiveSession
 │   ├── dashboard.ts      getDashboard (streak, adherence, overdue)
+│   ├── calendar.ts       getCalendarSummary (per-day heat for the month)
 │   └── serialize.ts      exportAll, importAll, clearAll
 └── lib/                  countdown, format, dates, urgency-tones, theme-context
 ```

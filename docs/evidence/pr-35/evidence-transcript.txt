@@ -1,0 +1,43 @@
+## Setup
+
+✅ Cold start redirects to /import (no schedule)  — url=http://localhost:3002/import
+✅ Imported sample schedule  — 356 tasks loaded
+✅ Dashboard loaded  — url=http://localhost:3002/
+
+## Issue #33 — /tasks
+
+✅ Bottom-nav "Tasks" navigates to /tasks  — url=http://localhost:3002/tasks
+ℹ️  Screenshot: tasks default view  — /tmp/qa-lakshya/artifacts/evidence-tasks-default.png
+✅ Heading "Tasks" visible
+✅ Subject chip count  — 80 chips matched (Anatomy/Physiology/Surgery)
+✅ Task rows rendered  — 356 rows
+✅ Anatomy chip filter narrows the list  — 26 rows mention Anatomy
+ℹ️  Screenshot: tasks filtered to Anatomy  — /tmp/qa-lakshya/artifacts/evidence-tasks-filtered.png
+✅ "Done" status filter shows empty state initially  — 0 rows
+
+## Issue #34 — /calendar
+
+✅ Bottom-nav "Calendar" navigates to /calendar  — url=http://localhost:3002/calendar
+✅ Month heading  — May 2026 (2026-05)
+✅ Day cells in May 2026  — 31 cells
+✅ Today's cell has accent ring
+✅ Legend items rendered  — 6 items
+ℹ️  Screenshot: calendar May 2026  — /tmp/qa-lakshya/artifacts/evidence-calendar-may.png
+✅ Next month nav  — June 2026 (2026-06)
+✅ Today click → /tasks?date=…  — url=http://localhost:3002/tasks?date=2026-05-10
+✅ Pinned-date banner visible on /tasks
+ℹ️  Screenshot: tasks pinned to today  — /tmp/qa-lakshya/artifacts/evidence-tasks-pinned-today.png
+✅ Toggling first task creates line-through  — task="Physiology", count=1
+✅ Today heat tone after partial completion (1/2)  — expects "todo" tone (accent-soft) per design — today stays in-progress
+ℹ️  Screenshot: calendar after partial completion  — /tmp/qa-lakshya/artifacts/evidence-calendar-after-toggle.png
+✅ Module-load guard did not throw
+
+## Direct URL navigation (BrowserRouter)
+
+✅ Refresh on /calendar serves the page
+✅ Refresh on /tasks?date=2026-05-15 preserves pinned date
+✅ Malformed ?date param is rejected (no banner shown)
+
+## Console / page errors
+
+_(none)_

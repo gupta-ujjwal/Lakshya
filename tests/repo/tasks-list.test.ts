@@ -118,6 +118,32 @@ describe("listTasks", () => {
     expect(after.find((t) => t.id === todayTasks[0].id)?.status).toBe("overdue");
   });
 
+  it("when a task has multiple progress rows, the row with the latest updatedAt determines status", async () => {
+    await importSchedule(sampleInput);
+    const todayTasks = await listTasks({ fromDate: TODAY, toDate: TODAY });
+    const target = todayTasks[0];
+
+    // Day 1: complete the task.
+    await recordTaskProgress(target.id, PROGRESS_COMPLETED);
+    expect(
+      (await listTasks({ fromDate: TODAY, toDate: TODAY })).find(
+        (t) => t.id === target.id,
+      )?.status,
+    ).toBe("completed");
+
+    // Day 2: same task gets a pending row on the new date. Wins by
+    // updatedAt because it was just written. recordTaskProgress always
+    // writes for `today()`, so advance the clock.
+    vi.setSystemTime(new Date("2026-05-11T00:00:00.000Z"));
+    await recordTaskProgress(target.id, PROGRESS_PENDING);
+    const after = await listTasks();
+    const row = after.find((t) => t.id === target.id)!;
+    // Today's pending row beats yesterday's completed row.
+    // (target.targetDate is 2026-05-10, "yesterday" — so without a
+    // completed-or-newer-pending, status would derive to "overdue".)
+    expect(row.status).toBe("overdue");
+  });
+
   it("sorts by priority desc, then targetDate asc", async () => {
     await importSchedule(sampleInput);
     const all = await listTasks();

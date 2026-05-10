@@ -3,11 +3,8 @@ import { z } from "zod";
 export const SessionReflectionSchema = z.enum(["💪", "🙂", "😩"]);
 export type SessionReflection = z.infer<typeof SessionReflectionSchema>;
 
-export const DEFAULT_FOCUS_MINUTES = 25;
-
 export const StartSessionSchema = z.object({
   taskId: z.string().min(1).optional(),
-  focusMinutes: z.number().int().min(1).max(180).optional(),
 });
 export type StartSessionInput = z.infer<typeof StartSessionSchema>;
 
@@ -19,13 +16,14 @@ export type EndSessionInput = z.infer<typeof EndSessionSchema>;
 
 // Discriminated union: open and closed sessions are different shapes,
 // not a single shape with nullable fields. This makes "duration is set
-// iff session is closed" expressible at the type level.
+// iff session is closed" expressible at the type level. Stopwatch mode
+// has no target duration — the session runs until the user stops it,
+// and `duration` is the only post-hoc time value.
 export interface OpenSession {
   id: string;
   state: "open";
   startedAt: string;
   taskId: string | null;
-  focusMinutes: number;
   createdAt: string;
 }
 
@@ -36,7 +34,6 @@ export interface ClosedSession {
   endedAt: string;
   duration: number;
   taskId: string | null;
-  focusMinutes: number;
   reflection: SessionReflection | null;
   createdAt: string;
 }

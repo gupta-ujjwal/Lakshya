@@ -47,6 +47,12 @@ export default tseslint.config(
       "*.config.ts",
       "*.config.js",
       "apm_modules/",
+      // .agency/ holds tooling scripts (the PR-evidence probe template,
+      // future agent helpers) that run in Node, not in the browser
+      // app. Linting them with the app's browser-tilted config
+      // produces no-undef noise for `process`, `Buffer`, etc., and
+      // they're not part of the src/ build anyway.
+      ".agency/",
     ],
   }
 );

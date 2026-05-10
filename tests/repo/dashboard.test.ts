@@ -1,8 +1,14 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { db } from "@/db";
-import { getDashboard, importSchedule, recordTaskProgress } from "@/repo";
+import { db, newId, nowIso } from "@/db";
+import {
+  getDashboard,
+  getOverallProgress,
+  importSchedule,
+  recordTaskProgress,
+} from "@/repo";
 import { PROGRESS_COMPLETED } from "@/domain/progress";
 import type { ImportScheduleInput } from "@/domain/schedule";
+import type { ClosedSession } from "@/domain/session";
 import { clearDb } from "../helpers";
 
 const sampleInput: ImportScheduleInput = {
@@ -79,5 +85,93 @@ describe("getDashboard", () => {
     await recordTaskProgress(todayTask.id, PROGRESS_COMPLETED);
     const dash = await getDashboard();
     expect(dash!.stats.streak).toBe(1);
+  });
+
+  it("completedEver is true even for completions older than the streak window", async () => {
+    // Pin the regression: the focus-pin filter on Dashboard relies on
+    // completedEver to hide already-finished tasks. A 30-day-window
+    // proxy would mis-flag an old-but-completed task as still pending.
+    await importSchedule(sampleInput);
+    const t = (await db.tasks.toArray())[0];
+    // Record completion 60 days ago — well outside STREAK_LOOKBACK_DAYS.
+    vi.setSystemTime(new Date("2026-03-11T00:00:00.000Z"));
+    await recordTaskProgress(t.id, PROGRESS_COMPLETED);
+    vi.setSystemTime(new Date("2026-05-10T00:00:00.000Z"));
+    const dash = await getDashboard();
+    const flagged = dash!.tasks.find((row) => row.id === t.id)!;
+    expect(flagged.completedEver).toBe(true);
+  });
+
+  it("flags scheduledForToday and pinnedSubject independently", async () => {
+    await importSchedule(sampleInput);
+    const dash = await getDashboard({ pinnedSubjects: ["Math"] });
+    const todayMath = dash!.tasks.find(
+      (t) => t.targetDate === "2026-05-10" && t.subject === "Math",
+    )!;
+    const futureMath = dash!.tasks.find(
+      (t) => t.targetDate === "2026-05-12" && t.subject === "Math",
+    )!;
+    const todayPhysics = dash!.tasks.find(
+      (t) => t.targetDate === "2026-05-10" && t.subject === "Physics",
+    )!;
+    expect(todayMath.scheduledForToday).toBe(true);
+    expect(todayMath.pinnedSubject).toBe(true);
+    expect(futureMath.scheduledForToday).toBe(false);
+    expect(futureMath.pinnedSubject).toBe(true);
+    expect(todayPhysics.scheduledForToday).toBe(true);
+    expect(todayPhysics.pinnedSubject).toBe(false);
+  });
+
+  it("totalStudyMinutes sums duration over closed sessions only", async () => {
+    await importSchedule(sampleInput);
+    const closed: ClosedSession = {
+      id: newId(),
+      state: "closed",
+      startedAt: "2026-05-10T08:00:00.000Z",
+      endedAt: "2026-05-10T08:30:00.000Z",
+      duration: 1800,
+      taskId: null,
+      reflection: null,
+      createdAt: nowIso(),
+    };
+    const open = {
+      id: newId(),
+      state: "open" as const,
+      startedAt: "2026-05-10T09:00:00.000Z",
+      taskId: null,
+      createdAt: nowIso(),
+    };
+    await db.sessions.bulkAdd([closed, open]);
+    const dash = await getDashboard();
+    expect(dash!.stats.totalStudyMinutes).toBe(30);
+  });
+});
+
+describe("getOverallProgress", () => {
+  beforeEach(async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-05-10T00:00:00.000Z"));
+    await clearDb();
+  });
+  afterEach(async () => {
+    vi.useRealTimers();
+    await clearDb();
+  });
+
+  it("returns null with no schedule", async () => {
+    expect(await getOverallProgress()).toBeNull();
+  });
+
+  it("counts a completed task once even with multiple progress rows", async () => {
+    await importSchedule(sampleInput);
+    const tasks = await db.tasks.toArray();
+    const t = tasks[0];
+    await recordTaskProgress(t.id, PROGRESS_COMPLETED);
+    // Same task ticked again on a different day — two rows, one task.
+    vi.setSystemTime(new Date("2026-05-11T00:00:00.000Z"));
+    await recordTaskProgress(t.id, PROGRESS_COMPLETED);
+    const overall = await getOverallProgress();
+    expect(overall!.total).toBe(12);
+    expect(overall!.completed).toBe(1);
   });
 });

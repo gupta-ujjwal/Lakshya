@@ -1,12 +1,18 @@
-import { useCallback, useState } from "react";
-import { Link } from "react-router-dom";
+import { useCallback, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
   getSampleSchedule,
   ImportScheduleSchema,
   type ImportScheduleInput,
 } from "@/domain/schedule";
 import { downloadJson } from "@/lib/download";
-import { importSchedule } from "@/repo";
+import { today } from "@/lib/dates";
+import {
+  clearAll,
+  exportAll,
+  importAll,
+  importSchedule,
+} from "@/repo";
 
 type UploadState =
   | "idle"
@@ -51,6 +57,8 @@ const DROP_ZONE_BY_STATE: Record<UploadState, string> = {
 };
 
 export function ImportPage() {
+  const navigate = useNavigate();
+  const dataFileRef = useRef<HTMLInputElement>(null);
   const [uploadState, setUploadState] = useState<UploadState>("idle");
   const [file, setFile] = useState<FileInfo | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -59,6 +67,7 @@ export function ImportPage() {
     Array<{ path: string; message: string }>
   >([]);
   const [taskCount, setTaskCount] = useState<number | null>(null);
+  const [dataMessage, setDataMessage] = useState<string | null>(null);
 
   const processFile = useCallback(async (f: File) => {
     if (!f.name.endsWith(".json") && f.type !== "application/json") {
@@ -194,6 +203,35 @@ export function ImportPage() {
     setTaskCount(null);
     setUploadState("idle");
   }, []);
+
+  const handleExport = useCallback(async () => {
+    setDataMessage(null);
+    try {
+      downloadJson(`lakshya-${today()}.json`, await exportAll());
+      setDataMessage("Backup downloaded.");
+    } catch (err) {
+      setDataMessage(err instanceof Error ? err.message : "Export failed");
+    }
+  }, []);
+
+  const handleRestoreBackup = useCallback(async (f: File) => {
+    setDataMessage(null);
+    try {
+      const text = await f.text();
+      const payload = JSON.parse(text);
+      await importAll(payload);
+      setDataMessage("Backup restored.");
+      navigate("/");
+    } catch (err) {
+      setDataMessage(err instanceof Error ? err.message : "Restore failed");
+    }
+  }, [navigate]);
+
+  const handleEraseAll = useCallback(async () => {
+    if (!confirm("Erase all local data? This cannot be undone.")) return;
+    await clearAll();
+    navigate("/import");
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-bg-primary">
@@ -409,6 +447,55 @@ export function ImportPage() {
                 </button>
               </div>
             </div>
+          )}
+        </div>
+
+        <div className="mt-8 pt-6 border-t border-border">
+          <h3 className="text-sm font-semibold text-text-primary mb-3">
+            Manage data
+          </h3>
+          <p className="text-xs text-text-secondary mb-3">
+            Lakshya runs entirely on this device. Back up periodically; restore
+            on a new browser.
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={handleExport}
+              data-testid="export-button"
+              className="min-h-[44px] rounded-md bg-bg-secondary border border-border text-sm font-medium text-text-primary active:scale-[0.98] transition-all"
+            >
+              Export JSON
+            </button>
+            <button
+              onClick={() => dataFileRef.current?.click()}
+              data-testid="restore-button"
+              className="min-h-[44px] rounded-md bg-bg-secondary border border-border text-sm font-medium text-text-primary active:scale-[0.98] transition-all"
+            >
+              Restore backup
+            </button>
+          </div>
+          <input
+            ref={dataFileRef}
+            type="file"
+            accept="application/json,.json"
+            className="sr-only"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) void handleRestoreBackup(f);
+              e.target.value = "";
+            }}
+          />
+          <button
+            onClick={handleEraseAll}
+            data-testid="erase-button"
+            className="mt-2 w-full min-h-[44px] text-sm font-medium text-danger active:scale-[0.98] transition-all"
+          >
+            Erase all data
+          </button>
+          {dataMessage && (
+            <p className="mt-2 text-xs text-text-secondary text-center">
+              {dataMessage}
+            </p>
           )}
         </div>
 

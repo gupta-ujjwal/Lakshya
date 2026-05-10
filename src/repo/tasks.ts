@@ -132,16 +132,7 @@ export async function listTasks(
   const todayKey = today();
   const tasks = await db.tasks.where("scheduleId").equals(scheduleId).toArray();
   const progress = await fetchProgressForTaskIds(tasks.map((t) => t.id));
-
-  // Latest-progress-per-task wins. The taskProgress table is keyed
-  // `&[taskId+date]`, so multiple rows per task are possible across
-  // days. We surface the row whose updatedAt is newest as the task's
-  // current status.
-  const progressByTask = new Map<string, TaskProgressRecord>();
-  for (const p of progress) {
-    const prev = progressByTask.get(p.taskId);
-    if (!prev || p.updatedAt > prev.updatedAt) progressByTask.set(p.taskId, p);
-  }
+  const progressByTask = latestProgressPerTask(progress);
 
   const subjectAllowed = filters.subjects?.length
     ? new Set(filters.subjects)
@@ -201,4 +192,22 @@ async function fetchProgressForTaskIds(
   // taskProgress for matches — no second db.tasks fetch.
   if (taskIds.length === 0) return [];
   return db.taskProgress.where("taskId").anyOf(taskIds).toArray();
+}
+
+// The taskProgress table is keyed `&[taskId+date]`, so multiple rows
+// per task are possible across days. Callers that need a task's
+// effective state surface the row whose `updatedAt` is newest. This
+// helper is the canonical implementation — `listTasks`,
+// `getOverallProgress`, and the focus-pin filter in `getDashboard`
+// all consume it. Anything else that re-derives "current status from
+// history" should call here too rather than re-implement the loop.
+export function latestProgressPerTask(
+  rows: TaskProgressRecord[],
+): Map<string, TaskProgressRecord> {
+  const m = new Map<string, TaskProgressRecord>();
+  for (const p of rows) {
+    const prev = m.get(p.taskId);
+    if (!prev || p.updatedAt > prev.updatedAt) m.set(p.taskId, p);
+  }
+  return m;
 }

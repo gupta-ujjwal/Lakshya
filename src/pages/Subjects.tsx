@@ -228,6 +228,9 @@ export function SubjectDetailPage() {
     try {
       await recordTaskProgress(task.id, next);
     } catch {
+      // Roll back the optimistic flip — the bar visibly snaps back
+      // so the user can re-tap, no error toast needed for a single
+      // tap in single-device IndexedDB.
       setTasks((prev) =>
         prev
           ? prev.map((t) => (t.id === task.id ? { ...t, status: task.status } : t))

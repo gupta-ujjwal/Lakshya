@@ -28,6 +28,9 @@ function read(): StoredPin | null {
     );
     return { date: obj.date, subjects };
   } catch {
+    // Malformed JSON or storage-access failure both mean "no pin."
+    // The user simply re-pins; surfacing the error to the dashboard
+    // would block render on a recoverable, low-stakes state.
     return null;
   }
 }

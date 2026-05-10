@@ -4,6 +4,8 @@ import { UpdateBanner } from "@/components/UpdateBanner";
 import { DashboardLayout } from "@/pages/DashboardLayout";
 import { DashboardPage } from "@/pages/Dashboard";
 import { ImportPage } from "@/pages/Import";
+import { TasksPage } from "@/pages/Tasks";
+import { CalendarPage } from "@/pages/Calendar";
 
 // BrowserRouter — GitHub Pages doesn't have an SPA fallback, but
 // public/404.html + the decoder script in index.html implement one
@@ -27,6 +29,8 @@ export function App() {
         <Routes>
           <Route element={<LayoutOutlet />}>
             <Route path="/" element={<DashboardPage />} />
+            <Route path="/tasks" element={<TasksPage />} />
+            <Route path="/calendar" element={<CalendarPage />} />
             <Route path="/import" element={<ImportPage />} />
           </Route>
         </Routes>

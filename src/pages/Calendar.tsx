@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { fromDateKey, today } from "@/lib/dates";
+import { encodeTaskDate } from "@/lib/task-date-param";
 import { getCalendarSummary, type CalendarDay, type CalendarHeat } from "@/repo";
 
 const HEAT_TONES: Record<CalendarHeat, string> = {
@@ -109,7 +110,7 @@ export function CalendarPage() {
           return (
             <button
               key={d.date}
-              onClick={() => navigate(`/tasks?date=${d.date}`)}
+              onClick={() => navigate(`/tasks?${encodeTaskDate(d.date)}`)}
               disabled={d.total === 0}
               className={`aspect-square rounded-md flex flex-col items-center justify-center gap-0.5 text-[11px] font-medium transition-transform active:scale-95 disabled:cursor-default ${tone} ${
                 isToday ? "ring-2 ring-accent" : ""

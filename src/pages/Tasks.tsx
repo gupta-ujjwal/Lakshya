@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { addDaysToKey, today } from "@/lib/dates";
 import { formatDateLong } from "@/lib/format";
+import { decodeTaskDate, TASK_DATE_PARAM } from "@/lib/task-date-param";
 import {
   listSubjects,
   listTasks,
@@ -54,7 +55,7 @@ function computeDateBounds(
 
 export function TasksPage() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const pinnedDate = searchParams.get("date");
+  const pinnedDate = decodeTaskDate(searchParams.get(TASK_DATE_PARAM));
 
   const [tasks, setTasks] = useState<TaskWithProgress[] | null>(null);
   const [subjects, setSubjects] = useState<string[]>([]);
@@ -139,7 +140,7 @@ export function TasksPage() {
   function clearPinnedDate() {
     setSearchParams((p) => {
       const next = new URLSearchParams(p);
-      next.delete("date");
+      next.delete(TASK_DATE_PARAM);
       return next;
     });
   }

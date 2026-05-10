@@ -1,16 +1,61 @@
-import { defineConfig } from "vite";
+import { defineConfig, type PluginOption } from "vite";
+import { readFileSync, writeFileSync } from "node:fs";
+import { resolve } from "node:path";
 import react from "@vitejs/plugin-react";
 import tsconfigPaths from "vite-tsconfig-paths";
 import { VitePWA } from "vite-plugin-pwa";
 
+// Derive pathSegmentsToKeep in dist/404.html from the resolved Vite
+// base, so a fork that flips VITE_BASE doesn't have to remember to
+// touch public/404.html too. Vite copies public/ verbatim, so the
+// substitution lands in closeBundle (after vite-plugin-pwa has
+// finished writing dist/).
+function patchSpaFallbackBase(): PluginOption {
+  let outDir = "dist";
+  let segments = 1;
+  return {
+    name: "spa-fallback-base",
+    apply: "build",
+    configResolved(config) {
+      outDir = config.build.outDir;
+      segments = config.base.split("/").filter(Boolean).length;
+    },
+    closeBundle() {
+      const file = resolve(outDir, "404.html");
+      let html: string;
+      try {
+        html = readFileSync(file, "utf-8");
+      } catch (err) {
+        // 404.html is opt-in — drop public/404.html to disable. Other
+        // read errors should bubble; only ENOENT is "feature off."
+        if ((err as NodeJS.ErrnoException).code === "ENOENT") return;
+        throw err;
+      }
+      const patched = html.replace(
+        /var pathSegmentsToKeep = \d+;/,
+        `var pathSegmentsToKeep = ${segments};`,
+      );
+      if (patched !== html) writeFileSync(file, patched);
+    },
+  };
+}
+
 // `base` is set so assets resolve under GitHub Pages project-site URLs
 // (`<user>.github.io/<repo>/`). For a custom domain or root host, override
 // with `VITE_BASE=/`. For local dev, the default `/` works.
+//
+// This value also flows through `import.meta.env.BASE_URL` into the
+// BrowserRouter's basename (src/App.tsx) — asset prefix and route
+// prefix happen to be the same string for vanilla deploys. They would
+// diverge under a reverse proxy that rewrites paths; in that case
+// introduce a separate VITE_ROUTER_BASE env var and thread it into
+// App.tsx instead of using import.meta.env.BASE_URL.
 export default defineConfig({
   base: process.env.VITE_BASE ?? "/",
   plugins: [
     react(),
     tsconfigPaths(),
+    patchSpaFallbackBase(),
     VitePWA({
       // 'prompt' (not 'autoUpdate'): a silent reload mid-focus-session would
       // wipe the SessionWidget timer in src/components/SessionWidget.tsx.
@@ -53,10 +98,11 @@ export default defineConfig({
         ],
       },
       workbox: {
-        // navigateFallback is a no-op while HashRouter is active
-        // (App() in src/App.tsx) — every in-app navigation resolves as a
-        // request for "/" anyway. This becomes load-bearing if the
-        // BrowserRouter swap (Phase 3) ever lands.
+        // navigateFallback is load-bearing under BrowserRouter
+        // (App() in src/App.tsx): a refresh on /Lakshya/import after
+        // the SW is installed is intercepted here and served from the
+        // precached index.html, bypassing the public/404.html redirect
+        // dance that handles the same case for fresh visits.
         navigateFallback: "index.html",
         globPatterns: ["**/*.{js,css,html,svg,png,ico,woff2}"],
       },

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Lakshya</title>
+    <script>
+      // SPA redirect for GitHub Pages — encodes /<base>/path as
+      // /<base>/?/path and replaces the URL so the SPA can decode it
+      // back. Token is "?/" — the decoder script in index.html relies
+      // on that exact prefix; keep them in sync.
+      // https://github.com/rafgraph/spa-github-pages
+      //
+      // pathSegmentsToKeep is patched at build time by the
+      // patchSpaFallbackBase plugin in vite.config.ts — derived from
+      // the resolved Vite base so VITE_BASE is the single source of
+      // truth. The literal here is the dev-server default (root host,
+      // 0 segments); a project-site build replaces it with 1.
+      var pathSegmentsToKeep = 0;
+      var l = window.location;
+      l.replace(
+        l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+        l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?/' +
+        l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
+        (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+        l.hash
+      );
+    </script>
+  </head>
+  <body></body>
+</html>

@@ -31,11 +31,11 @@ export interface DashboardTask {
   priority: number;
   // "Were you marked done for today?" — keyed on progress.date===today.
   completedToday: boolean;
-  // "Has this task ever been marked done in the recent window?" —
-  // approximation used by the focus-pin filter to avoid surfacing
-  // already-finished tasks. Window is `STREAK_LOOKBACK_DAYS` days,
-  // matching the streak/overdue queries below.
-  completedRecently: boolean;
+  // True iff the task's latest progress row has `status === completed`,
+  // across all dates. Used by the focus-pin filter to avoid surfacing
+  // tasks the user already finished — even tasks completed months ago
+  // (a 30-day window would mis-surface them).
+  completedEver: boolean;
   // Today's two render axes, pre-computed so the page doesn't re-derive
   // them: scheduled-for-today (`targetDate === today`) and pinned by
   // the user's "study X today" focus list. Tasks may match both,
@@ -79,28 +79,40 @@ export async function getDashboard(
   );
   const pinnedSubjects = new Set(input.pinnedSubjects ?? []);
 
-  const [tasks, recentProgress, closedSessions] = await Promise.all([
+  const [tasks, closedSessions] = await Promise.all([
     db.tasks.where("scheduleId").equals(schedule.id).toArray(),
-    db.taskProgress
-      .where("date")
-      .aboveOrEqual(streakWindowStart)
-      .and((p) => p.status === PROGRESS_COMPLETED)
-      .toArray(),
     db.sessions.where("state").equals("closed").toArray(),
   ]);
 
-  // Only progress tied to this schedule's tasks counts; a stale schedule's
-  // completions in the date window would otherwise inflate streak/adherence.
-  const taskIds = new Set(tasks.map((t) => t.id));
-  const scopedProgress = recentProgress.filter((p) => taskIds.has(p.taskId));
+  // One scoped progress fetch covers every axis below: streak (date
+  // window), adherence (date window), today (one date), and "ever
+  // completed" (latest-wins across all dates). Pulling all rows for
+  // the schedule's tasks is bounded — the table is keyed
+  // `&[taskId+date]` so per-task rows accumulate at one per day at
+  // most.
+  const taskIds = tasks.map((t) => t.id);
+  const allProgress = await db.taskProgress
+    .where("taskId")
+    .anyOf(taskIds)
+    .toArray();
+
+  const completedProgress = allProgress.filter(
+    (p) => p.status === PROGRESS_COMPLETED,
+  );
 
   const completedTodayIds = new Set(
-    scopedProgress.filter((p) => p.date === todayKey).map((p) => p.taskId),
+    completedProgress
+      .filter((p) => p.date === todayKey)
+      .map((p) => p.taskId),
   );
 
   // Streak axis: "did I sit down on day D" — keyed by progress.date,
   // ignores which task. A single completion any day flips the day "on."
-  const completionDates = new Set(scopedProgress.map((p) => p.date));
+  const completionDates = new Set(
+    completedProgress
+      .filter((p) => p.date >= streakWindowStart)
+      .map((p) => p.date),
+  );
   const streak = computeStreak(completionDates);
 
   // Adherence axis: "did I hit tasks scheduled in the window" — keyed by
@@ -112,7 +124,7 @@ export async function getDashboard(
       t.targetDate >= adherenceWindowStart && t.targetDate <= todayKey,
   );
   const windowCompletedIds = new Set(
-    scopedProgress
+    completedProgress
       .filter((p) => p.date >= adherenceWindowStart && p.date <= todayKey)
       .map((p) => p.taskId),
   );
@@ -124,9 +136,17 @@ export async function getDashboard(
       ? Math.round((windowCompletedCount / windowTasks.length) * 100)
       : 0;
 
-  const recentlyCompletedIds = new Set(scopedProgress.map((p) => p.taskId));
+  // Latest-progress-wins for "is this task currently done", regardless
+  // of when. Used for both the overdue count and the focus-pin filter
+  // — both want to ignore tasks the user has already finished, even
+  // ones from months ago.
+  const latestByTask = latestProgressPerTask(allProgress);
+  const completedEverIds = new Set<string>();
+  for (const [id, p] of latestByTask) {
+    if (p.status === PROGRESS_COMPLETED) completedEverIds.add(id);
+  }
   const overdueCount = tasks.filter(
-    (t) => t.targetDate < todayKey && !recentlyCompletedIds.has(t.id),
+    (t) => t.targetDate < todayKey && !completedEverIds.has(t.id),
   ).length;
 
   const totalStudySeconds = closedSessions.reduce(
@@ -163,7 +183,7 @@ export async function getDashboard(
       targetDate: task.targetDate,
       priority: task.priority,
       completedToday: completedTodayIds.has(task.id),
-      completedRecently: recentlyCompletedIds.has(task.id),
+      completedEver: completedEverIds.has(task.id),
       scheduledForToday: task.targetDate === todayKey,
       pinnedSubject: pinnedSubjects.has(task.subject),
     })),

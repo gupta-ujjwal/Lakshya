@@ -87,6 +87,21 @@ describe("getDashboard", () => {
     expect(dash!.stats.streak).toBe(1);
   });
 
+  it("completedEver is true even for completions older than the streak window", async () => {
+    // Pin the regression: the focus-pin filter on Dashboard relies on
+    // completedEver to hide already-finished tasks. A 30-day-window
+    // proxy would mis-flag an old-but-completed task as still pending.
+    await importSchedule(sampleInput);
+    const t = (await db.tasks.toArray())[0];
+    // Record completion 60 days ago — well outside STREAK_LOOKBACK_DAYS.
+    vi.setSystemTime(new Date("2026-03-11T00:00:00.000Z"));
+    await recordTaskProgress(t.id, PROGRESS_COMPLETED);
+    vi.setSystemTime(new Date("2026-05-10T00:00:00.000Z"));
+    const dash = await getDashboard();
+    const flagged = dash!.tasks.find((row) => row.id === t.id)!;
+    expect(flagged.completedEver).toBe(true);
+  });
+
   it("flags scheduledForToday and pinnedSubject independently", async () => {
     await importSchedule(sampleInput);
     const dash = await getDashboard({ pinnedSubjects: ["Math"] });

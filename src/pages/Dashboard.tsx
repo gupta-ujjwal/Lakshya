@@ -159,8 +159,7 @@ export function DashboardPage() {
   const focusTasks = pinnedSubjects.length
     ? tasks
         .filter(
-          (t) =>
-            t.pinnedSubject && !t.scheduledForToday && !t.completedRecently,
+          (t) => t.pinnedSubject && !t.scheduledForToday && !t.completedEver,
         )
         .slice(0, FOCUS_TASK_LIMIT)
     : [];

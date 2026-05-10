@@ -93,6 +93,17 @@ describe("getCalendarSummary", () => {
     expect(cell.heat).toBe("overdue");
   });
 
+  it("keeps today's heat as 'todo' even when partially completed (today is in-progress, not partial)", async () => {
+    await importSchedule(sampleInput);
+    const todayTasks = await listTasks({ fromDate: TODAY, toDate: TODAY });
+    await recordTaskProgress(todayTasks[0].id, PROGRESS_COMPLETED);
+    const days = await getCalendarSummary("2026-05");
+    const cell = days.find((d) => d.date === TODAY)!;
+    expect(cell.completed).toBe(1);
+    expect(cell.total).toBe(2);
+    expect(cell.heat).toBe("todo");
+  });
+
   it("flips partially-completed past-dated days to 'partial'", async () => {
     await importSchedule(sampleInput);
     const todayTasks = await listTasks({ fromDate: TODAY, toDate: TODAY });

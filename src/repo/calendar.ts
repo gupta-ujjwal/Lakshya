@@ -64,6 +64,11 @@ function deriveHeat(
   if (total === 0) return "empty";
   if (completed >= total) return "done";
   if (date > todayKey) return "future";
+  // Today's cell intentionally renders "todo" regardless of partial
+  // completion — the day isn't over, so 1/2 done is still in-progress
+  // rather than a missed opportunity. "partial" is reserved for past
+  // days where the user started but didn't finish; "overdue" for past
+  // days with zero completions.
   if (date === todayKey) return "todo";
   if (completed > 0) return "partial";
   return "overdue";

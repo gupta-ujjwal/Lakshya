@@ -1,0 +1,56 @@
+## Setup
+
+✅ Cold start redirects to /import (no schedule)  — url=http://localhost:3002/import
+✅ Imported sample schedule
+✅ Dashboard loaded  — url=http://localhost:3002/
+
+## PR-specific flows
+
+✅ Bottom-nav has Home/Calendar/Tasks/Subjects (no Import)  — labels=["Home","Calendar","Tasks","Subjects"]
+✅ Dashboard total-hours stat tile renders  — value=0m
+ℹ️  Screenshot: dashboard-default  — /tmp/qa-lakshya/artifacts/evidence-pr-40-dashboard-default.png
+✅ Footer "Manage data" link points to /import  — href=/import
+✅ Navigated to /import via Manage data
+✅ Import page Manage data panel exposes export/restore/erase  — export=true restore=true erase=true
+ℹ️  Screenshot: import-manage-data  — /tmp/qa-lakshya/artifacts/evidence-pr-40-import-manage-data.png
+✅ Back to dashboard via bottom-nav Home
+✅ Bottom-nav Subjects → /subjects
+✅ Subjects list renders ≥1 subject card  — count=14
+ℹ️  Screenshot: subjects-list  — /tmp/qa-lakshya/artifacts/evidence-pr-40-subjects-list.png
+✅ Subject card click → /subjects/<name>  — url=http://localhost:3002/subjects/Anatomy  subject=Anatomy
+ℹ️  Screenshot: subject-detail  — /tmp/qa-lakshya/artifacts/evidence-pr-40-subject-detail.png
+✅ Pin button initially reads "Study this subject today"  — text=Study this subject today
+✅ Pin button toggles to Pinned/unpin state  — text=✓ Pinned for today — tap to unpin
+ℹ️  Screenshot: subject-pinned  — /tmp/qa-lakshya/artifacts/evidence-pr-40-subject-pinned.png
+✅ Dashboard shows focus-section after pinning a subject  — pinned=Anatomy
+✅ Focus header is "Today's focus" with "Pinned: …" subtitle  — header=Today's focus  subtitle=Pinned: Anatomy
+✅ Focus section exposes Unpin button per pinned subject  — count=1
+ℹ️  Screenshot: dashboard-focus  — /tmp/qa-lakshya/artifacts/evidence-pr-40-dashboard-focus.png
+✅ SessionWidget idle "Start session" button visible  — text=Start session
+✅ Start button reads "Start session" without a minute label  — text=Start session
+✅ Session timer counts up in MM:SS  — text=00:03
+ℹ️  Screenshot: session-stopwatch  — /tmp/qa-lakshya/artifacts/evidence-pr-40-session-stopwatch.png
+✅ Reflection screen appears after Stop
+✅ Reflection screen exposes "Mark … as done" toggle
+✅ After reflection emoji, widget returns to idle
+✅ Bottom-nav Tasks → /tasks
+✅ Tasks page shows overall-progress card
+✅ Tasks page exposes Range and Status as <select> dropdowns  — selects=2
+✅ Subjects filter is a <details> panel  — tag=details
+ℹ️  Screenshot: tasks-overall  — /tmp/qa-lakshya/artifacts/evidence-pr-40-tasks-overall.png
+
+## Direct URL navigation
+
+✅ Refresh on /subjects serves the page
+✅ Refresh on http://localhost:3002/subjects/Anatomy serves the detail page
+✅ Refresh on /tasks serves the page
+✅ Refresh on /import serves the page
+✅ Refresh on /calendar serves the page
+
+## Pinned design rules
+
+✅ Today's Tasks card still renders on dashboard (regression net)
+
+## Console / page errors
+
+_(none)_

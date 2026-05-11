@@ -36,10 +36,13 @@ export function validateCycleTimetable(
   cycleLengthDays: number,
 ): CycleTimetableValidation {
   const counts = new Map<number, number>();
-  const outOfRange: number[] = [];
+  // Use a Set for out-of-range too — without dedup, a payload submitting
+  // dayNumber 8 twice in a 7-day cycle would surface "outside cycle
+  // range 1..7: 8, 8" and read as two distinct problems.
+  const outOfRangeSet = new Set<number>();
   for (const day of timetable) {
     if (day.dayNumber < 1 || day.dayNumber > cycleLengthDays) {
-      outOfRange.push(day.dayNumber);
+      outOfRangeSet.add(day.dayNumber);
       continue;
     }
     counts.set(day.dayNumber, (counts.get(day.dayNumber) ?? 0) + 1);
@@ -53,7 +56,7 @@ export function validateCycleTimetable(
     if (!counts.has(day)) missing.push(day);
   }
   return {
-    outOfRange: outOfRange.sort((a, b) => a - b),
+    outOfRange: [...outOfRangeSet].sort((a, b) => a - b),
     duplicate: duplicate.sort((a, b) => a - b),
     missing: missing.sort((a, b) => a - b),
   };

@@ -56,6 +56,14 @@ describe("validateCycleTimetable", () => {
     expect(result.missing).toEqual([]);
   });
 
+  it("deduplicates repeated out-of-range days so the user sees each number once", () => {
+    const result = validateCycleTimetable(
+      [1, 2, 3, 4, 5, 6, 7, 8, 8, 9, 9].map(ALL_SUBJECTS),
+      7,
+    );
+    expect(result.outOfRange).toEqual([8, 9]);
+  });
+
   it("reports all three categories together when present", () => {
     const result = validateCycleTimetable(
       [

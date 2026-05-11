@@ -1,12 +1,17 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { StatusBar } from "@/components/StatusBar";
 import { ROUTE_ICONS } from "@/lib/icons";
 import { NAV_ITEMS } from "@/lib/navigation";
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
+  // Dashboard owns the loud countdown via DaysLeftHero — duplicating
+  // the big number in the bar 80px above halved the hero's impact. The
+  // layout knows the route topology, so it owns the slim-bar decision;
+  // StatusBar just renders what it's told.
+  const isDashboard = useLocation().pathname === "/";
   return (
     <div className="min-h-screen bg-bg-primary pb-20">
-      <StatusBar />
+      <StatusBar compact={isDashboard} />
       <main className="max-w-lg mx-auto px-4 pt-4">{children}</main>
       <nav className="fixed bottom-0 left-0 right-0 bg-bg-secondary border-t border-border safe-area-bottom z-50">
         <div className="max-w-lg mx-auto flex items-center justify-around h-[var(--nav-height)]">

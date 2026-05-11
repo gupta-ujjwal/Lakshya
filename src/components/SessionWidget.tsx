@@ -202,7 +202,7 @@ export function SessionWidget({ task, onSessionFinished }: SessionWidgetProps) {
               onClick={() => finishSession(opt.emoji)}
               disabled={saving}
               aria-label={opt.label}
-              className="flex flex-col items-center gap-1 py-3 rounded-xl bg-bg-tertiary/40 hover:bg-bg-tertiary active:scale-95 transition-all disabled:opacity-60 min-h-[44px]"
+              className="flex flex-col items-center gap-1 py-3 rounded-md bg-bg-tertiary/40 hover:bg-bg-tertiary active:scale-95 transition-all disabled:opacity-60 min-h-[44px]"
             >
               <span className="text-3xl" aria-hidden>{opt.emoji}</span>
               <span className="text-[11px] text-text-secondary">

@@ -44,6 +44,12 @@ export function StatusBar() {
       ? "the day is here"
       : `day${days === 1 ? "" : "s"} until`;
 
+  // Dashboard owns the loud countdown via DaysLeftHero — duplicating
+  // the big number 80px above the hero halved its impact. On `/` the
+  // bar is a slim journey indicator (title + progress); on every other
+  // route it's the full countdown surface.
+  const isDashboard = location.pathname === "/";
+
   return (
     <div
       className={`sticky top-0 z-40 border-b ${tone.border} bg-gradient-to-r ${tone.gradient} shadow-sm`}
@@ -51,16 +57,20 @@ export function StatusBar() {
       aria-label={`${countdownNumber} ${countdownLabel} ${schedule.title}`}
     >
       <div className="max-w-lg mx-auto px-4 pt-2.5 pb-2 flex items-center gap-3">
-        <span
-          className={`text-3xl font-display font-extrabold leading-none tabular-nums ${tone.text}`}
-          aria-hidden
-        >
-          {countdownNumber}
-        </span>
-        <span className="flex-1 min-w-0">
-          <span className={`block text-[11px] font-medium uppercase tracking-wide ${tone.subtext}`}>
-            {countdownLabel}
+        {!isDashboard && (
+          <span
+            className={`text-3xl font-display font-extrabold leading-none tabular-nums ${tone.text}`}
+            aria-hidden
+          >
+            {countdownNumber}
           </span>
+        )}
+        <span className="flex-1 min-w-0">
+          {!isDashboard && (
+            <span className={`block text-[11px] font-medium uppercase tracking-wide ${tone.subtext}`}>
+              {countdownLabel}
+            </span>
+          )}
           <span className={`block text-sm font-semibold truncate ${tone.text}`}>
             {schedule.title}
           </span>

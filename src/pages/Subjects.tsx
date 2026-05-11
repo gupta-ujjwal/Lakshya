@@ -37,7 +37,7 @@ function LetterTile({
   return (
     <span
       aria-hidden
-      className={`${dim} rounded-xl flex items-center justify-center text-white font-display font-bold flex-shrink-0`}
+      className={`${dim} rounded-md flex items-center justify-center text-white font-display font-bold flex-shrink-0`}
       style={{ backgroundColor: `hsl(${tileHue(subject)}, 55%, 42%)` }}
     >
       {subject.charAt(0).toUpperCase()}
@@ -155,9 +155,9 @@ export function SubjectsPage() {
                   <span className="block text-xs text-text-muted mt-0.5">
                     {s.completed}/{s.total} done · {pct}%
                   </span>
-                  <span className="progress-bar mt-1.5 h-1 block">
+                  <span className="progress-bar mt-1.5 block">
                     <span
-                      className="progress-bar-fill h-1 block"
+                      className="progress-bar-fill block"
                       style={{ width: `${pct}%` }}
                     />
                   </span>
@@ -285,15 +285,15 @@ export function SubjectDetailPage() {
             </p>
           </div>
         </div>
-        <div className="progress-bar mt-3 h-2">
-          <div className="progress-bar-fill h-2" style={{ width: `${pct}%` }} />
+        <div className="progress-bar mt-3">
+          <div className="progress-bar-fill" style={{ width: `${pct}%` }} />
         </div>
       </header>
 
       <button
         onClick={togglePin}
         data-testid="pin-subject-button"
-        className={`w-full min-h-[48px] rounded-xl font-semibold text-base transition-all duration-150 active:scale-[0.98] ${
+        className={`w-full min-h-[48px] rounded-md font-semibold text-base transition-all duration-150 active:scale-[0.98] ${
           pinned
             ? "bg-success-soft border border-success/40 text-success"
             : "bg-accent text-white hover:bg-accent-hover shadow-md"

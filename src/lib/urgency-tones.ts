@@ -25,9 +25,12 @@ export interface StatusBarTone {
 }
 
 export const heroTones: Record<UrgencyLevel, HeroTone> = {
+  // calm (60+ days): plenty of runway — a dusky steel-blue that
+  // signals "approach mode," visually distinct from focus's bright
+  // accent so the urgency ramp reads as a real progression.
   calm: {
-    gradient: "from-accent via-accent to-accent-hover",
-    ring: "ring-accent/30",
+    gradient: "from-[#3D5A80] via-[#406B95] to-[#4682B4]",
+    ring: "ring-[#3D5A80]/40",
     hours: "bg-white/15 text-white",
     ...onColorText,
   },
@@ -69,7 +72,14 @@ const accentStatusBarTone: StatusBarTone = {
 };
 
 export const statusBarTones: Record<UrgencyLevel, StatusBarTone> = {
-  calm: accentStatusBarTone,
+  calm: {
+    gradient: "from-[#3D5A80] to-[#4682B4]",
+    text: "text-white",
+    subtext: "text-white/85",
+    progressTrack: "bg-white/20",
+    progressFill: "bg-white",
+    border: "border-[#3D5A80]/50",
+  },
   focus: accentStatusBarTone,
   urgent: {
     gradient: "from-warning to-[#FF7B00]",

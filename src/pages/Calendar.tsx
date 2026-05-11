@@ -26,13 +26,12 @@ function shiftMonth(monthKey: string, delta: number): string {
 }
 
 function formatMonth(monthKey: string): string {
-  const [yStr, mStr] = monthKey.split("-");
   const date = fromDateKey(`${monthKey}-01`);
   return date.toLocaleDateString(undefined, {
     month: "long",
     year: "numeric",
     timeZone: "UTC",
-  }) + ` (${yStr}-${mStr})`;
+  });
 }
 
 export function CalendarPage() {
@@ -113,7 +112,7 @@ export function CalendarPage() {
               onClick={() => navigate(`/tasks?${encodeTaskDate(d.date)}`)}
               disabled={d.total === 0}
               className={`aspect-square rounded-md flex flex-col items-center justify-center gap-0.5 text-[11px] font-medium transition-transform active:scale-95 disabled:cursor-default ${tone} ${
-                isToday ? "ring-2 ring-accent" : ""
+                isToday ? "ring-2 ring-text-primary" : ""
               }`}
             >
               <span className="font-display text-sm leading-none tabular-nums">

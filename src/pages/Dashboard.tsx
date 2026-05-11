@@ -256,9 +256,9 @@ export function DashboardPage() {
           </span>
         </div>
         {todaysTasks.length > 0 && (
-          <div className="progress-bar h-1 mb-3">
+          <div className="progress-bar mb-3">
             <div
-              className="progress-bar-fill h-1"
+              className="progress-bar-fill"
               style={{ width: `${progress}%` }}
             />
           </div>

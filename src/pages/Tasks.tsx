@@ -208,9 +208,9 @@ export function TasksPage() {
               {overall.completed}/{overall.total} · {overallPct}%
             </p>
           </div>
-          <div className="progress-bar h-2">
+          <div className="progress-bar">
             <div
-              className="progress-bar-fill h-2"
+              className="progress-bar-fill"
               style={{ width: `${overallPct}%` }}
             />
           </div>

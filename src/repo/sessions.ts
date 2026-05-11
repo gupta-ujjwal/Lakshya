@@ -39,7 +39,7 @@ export async function getActiveSession(): Promise<ActiveSession | null> {
     const cappedEndedAt = new Date(
       startedMs + RECOVERY_CAP_HOURS * 3600 * 1000,
     ).toISOString();
-    await endSession(session.id, cappedEndedAt);
+    await closeSession(session.id, cappedEndedAt);
     return null;
   }
 
@@ -87,14 +87,13 @@ export async function startSession(
   return { ok: true, session, task };
 }
 
-// State transition open → closed. Writes endedAt and computes duration.
-// Idempotent: re-applying would clobber duration with a later snapshot.
-// Knows nothing about reflections or task progress — see the sibling
-// functions below for those. `endedAt` is supplied only by the recovery
-// path, which clips it to bound the duration of abandoned sessions.
-export async function endSession(
+// Module-private workhorse: the recovery path needs to inject a clipped
+// endedAt to bound abandoned-session duration. Public callers always
+// close "now" — exposing the second arg on `endSession` would invite
+// fabricated timestamps from outside this module.
+async function closeSession(
   id: string,
-  endedAt: string = nowIso(),
+  endedAt: string,
 ): Promise<ClosedSession> {
   const existing = await db.sessions.get(id);
   if (!existing) throw new Error("Session not found");
@@ -119,6 +118,13 @@ export async function endSession(
 
   await db.sessions.put(closed);
   return closed;
+}
+
+// State transition open → closed at the current moment. Idempotent on
+// already-closed sessions. Knows nothing about reflections or task
+// progress — see the sibling functions below for those.
+export async function endSession(id: string): Promise<ClosedSession> {
+  return closeSession(id, nowIso());
 }
 
 // Annotation on a closed session. Overwrites a prior reflection on

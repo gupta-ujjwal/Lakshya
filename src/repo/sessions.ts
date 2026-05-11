@@ -87,6 +87,13 @@ export async function startSession(
   return { ok: true, session, task };
 }
 
+// Throws on missing — the three callers below share this precondition.
+async function loadSession(id: string) {
+  const existing = await db.sessions.get(id);
+  if (!existing) throw new Error("Session not found");
+  return existing;
+}
+
 // Module-private workhorse: the recovery path needs to inject a clipped
 // endedAt to bound abandoned-session duration. Public callers always
 // close "now" — exposing the second arg on `endSession` would invite
@@ -95,8 +102,7 @@ async function closeSession(
   id: string,
   endedAt: string,
 ): Promise<ClosedSession> {
-  const existing = await db.sessions.get(id);
-  if (!existing) throw new Error("Session not found");
+  const existing = await loadSession(id);
   if (existing.state === "closed") return existing;
 
   const startedMs = new Date(existing.startedAt).getTime();
@@ -134,8 +140,7 @@ export async function recordSessionReflection(
   id: string,
   reflection: SessionReflection,
 ): Promise<ClosedSession> {
-  const existing = await db.sessions.get(id);
-  if (!existing) throw new Error("Session not found");
+  const existing = await loadSession(id);
   if (existing.state !== "closed") {
     throw new Error("Cannot record reflection on an open session");
   }
@@ -149,8 +154,7 @@ export async function recordSessionReflection(
 // the (taskId+date) unique index, so this is idempotent. No-op when the
 // session has no task attached.
 export async function markSessionTaskComplete(id: string): Promise<void> {
-  const existing = await db.sessions.get(id);
-  if (!existing) throw new Error("Session not found");
+  const existing = await loadSession(id);
   if (existing.state !== "closed") {
     throw new Error("Cannot mark task complete for an open session");
   }

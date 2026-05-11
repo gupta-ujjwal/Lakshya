@@ -75,11 +75,8 @@ const accentStatusBarTone: StatusBarTone = {
 
 export const statusBarTones: Record<UrgencyLevel, StatusBarTone> = {
   calm: {
+    ...accentStatusBarTone,
     gradient: "from-calm to-calm-end",
-    text: "text-white",
-    subtext: "text-white/85",
-    progressTrack: "bg-white/20",
-    progressFill: "bg-white",
     border: "border-calm/50",
   },
   focus: accentStatusBarTone,

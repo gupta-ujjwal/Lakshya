@@ -5,7 +5,15 @@ import { daysUntil, journeyProgress, urgencyLevel } from "@/lib/countdown";
 import { statusBarTones } from "@/lib/urgency-tones";
 import { getDashboard, type DashboardSchedule } from "@/repo";
 
-export function StatusBar() {
+interface StatusBarProps {
+  // When true, hides the big countdown number + "days until" label.
+  // The route's content layer claims the loud countdown surface
+  // instead — set by the layout that knows which routes own a hero.
+  // StatusBar stays ignorant of routing.
+  compact?: boolean;
+}
+
+export function StatusBar({ compact = false }: StatusBarProps) {
   const location = useLocation();
   const [schedule, setSchedule] = useState<DashboardSchedule | null>(null);
 
@@ -51,16 +59,20 @@ export function StatusBar() {
       aria-label={`${countdownNumber} ${countdownLabel} ${schedule.title}`}
     >
       <div className="max-w-lg mx-auto px-4 pt-2.5 pb-2 flex items-center gap-3">
-        <span
-          className={`text-3xl font-display font-extrabold leading-none tabular-nums ${tone.text}`}
-          aria-hidden
-        >
-          {countdownNumber}
-        </span>
-        <span className="flex-1 min-w-0">
-          <span className={`block text-[11px] font-medium uppercase tracking-wide ${tone.subtext}`}>
-            {countdownLabel}
+        {!compact && (
+          <span
+            className={`text-3xl font-display font-extrabold leading-none tabular-nums ${tone.text}`}
+            aria-hidden
+          >
+            {countdownNumber}
           </span>
+        )}
+        <span className="flex-1 min-w-0">
+          {!compact && (
+            <span className={`block text-[11px] font-medium uppercase tracking-wide ${tone.subtext}`}>
+              {countdownLabel}
+            </span>
+          )}
           <span className={`block text-sm font-semibold truncate ${tone.text}`}>
             {schedule.title}
           </span>

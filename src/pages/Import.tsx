@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   getSampleSchedule,
   ImportScheduleSchema,
@@ -45,7 +46,7 @@ function formatTimeAgo(date: Date, now: number = Date.now()): string {
 }
 
 const DROP_ZONE_BASE =
-  "relative border-2 border-dashed rounded-2xl p-6 text-center transition-all duration-200 cursor-pointer";
+  "relative border-2 border-dashed rounded-md p-6 text-center transition-all duration-200 cursor-pointer";
 
 const DROP_ZONE_BY_STATE: Record<UploadState, string> = {
   idle: "border-border bg-bg-secondary hover:border-accent",
@@ -237,25 +238,28 @@ export function ImportPage() {
     <div className="min-h-screen bg-bg-primary">
       <div className="max-w-lg mx-auto py-6">
         <header className="mb-6">
-          <Link
-            to="/"
-            className="inline-flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors mb-4"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+          <div className="flex items-center justify-between mb-4">
+            <Link
+              to="/"
+              className="inline-flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-            <span className="text-sm">Back to Dashboard</span>
-          </Link>
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+              <span className="text-sm">Back to Dashboard</span>
+            </Link>
+            <ThemeToggle />
+          </div>
           <h1 className="text-2xl font-display font-bold text-text-primary">
             Import Your Study Schedule
           </h1>
@@ -357,7 +361,7 @@ export function ImportPage() {
           {uploadState === "error" &&
             errorMessage &&
             !validationErrors.length && (
-              <div className="bg-danger-soft/50 border border-danger/30 rounded-xl p-4">
+              <div className="bg-danger-soft/50 border border-danger/30 rounded-md p-4">
                 <p className="text-sm font-semibold text-danger">Import failed</p>
                 <p className="text-sm text-text-secondary mt-1">{errorMessage}</p>
                 {file && (
@@ -372,7 +376,7 @@ export function ImportPage() {
             )}
 
           {validationErrors.length > 0 && (
-            <div className="bg-warning-soft/50 border border-warning/30 rounded-xl p-4">
+            <div className="bg-warning-soft/50 border border-warning/30 rounded-md p-4">
               <p className="text-sm font-semibold text-warning mb-2">
                 {validationErrors.length} error
                 {validationErrors.length !== 1 ? "s" : ""} found
@@ -413,7 +417,7 @@ export function ImportPage() {
           <button
             onClick={handleImport}
             disabled={uploadState !== "file-selected"}
-            className={`w-full h-12 rounded-xl font-semibold text-base transition-all duration-150 ${
+            className={`w-full h-12 rounded-md font-semibold text-base transition-all duration-150 ${
               uploadState === "file-selected"
                 ? "bg-accent text-white hover:bg-accent-hover active:scale-[0.98] shadow-md"
                 : "bg-bg-tertiary text-text-muted cursor-not-allowed"
@@ -423,7 +427,7 @@ export function ImportPage() {
           </button>
 
           {uploadState === "success" && (
-            <div className="rounded-2xl p-6 text-center bg-success-soft/50 border border-success/30 animate-fade-in">
+            <div className="rounded-md p-6 text-center bg-success-soft/50 border border-success/30 animate-fade-in">
               <h2 className="text-lg font-semibold text-text-primary mb-1">
                 Schedule imported successfully!
               </h2>
@@ -435,13 +439,13 @@ export function ImportPage() {
               <div className="space-y-2">
                 <Link
                   to="/"
-                  className="block w-full h-12 rounded-xl bg-success text-white font-semibold text-base flex items-center justify-center hover:bg-success/90 active:scale-[0.98] transition-all"
+                  className="block w-full h-12 rounded-md bg-success text-white font-semibold text-base flex items-center justify-center hover:bg-success/90 active:scale-[0.98] transition-all"
                 >
                   View Dashboard
                 </Link>
                 <button
                   onClick={resetAndImportAnother}
-                  className="w-full h-12 rounded-xl bg-bg-secondary text-text-primary font-semibold text-base border border-border hover:bg-bg-tertiary active:scale-[0.98] transition-all"
+                  className="w-full h-12 rounded-md bg-bg-secondary text-text-primary font-semibold text-base border border-border hover:bg-bg-tertiary active:scale-[0.98] transition-all"
                 >
                   Import Another
                 </button>

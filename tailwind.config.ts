@@ -37,6 +37,17 @@ const config: Config = {
           DEFAULT: "var(--border)",
           strong: "var(--border-strong)",
         },
+        // Steel-blue family used by the `calm` urgency tone (60+ days
+        // out). Theme-invariant — works on both light and dark
+        // backgrounds — so these are plain hex tokens rather than CSS
+        // variables. Other tones (focus/urgent/critical) use the
+        // semantic accent/warning/danger tokens; calm needed its own
+        // hue to break the calm===focus visual collision.
+        calm: {
+          DEFAULT: "#3D5A80",
+          mid: "#406B95",
+          end: "#4682B4",
+        },
       },
       fontFamily: {
         // The CSS variables (defined in src/globals.css alongside the

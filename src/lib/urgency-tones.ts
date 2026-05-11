@@ -25,9 +25,14 @@ export interface StatusBarTone {
 }
 
 export const heroTones: Record<UrgencyLevel, HeroTone> = {
+  // calm (60+ days): plenty of runway — a dusky steel-blue that
+  // signals "approach mode," visually distinct from focus's bright
+  // accent so the urgency ramp reads as a real progression. Colors
+  // live in tailwind.config.ts under `colors.calm` so they're tokens,
+  // not orphaned hex strings.
   calm: {
-    gradient: "from-accent via-accent to-accent-hover",
-    ring: "ring-accent/30",
+    gradient: "from-calm via-calm-mid to-calm-end",
+    ring: "ring-calm/40",
     hours: "bg-white/15 text-white",
     ...onColorText,
   },
@@ -69,7 +74,11 @@ const accentStatusBarTone: StatusBarTone = {
 };
 
 export const statusBarTones: Record<UrgencyLevel, StatusBarTone> = {
-  calm: accentStatusBarTone,
+  calm: {
+    ...accentStatusBarTone,
+    gradient: "from-calm to-calm-end",
+    border: "border-calm/50",
+  },
   focus: accentStatusBarTone,
   urgent: {
     gradient: "from-warning to-[#FF7B00]",

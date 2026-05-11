@@ -1,0 +1,41 @@
+## Setup
+
+✅ Cold start redirects to /import (no schedule)  — url=http://localhost:3003/import
+✅ Imported sample schedule
+✅ Dashboard loaded  — url=http://localhost:3003/
+
+## PR-specific flows
+
+✅ Dashboard StatusBar is slim (no text-3xl countdown span)  — text-3xl-spans=0
+✅ DaysLeftHero countdown surface visible on dashboard
+ℹ️  Screenshot: dashboard-slim-statusbar  — /tmp/qa-lakshya/artifacts/evidence-pr-41-dashboard-slim-statusbar.png
+✅ Tasks page StatusBar shows the big text-3xl countdown  — text=176
+ℹ️  Screenshot: tasks-full-statusbar  — /tmp/qa-lakshya/artifacts/evidence-pr-41-tasks-full-statusbar.png
+✅ Calendar header has no (YYYY-MM) debug suffix  — header="May 2026"
+✅ Today's cell uses ring-text-primary  — match
+ℹ️  Screenshot: calendar-header-and-ring  — /tmp/qa-lakshya/artifacts/evidence-pr-41-calendar-header-and-ring.png
+✅ Import header exposes ThemeToggle (aria-label='Switch to (dark|light) mode')  — count=1
+ℹ️  Screenshot: import-themetoggle  — /tmp/qa-lakshya/artifacts/evidence-pr-41-import-themetoggle.png
+✅ Subjects list progress bars use default .progress-bar height (no h-1/h-2 override)  — class="progress-bar mt-1.5 block"
+ℹ️  Screenshot: subjects-progress-bars  — /tmp/qa-lakshya/artifacts/evidence-pr-41-subjects-progress-bars.png
+✅ Pin button uses rounded-md radius (was rounded-xl)  — class="w-full min-h-[48px] rounded-md font-semibold text-base transition-all duration-150 active:scale-[0.98] bg-accent text-white hover:bg-accent-hover shadow-md"
+ℹ️  Screenshot: subject-detail-pin-radius  — /tmp/qa-lakshya/artifacts/evidence-pr-41-subject-detail-pin-radius.png
+
+## Direct URL navigation
+
+✅ Cold reload of / keeps StatusBar slim  — text-3xl-spans=0
+✅ Cold reload of /tasks keeps StatusBar full
+✅ Cold reload of /calendar serves the page  — header="May 2026"
+✅ Cold reload of /import keeps ThemeToggle in header
+✅ Cold reload of /subjects renders progress bars  — bars=14
+✅ Cold reload of /subjects/Anatomy shows pin button
+
+## Pinned design rules
+
+✅ StatusBar compact mode is route-aware (slim on /, full elsewhere)
+✅ Today's calendar cell uses ring-text-primary, not ring-accent  — primary=1 accent=0
+✅ LetterTile uses rounded-md (was rounded-xl)  — match
+
+## Console / page errors
+
+_(none)_

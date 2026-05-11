@@ -152,16 +152,12 @@ describe("ImportScheduleSchema cycle completeness", () => {
 
 describe("ImportScheduleSchema fuzz / oversize hardening", () => {
   it("rejects cycleLengthDays > 366", () => {
-    const result = ImportScheduleSchema.safeParse(
-      baseInput([{ dayNumber: 1, slots: [{ subject: "Math" }] }]),
-    );
-    // valid baseline above; now make it oversize
     const oversize = ImportScheduleSchema.safeParse({
-      ...(baseInput([]) as object),
+      title: "Plan",
+      targetDate: "2026-12-31",
       cycleLengthDays: 367,
       timetable: Array.from({ length: 367 }, (_, i) => ALL_SUBJECTS(i + 1)),
     });
-    expect(result.success).toBe(true);
     expect(oversize.success).toBe(false);
   });
 

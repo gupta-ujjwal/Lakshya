@@ -119,11 +119,9 @@ export function SessionWidget({ task, onSessionFinished }: SessionWidgetProps) {
     }
   }
 
-  // Close the session DB row immediately on Stop. Before, closure only
-  // happened after the reflection screen — a tab-close in that window
-  // left the row open, and the next visit's recovery committed a junk
-  // multi-hour `duration` once the user finally tapped an emoji. Now the
-  // duration is locked at Stop; the reflection screen just annotates.
+  // Close on Stop, not on emoji-pick — otherwise a tab close in the
+  // reflect window leaves the row open and the next visit commits a
+  // junk multi-hour duration.
   async function stopSession() {
     if (!sessionId) return;
     setSaving(true);

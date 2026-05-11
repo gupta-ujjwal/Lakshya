@@ -24,14 +24,10 @@
     --accent: #2AABFF;
     --accent-hover: #1A9AEE;
     --accent-soft: rgba(42, 171, 255, 0.12);
-    /* --accent-strong is the AA-compliant interactive variant. Two
-       directions both clear WCAG 4.5:1: (a) --accent-strong text on
-       --bg-primary; (b) --accent-strong-fg text on --accent-strong (the
-       button case). The fg pair is needed because no single accent
-       value clears 4.5:1 in *both* directions across light and dark
-       backgrounds. --accent stays bright for gradients, soft tints, and
-       decorative chromatic surfaces where contrast doesn't apply. See
-       tests/lib/design-tokens.test.ts for the assertions. */
+    /* AA-compliant pair: --accent-strong-fg on --accent-strong (button),
+       and --accent-strong on --bg-primary (text). --accent stays bright
+       for gradients/tints where contrast doesn't apply. Assertions live
+       in tests/lib/design-tokens.test.ts. */
     --accent-strong: #0066CC;
     --accent-strong-fg: #FFFFFF;
     --success: #34C759;
@@ -76,12 +72,8 @@
     --accent: #2AABFF;
     --accent-hover: #4DBFFF;
     --accent-soft: rgba(42, 171, 255, 0.2);
-    /* Dark mode: --accent already clears AA against the dark
-       backgrounds (6.78:1 vs --bg-primary #1C1E21) for the *text*
-       direction, so --accent-strong stays bright here. But white text
-       on the same bright #2AABFF is only 2.49:1 — the button direction
-       fails AA. Flip the fg to a dark colour so button text clears 4.5:1
-       against the bright accent (6.7:1). */
+    /* Dark mode keeps the bright accent (text direction passes), but
+       flips the fg dark so button text on the bright accent clears AA. */
     --accent-strong: #2AABFF;
     --accent-strong-fg: #1C1E21;
     --success: #30D158;

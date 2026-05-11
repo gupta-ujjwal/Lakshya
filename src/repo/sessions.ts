@@ -15,13 +15,9 @@ export interface ActiveSession {
   task: TaskPreview | null;
 }
 
-// Any open session older than this is treated as abandoned and auto-closed
-// on the next `getActiveSession` call, with `endedAt` clipped to
-// `startedAt + RECOVERY_CAP_HOURS` so the recorded `duration` can't bleed
-// past the cap. Covers two failure modes sharing the same root: (1) tab
-// closed mid-active, never stopped; (2) tab closed in the reflect-phase
-// gap that existed before #38's split. For NEET-PG, no honest focus block
-// runs this long — 12 hours is a safe floor.
+// Open sessions older than this are auto-closed on next read with
+// `endedAt` clipped, so abandoned-tab cases can't leak unbounded
+// duration into the dashboard's hours-studied aggregate.
 export const RECOVERY_CAP_HOURS = 12;
 
 export async function getActiveSession(): Promise<ActiveSession | null> {
@@ -94,10 +90,8 @@ async function loadSession(id: string) {
   return existing;
 }
 
-// Module-private workhorse: the recovery path needs to inject a clipped
-// endedAt to bound abandoned-session duration. Public callers always
-// close "now" — exposing the second arg on `endSession` would invite
-// fabricated timestamps from outside this module.
+// Module-private so the recovery path can pass a clipped `endedAt`
+// without exposing arbitrary timestamps as a public API.
 async function closeSession(
   id: string,
   endedAt: string,
@@ -126,16 +120,12 @@ async function closeSession(
   return closed;
 }
 
-// State transition open → closed at the current moment. Idempotent on
-// already-closed sessions. Knows nothing about reflections or task
-// progress — see the sibling functions below for those.
+// Idempotent on already-closed.
 export async function endSession(id: string): Promise<ClosedSession> {
   return closeSession(id, nowIso());
 }
 
-// Annotation on a closed session. Overwrites a prior reflection on
-// re-call — the latest tap wins. Throws if called on a still-open session,
-// since the lifecycle invariant is "close, then annotate."
+// Re-call overwrites — latest tap wins.
 export async function recordSessionReflection(
   id: string,
   reflection: SessionReflection,
@@ -149,10 +139,7 @@ export async function recordSessionReflection(
   return updated;
 }
 
-// Marks the session's underlying task complete for today. Side effect on
-// taskProgress, not on the session row. recordTaskProgress upserts on
-// the (taskId+date) unique index, so this is idempotent. No-op when the
-// session has no task attached.
+// Idempotent via recordTaskProgress's upsert on (taskId+date).
 export async function markSessionTaskComplete(id: string): Promise<void> {
   const existing = await loadSession(id);
   if (existing.state !== "closed") {

@@ -27,18 +27,14 @@ export interface CycleTimetableValidation {
   missing: number[];
 }
 
-// Domain-layer invariant check: the timetable must cover every cycle day
-// exactly once, with no out-of-range entries. Kept independent of Zod so
-// a future edit flow can re-validate a timetable without round-tripping
-// through ImportScheduleSchema.
+// Independent of Zod so callers outside import (e.g. edit flow) can
+// reuse it without re-parsing the whole schema.
 export function validateCycleTimetable(
   timetable: TimetableDay[],
   cycleLengthDays: number,
 ): CycleTimetableValidation {
   const counts = new Map<number, number>();
-  // Use a Set for out-of-range too — without dedup, a payload submitting
-  // dayNumber 8 twice in a 7-day cycle would surface "outside cycle
-  // range 1..7: 8, 8" and read as two distinct problems.
+  // Set, not array — dedup so "8, 8" doesn't surface as two problems.
   const outOfRangeSet = new Set<number>();
   for (const day of timetable) {
     if (day.dayNumber < 1 || day.dayNumber > cycleLengthDays) {

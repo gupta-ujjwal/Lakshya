@@ -253,7 +253,7 @@ export function SessionWidget({ task, onSessionFinished }: SessionWidgetProps) {
       data-testid="session-widget-idle"
       className="card p-5 bg-gradient-to-br from-accent/10 to-accent/5 animate-fade-in"
     >
-      <p className="text-xs font-semibold text-accent uppercase tracking-wide mb-2">
+      <p className="text-xs font-semibold text-accent-strong uppercase tracking-wide mb-2">
         Up Next
       </p>
       {task ? (

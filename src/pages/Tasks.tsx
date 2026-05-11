@@ -186,7 +186,7 @@ export function TasksPage() {
             Showing {formatDateLong(pinnedDate)}.{" "}
             <button
               onClick={clearPinnedDate}
-              className="text-accent hover:underline"
+              className="text-accent-strong hover:underline"
             >
               Clear
             </button>
@@ -258,9 +258,9 @@ export function TasksPage() {
                         : [...prev, s],
                     )
                   }
-                  className={`min-h-[32px] px-3 rounded-full text-xs font-medium border transition-colors ${
+                  className={`min-h-[44px] px-3 rounded-full text-xs font-medium border transition-colors ${
                     active
-                      ? "bg-accent text-white border-accent"
+                      ? "bg-accent-strong text-white border-accent-strong"
                       : "bg-bg-secondary text-text-secondary border-border hover:bg-bg-tertiary"
                   }`}
                 >
@@ -271,7 +271,7 @@ export function TasksPage() {
             {subjectFilter.length > 0 && (
               <button
                 onClick={() => setSubjectFilter([])}
-                className="min-h-[32px] px-3 rounded-full text-xs font-medium text-danger"
+                className="min-h-[44px] px-3 rounded-full text-xs font-medium text-danger"
               >
                 Clear
               </button>

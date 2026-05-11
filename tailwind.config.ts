@@ -20,6 +20,8 @@ const config: Config = {
           DEFAULT: "var(--accent)",
           hover: "var(--accent-hover)",
           soft: "var(--accent-soft)",
+          // AA-compliant variant — see --accent-strong in globals.css.
+          strong: "var(--accent-strong)",
         },
         success: {
           DEFAULT: "var(--success)",

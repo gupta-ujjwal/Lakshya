@@ -319,7 +319,7 @@ export function ImportPage() {
             )}
 
             {uploadState === "dragging" && (
-              <p className="pointer-events-none text-base font-medium text-accent">
+              <p className="pointer-events-none text-base font-medium text-accent-strong">
                 Release to upload file
               </p>
             )}
@@ -351,7 +351,7 @@ export function ImportPage() {
                 <div className="flex justify-center mb-3">
                   <div className="w-12 h-12 rounded-full border-4 border-accent border-t-transparent animate-spin" />
                 </div>
-                <p className="text-base font-medium text-accent">
+                <p className="text-base font-medium text-accent-strong">
                   Importing schedule...
                 </p>
               </div>

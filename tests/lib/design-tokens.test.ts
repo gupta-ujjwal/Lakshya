@@ -78,24 +78,37 @@ describe("Design Token Compliance", () => {
   });
 
   describe("Accent contrast (WCAG AA, 4.5:1)", () => {
-    it("light-mode --accent-strong meets 4.5:1 against --bg-primary", () => {
+    // Two directions matter: text on bg (--accent-strong on --bg-primary)
+    // and bg on text (a button's --accent-strong-fg on --accent-strong).
+    // No single hex can clear AA in both directions across both themes,
+    // which is why --accent-strong-fg exists.
+
+    it("light-mode --accent-strong meets 4.5:1 against --bg-primary (text direction)", () => {
       const block = blockBody(readGlobals(), ":root");
       const accent = readHex(block, "--accent-strong");
       const bg = readHex(block, "--bg-primary");
       expect(contrast(accent, bg)).toBeGreaterThanOrEqual(4.5);
     });
 
-    it("light-mode --accent-strong meets 4.5:1 against white (white-on-accent buttons)", () => {
-      const block = blockBody(readGlobals(), ":root");
-      const accent = readHex(block, "--accent-strong");
-      expect(contrast(accent, "#FFFFFF")).toBeGreaterThanOrEqual(4.5);
-    });
-
-    it("dark-mode --accent-strong meets 4.5:1 against --bg-primary", () => {
+    it("dark-mode --accent-strong meets 4.5:1 against --bg-primary (text direction)", () => {
       const block = blockBody(readGlobals(), "\\.dark");
       const accent = readHex(block, "--accent-strong");
       const bg = readHex(block, "--bg-primary");
       expect(contrast(accent, bg)).toBeGreaterThanOrEqual(4.5);
+    });
+
+    it("light-mode --accent-strong-fg on --accent-strong meets 4.5:1 (button direction)", () => {
+      const block = blockBody(readGlobals(), ":root");
+      const fg = readHex(block, "--accent-strong-fg");
+      const bg = readHex(block, "--accent-strong");
+      expect(contrast(fg, bg)).toBeGreaterThanOrEqual(4.5);
+    });
+
+    it("dark-mode --accent-strong-fg on --accent-strong meets 4.5:1 (button direction)", () => {
+      const block = blockBody(readGlobals(), "\\.dark");
+      const fg = readHex(block, "--accent-strong-fg");
+      const bg = readHex(block, "--accent-strong");
+      expect(contrast(fg, bg)).toBeGreaterThanOrEqual(4.5);
     });
   });
 });

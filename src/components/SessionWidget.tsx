@@ -272,7 +272,7 @@ export function SessionWidget({ task, onSessionFinished }: SessionWidgetProps) {
         onClick={handleStart}
         disabled={starting}
         data-testid="start-session-button"
-        className="mt-4 w-full min-h-[48px] rounded-md bg-accent-strong text-white font-semibold text-base active:scale-[0.98] transition-all disabled:opacity-60"
+        className="mt-4 w-full min-h-[48px] rounded-md bg-accent-strong text-accent-strong-fg font-semibold text-base active:scale-[0.98] transition-all disabled:opacity-60"
       >
         {starting ? "Starting…" : "Start session"}
       </button>

@@ -260,7 +260,7 @@ export function TasksPage() {
                   }
                   className={`min-h-[44px] px-3 rounded-full text-xs font-medium border transition-colors ${
                     active
-                      ? "bg-accent-strong text-white border-accent-strong"
+                      ? "bg-accent-strong text-accent-strong-fg border-accent-strong"
                       : "bg-bg-secondary text-text-secondary border-border hover:bg-bg-tertiary"
                   }`}
                 >

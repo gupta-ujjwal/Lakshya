@@ -24,12 +24,16 @@
     --accent: #2AABFF;
     --accent-hover: #1A9AEE;
     --accent-soft: rgba(42, 171, 255, 0.12);
-    /* --accent-strong is the AA-compliant interactive variant: white text
-       on --accent-strong (and --accent-strong text on --bg-primary) must
-       clear WCAG 4.5:1. --accent stays bright for gradients, soft tints,
-       and decorative chromatic surfaces where contrast doesn't apply.
-       See tests/lib/design-tokens.test.ts for the contrast assertion. */
+    /* --accent-strong is the AA-compliant interactive variant. Two
+       directions both clear WCAG 4.5:1: (a) --accent-strong text on
+       --bg-primary; (b) --accent-strong-fg text on --accent-strong (the
+       button case). The fg pair is needed because no single accent
+       value clears 4.5:1 in *both* directions across light and dark
+       backgrounds. --accent stays bright for gradients, soft tints, and
+       decorative chromatic surfaces where contrast doesn't apply. See
+       tests/lib/design-tokens.test.ts for the assertions. */
     --accent-strong: #0066CC;
+    --accent-strong-fg: #FFFFFF;
     --success: #34C759;
     --success-soft: rgba(52, 199, 89, 0.12);
     --warning: #FF9500;
@@ -72,10 +76,14 @@
     --accent: #2AABFF;
     --accent-hover: #4DBFFF;
     --accent-soft: rgba(42, 171, 255, 0.2);
-    /* Dark mode: --accent already clears AA against the dark backgrounds
-       (6.78:1 vs --bg-primary #1C1E21), so --accent-strong is identical
-       to --accent here. The split exists for light mode. */
+    /* Dark mode: --accent already clears AA against the dark
+       backgrounds (6.78:1 vs --bg-primary #1C1E21) for the *text*
+       direction, so --accent-strong stays bright here. But white text
+       on the same bright #2AABFF is only 2.49:1 — the button direction
+       fails AA. Flip the fg to a dark colour so button text clears 4.5:1
+       against the bright accent (6.7:1). */
     --accent-strong: #2AABFF;
+    --accent-strong-fg: #1C1E21;
     --success: #30D158;
     --success-soft: rgba(48, 209, 88, 0.2);
     --warning: #FF9F0A;
@@ -111,7 +119,7 @@
   }
 
   .btn-primary {
-    @apply h-12 w-full rounded-md bg-accent-strong text-white font-semibold text-base;
+    @apply h-12 w-full rounded-md bg-accent-strong text-accent-strong-fg font-semibold text-base;
     @apply transition-all duration-150 ease-out;
     @apply active:scale-[0.98];
     @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2;

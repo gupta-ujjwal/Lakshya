@@ -1,40 +1,37 @@
 import { useEffect, useRef, useState } from "react";
 import { getLast7DayAverage, getTodayCount, setTodayCount } from "@/repo";
 
+interface Stats {
+  count: number;
+  average: number;
+}
+
 // Tap-to-edit number that doubles as the display. Aspirants log MCQs
 // in batches of 10-100; ±1 buttons would force fifty taps, so the
 // number itself is the input. select-all on focus means typing
 // replaces the prior value rather than appending to it.
 export function McqCounter() {
-  const [count, setCount] = useState<number | null>(null);
-  const [average, setAverage] = useState<number | null>(null);
-  // `draft === null` means "not editing" — collapses the old `editing`
-  // boolean and `draft` string, which were never independently
-  // meaningful (draft was always either empty or the current count's
-  // string when editing started).
+  const [stats, setStats] = useState<Stats | null>(null);
   const [draft, setDraft] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Pure read — returns the snapshot, leaves state-setting to the
-  // caller so the mount effect doesn't trip set-state-in-effect.
-  async function readStats() {
-    const [today, avg] = await Promise.all([
+  async function readStats(): Promise<Stats> {
+    const [count, average] = await Promise.all([
       getTodayCount(),
       getLast7DayAverage(),
     ]);
-    return { count: today, average: avg };
+    return { count, average };
   }
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const stats = await readStats();
+        const next = await readStats();
         if (cancelled) return;
-        setCount(stats.count);
-        setAverage(stats.average);
+        setStats(next);
         setError(null);
       } catch (err) {
         if (cancelled) return;
@@ -50,13 +47,12 @@ export function McqCounter() {
     if (draft === null) return;
     const parsed = parseInt(draft, 10);
     setDraft(null);
-    if (!Number.isFinite(parsed) || parsed < 0 || parsed === count) return;
+    if (!Number.isFinite(parsed) || parsed < 0 || parsed === stats?.count)
+      return;
     setSaving(true);
     try {
       await setTodayCount(parsed);
-      const stats = await readStats();
-      setCount(stats.count);
-      setAverage(stats.average);
+      setStats(await readStats());
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save");
@@ -66,7 +62,7 @@ export function McqCounter() {
   }
 
   function beginEdit() {
-    setDraft(String(count ?? 0));
+    setDraft(String(stats?.count ?? 0));
     // requestAnimationFrame so the input mounts before select() runs.
     requestAnimationFrame(() => {
       inputRef.current?.focus();
@@ -101,19 +97,19 @@ export function McqCounter() {
         ) : (
           <button
             onClick={beginEdit}
-            // disabled during the in-flight save window too — without
-            // it, a fast double-tap can re-enter edit mode with stale
+            // Disabled during the in-flight save window too — without
+            // it, a fast double-tap re-enters edit mode with the stale
             // count before the post-commit readStats lands.
-            disabled={count === null || saving}
+            disabled={stats === null || saving}
             data-testid="mcq-counter-display"
             className="font-display text-4xl font-bold text-text-primary tabular-nums min-h-[44px] text-left disabled:opacity-60"
-            aria-label={`MCQs solved today: ${count ?? 0}. Tap to edit.`}
+            aria-label={`MCQs solved today: ${stats?.count ?? 0}. Tap to edit.`}
           >
-            {count ?? "—"}
+            {stats?.count ?? "—"}
           </button>
         )}
         <span className="text-xs text-text-muted">
-          {average !== null ? `7-day avg: ${average}` : ""}
+          {stats !== null ? `7-day avg: ${stats.average}` : ""}
         </span>
       </div>
       {error && <p className="mt-2 text-xs text-danger">{error}</p>}

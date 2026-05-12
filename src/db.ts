@@ -34,9 +34,8 @@ export interface TaskRecord {
 
 export type SessionRecord = OpenSession | ClosedSession;
 
-// MCQ counter (issue #8). One record per calendar day — date is the
-// primary key, no surrogate UUID. Mutations are simple upserts: `put`
-// replaces today's row.
+// One row per calendar day — date is the primary key, no surrogate
+// UUID, because daily aggregate identity *is* the date.
 export interface McqLogRecord {
   date: string;
   count: number;
@@ -69,9 +68,8 @@ class LakshyaDB extends Dexie {
           delete s.focusMinutes;
         }),
     );
-    // v3: add mcqLogs for the daily MCQ counter (#8). All prior stores
-    // must be repeated; Dexie treats `.stores()` as the full schema for
-    // that version, not a delta.
+    // Dexie's `.stores()` is the full schema for a version, not a
+    // delta — every prior store must be repeated.
     this.version(3).stores({
       schedules: "id, createdAt",
       tasks: "id, scheduleId, [scheduleId+targetDate], targetDate",

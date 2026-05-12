@@ -20,13 +20,10 @@ const McqLogSchema = z.object({
 export const EXPORT_VERSION = 2;
 
 // When bumping EXPORT_VERSION, add a per-version migration branch in
-// parsePayload before bulkAdd. Do not add new tables to importAll
-// without incrementing the version — bulkAdd of an unknown table
-// would silently no-op.
-//
-// v1 → v2: mcqLogs added (#8). v1 payloads remain importable; their
-// mcqLogs collection defaults to empty so prior backups don't fail to
-// restore.
+// parsePayload before bulkAdd, and add the new collection to
+// SUPPORTED_VERSIONS. Adding a table to importAll without bumping
+// silently no-ops on older payloads — bulkAdd of an unrecognized
+// collection just isn't called.
 const ExportPayloadSchema = z.object({
   version: z.union([z.literal(1), z.literal(2)]),
   exportedAt: z.string().optional(),

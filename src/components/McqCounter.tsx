@@ -17,6 +17,8 @@ export function McqCounter() {
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Returns a snapshot; callers set state. Keeps the mount effect
+  // clear of the react-hooks/set-state-in-effect lint rule.
   async function readStats(): Promise<Stats> {
     const [count, average] = await Promise.all([
       getTodayCount(),

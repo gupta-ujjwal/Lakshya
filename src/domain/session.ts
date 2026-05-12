@@ -8,12 +8,6 @@ export const StartSessionSchema = z.object({
 });
 export type StartSessionInput = z.infer<typeof StartSessionSchema>;
 
-export const EndSessionSchema = z.object({
-  reflection: SessionReflectionSchema.optional(),
-  markTaskComplete: z.boolean().optional(),
-});
-export type EndSessionInput = z.infer<typeof EndSessionSchema>;
-
 // Discriminated union: open and closed sessions are different shapes,
 // not a single shape with nullable fields. This makes "duration is set
 // iff session is closed" expressible at the type level. Stopwatch mode

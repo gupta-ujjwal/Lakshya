@@ -299,7 +299,7 @@ export function DashboardPage() {
                 <button
                   key={s}
                   onClick={() => handleUnpin(s)}
-                  className="text-[11px] font-medium text-accent hover:underline"
+                  className="text-[11px] font-medium text-accent-strong hover:underline"
                 >
                   Unpin {s}
                 </button>

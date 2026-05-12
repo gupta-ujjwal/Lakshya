@@ -11,7 +11,13 @@ export type {
 export { getCalendarSummary } from "./calendar";
 export type { CalendarDay, CalendarHeat } from "./calendar";
 
-export { startSession, endSession, getActiveSession } from "./sessions";
+export {
+  startSession,
+  endSession,
+  recordSessionReflection,
+  markSessionTaskComplete,
+  getActiveSession,
+} from "./sessions";
 export type { ActiveSession, StartSessionResult } from "./sessions";
 
 export { getDashboard, getOverallProgress } from "./dashboard";

@@ -100,7 +100,7 @@ export function SubjectsPage() {
           <p>No subjects yet — import a schedule to populate this list.</p>
           <Link
             to="/import"
-            className="mt-3 inline-block text-accent font-medium hover:underline"
+            className="mt-3 inline-block text-accent-strong font-medium hover:underline"
           >
             Go to import
           </Link>
@@ -123,7 +123,7 @@ export function SubjectsPage() {
       {pinned.length > 0 && (
         <div className="card p-3 bg-accent-soft/40 border border-accent/30">
           <p className="text-xs text-text-secondary">
-            <span className="font-semibold text-accent">Today’s focus:</span>{" "}
+            <span className="font-semibold text-accent-strong">Today’s focus:</span>{" "}
             {pinned.join(", ")}
           </p>
         </div>

@@ -21,16 +21,81 @@ const isValidDateString = (val: string): boolean => {
   return !isNaN(date.getTime()) && DATE_STRING_REGEX.test(val);
 };
 
-export const ImportScheduleSchema = z.object({
-  title: z.string().min(1).max(255),
-  description: z.string().optional(),
-  targetDate: z.string().refine(isValidDateString, {
-    message: "targetDate must be a valid date string in YYYY-MM-DD format",
-  }),
-  cycleLengthDays: z.number().int().min(1).max(366),
-  hoursPerDay: HoursPerDaySchema.optional(),
-  timetable: z.array(TimetableDaySchema).min(1),
-});
+export interface CycleTimetableValidation {
+  outOfRange: number[];
+  duplicate: number[];
+  missing: number[];
+}
+
+// Independent of Zod so callers outside import (e.g. edit flow) can
+// reuse it without re-parsing the whole schema.
+export function validateCycleTimetable(
+  timetable: TimetableDay[],
+  cycleLengthDays: number,
+): CycleTimetableValidation {
+  const counts = new Map<number, number>();
+  // Set, not array — dedup so "8, 8" doesn't surface as two problems.
+  const outOfRangeSet = new Set<number>();
+  for (const day of timetable) {
+    if (day.dayNumber < 1 || day.dayNumber > cycleLengthDays) {
+      outOfRangeSet.add(day.dayNumber);
+      continue;
+    }
+    counts.set(day.dayNumber, (counts.get(day.dayNumber) ?? 0) + 1);
+  }
+  const duplicate: number[] = [];
+  for (const [day, count] of counts) {
+    if (count > 1) duplicate.push(day);
+  }
+  const missing: number[] = [];
+  for (let day = 1; day <= cycleLengthDays; day++) {
+    if (!counts.has(day)) missing.push(day);
+  }
+  return {
+    outOfRange: [...outOfRangeSet].sort((a, b) => a - b),
+    duplicate: duplicate.sort((a, b) => a - b),
+    missing: missing.sort((a, b) => a - b),
+  };
+}
+
+export const ImportScheduleSchema = z
+  .object({
+    title: z.string().min(1).max(255),
+    description: z.string().optional(),
+    targetDate: z.string().refine(isValidDateString, {
+      message: "targetDate must be a valid date string in YYYY-MM-DD format",
+    }),
+    cycleLengthDays: z.number().int().min(1).max(366),
+    hoursPerDay: HoursPerDaySchema.optional(),
+    timetable: z.array(TimetableDaySchema).min(1),
+  })
+  .superRefine((value, ctx) => {
+    const { outOfRange, duplicate, missing } = validateCycleTimetable(
+      value.timetable,
+      value.cycleLengthDays,
+    );
+    if (outOfRange.length > 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["timetable"],
+        message: `Timetable day(s) outside cycle range 1..${value.cycleLengthDays}: ${outOfRange.join(", ")}`,
+      });
+    }
+    if (duplicate.length > 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["timetable"],
+        message: `Duplicate cycle day(s): ${duplicate.join(", ")}`,
+      });
+    }
+    if (missing.length > 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["timetable"],
+        message: `Missing cycle day(s): ${missing.join(", ")}`,
+      });
+    }
+  });
 export type ImportScheduleInput = z.infer<typeof ImportScheduleSchema>;
 
 export const DEFAULT_HOURS_PER_DAY = 6;

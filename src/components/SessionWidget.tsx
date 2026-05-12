@@ -3,7 +3,13 @@ import {
   type SessionReflection,
   type TaskPreview,
 } from "@/domain/session";
-import { endSession, getActiveSession, startSession } from "@/repo";
+import {
+  endSession,
+  getActiveSession,
+  markSessionTaskComplete,
+  recordSessionReflection,
+  startSession,
+} from "@/repo";
 
 interface SessionWidgetProps {
   task: TaskPreview | null;
@@ -113,8 +119,21 @@ export function SessionWidget({ task, onSessionFinished }: SessionWidgetProps) {
     }
   }
 
-  function stopSession() {
-    setPhase("reflect");
+  // Close on Stop, not on emoji-pick — otherwise a tab close in the
+  // reflect window leaves the row open and the next visit commits a
+  // junk multi-hour duration.
+  async function stopSession() {
+    if (!sessionId) return;
+    setSaving(true);
+    setError(null);
+    try {
+      await endSession(sessionId);
+      setPhase("reflect");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to stop");
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function finishSession(reflection: SessionReflection | null) {
@@ -122,10 +141,8 @@ export function SessionWidget({ task, onSessionFinished }: SessionWidgetProps) {
     setSaving(true);
     setError(null);
     try {
-      await endSession(sessionId, {
-        ...(reflection ? { reflection } : {}),
-        markTaskComplete: markComplete && !!activeTask,
-      });
+      if (reflection) await recordSessionReflection(sessionId, reflection);
+      if (markComplete && activeTask) await markSessionTaskComplete(sessionId);
       setPhase("idle");
       setSessionId(null);
       setActiveTask(null);
@@ -145,7 +162,7 @@ export function SessionWidget({ task, onSessionFinished }: SessionWidgetProps) {
         data-testid="session-widget-active"
         className="card p-5 bg-gradient-to-br from-accent/15 to-accent/5 animate-fade-in text-center"
       >
-        <p className="text-xs font-semibold text-accent uppercase tracking-wide mb-2">
+        <p className="text-xs font-semibold text-accent-strong uppercase tracking-wide mb-2">
           Focusing
         </p>
         <h2 className="text-base font-display font-semibold text-text-primary leading-snug">
@@ -160,10 +177,14 @@ export function SessionWidget({ task, onSessionFinished }: SessionWidgetProps) {
         </p>
         <button
           onClick={stopSession}
-          className="mt-4 w-full min-h-[44px] rounded-md border border-border-strong text-text-primary font-medium text-sm active:scale-[0.98] transition-all"
+          disabled={saving}
+          className="mt-4 w-full min-h-[44px] rounded-md border border-border-strong text-text-primary font-medium text-sm active:scale-[0.98] transition-all disabled:opacity-60"
         >
-          Stop session
+          {saving ? "Stopping…" : "Stop session"}
         </button>
+        {error && (
+          <p className="mt-2 text-xs text-danger text-center">{error}</p>
+        )}
       </div>
     );
   }
@@ -174,7 +195,7 @@ export function SessionWidget({ task, onSessionFinished }: SessionWidgetProps) {
         data-testid="session-widget-reflect"
         className="card p-5 bg-gradient-to-br from-accent/10 to-accent/5 animate-fade-in"
       >
-        <p className="text-xs font-semibold text-accent uppercase tracking-wide mb-2">
+        <p className="text-xs font-semibold text-accent-strong uppercase tracking-wide mb-2">
           Session ended · {formatElapsed(elapsed)}
         </p>
         <p className="text-base font-semibold text-text-primary">
@@ -230,7 +251,7 @@ export function SessionWidget({ task, onSessionFinished }: SessionWidgetProps) {
       data-testid="session-widget-idle"
       className="card p-5 bg-gradient-to-br from-accent/10 to-accent/5 animate-fade-in"
     >
-      <p className="text-xs font-semibold text-accent uppercase tracking-wide mb-2">
+      <p className="text-xs font-semibold text-accent-strong uppercase tracking-wide mb-2">
         Up Next
       </p>
       {task ? (
@@ -249,7 +270,7 @@ export function SessionWidget({ task, onSessionFinished }: SessionWidgetProps) {
         onClick={handleStart}
         disabled={starting}
         data-testid="start-session-button"
-        className="mt-4 w-full min-h-[48px] rounded-md bg-accent text-white font-semibold text-base active:scale-[0.98] transition-all disabled:opacity-60"
+        className="mt-4 w-full min-h-[48px] rounded-md bg-accent-strong text-accent-strong-fg font-semibold text-base active:scale-[0.98] transition-all disabled:opacity-60"
       >
         {starting ? "Starting…" : "Start session"}
       </button>

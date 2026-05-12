@@ -4,10 +4,13 @@ export function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
 
+  // Touch-target ≥44px (WCAG SC 2.5.5) — repeated inline on the few
+  // controls outside the .btn-primary path; extract to a primitive when
+  // a third site appears.
   return (
     <button
       onClick={() => setTheme(isDark ? "light" : "dark")}
-      className="w-10 h-10 rounded-lg flex items-center justify-center bg-bg-tertiary hover:bg-border transition-colors"
+      className="w-11 h-11 rounded-lg flex items-center justify-center bg-bg-tertiary hover:bg-border transition-colors"
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
     >
       {isDark ? (

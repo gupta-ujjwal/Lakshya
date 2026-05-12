@@ -221,8 +221,6 @@ export function DashboardPage() {
         </div>
       )}
 
-      <McqCounter />
-
       <div className="grid grid-cols-3 gap-3">
         <div className="card p-3 text-center">
           <p className="text-xl" aria-hidden>🔥</p>
@@ -248,6 +246,8 @@ export function DashboardPage() {
           <p className="text-[11px] text-text-secondary mt-0.5">studied</p>
         </div>
       </div>
+
+      <McqCounter />
 
       <div className="card p-5 animate-fade-in">
         <div className="flex items-center justify-between mb-3">

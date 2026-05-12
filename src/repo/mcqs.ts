@@ -1,14 +1,5 @@
-import { z } from "zod";
 import { db, type McqLogRecord } from "@/db";
 import { addDaysToKey, today } from "@/lib/dates";
-
-// Single-field record — kept inline here rather than in src/domain/
-// because there are no invariants worth a separate module: count is a
-// non-negative integer, the date is the natural identity.
-export const McqLogSchema = z.object({
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  count: z.number().int().min(0),
-});
 
 const WINDOW_DAYS = 7;
 

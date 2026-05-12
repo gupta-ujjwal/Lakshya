@@ -7,7 +7,15 @@ import type {
   SessionRecord,
   TaskProgressRecord,
 } from "@/db";
-import { McqLogSchema } from "./mcqs";
+
+// Wire-validation schema for incoming MCQ rows. Lives next to the
+// other wire schemas (ExportPayloadSchema below) rather than in mcqs.ts
+// because the repo trusts its own writes — only the import boundary
+// needs per-row validation.
+const McqLogSchema = z.object({
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  count: z.number().int().min(0),
+});
 
 export const EXPORT_VERSION = 2;
 

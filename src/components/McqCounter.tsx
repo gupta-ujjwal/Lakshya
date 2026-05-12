@@ -8,8 +8,11 @@ import { getLast7DayAverage, getTodayCount, setTodayCount } from "@/repo";
 export function McqCounter() {
   const [count, setCount] = useState<number | null>(null);
   const [average, setAverage] = useState<number | null>(null);
-  const [draft, setDraft] = useState("");
-  const [editing, setEditing] = useState(false);
+  // `draft === null` means "not editing" — collapses the old `editing`
+  // boolean and `draft` string, which were never independently
+  // meaningful (draft was always either empty or the current count's
+  // string when editing started).
+  const [draft, setDraft] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -44,8 +47,9 @@ export function McqCounter() {
   }, []);
 
   async function commit() {
-    setEditing(false);
+    if (draft === null) return;
     const parsed = parseInt(draft, 10);
+    setDraft(null);
     if (!Number.isFinite(parsed) || parsed < 0 || parsed === count) return;
     setSaving(true);
     try {
@@ -63,7 +67,6 @@ export function McqCounter() {
 
   function beginEdit() {
     setDraft(String(count ?? 0));
-    setEditing(true);
     // requestAnimationFrame so the input mounts before select() runs.
     requestAnimationFrame(() => {
       inputRef.current?.focus();
@@ -77,7 +80,7 @@ export function McqCounter() {
         MCQs solved today
       </p>
       <div className="flex items-baseline gap-3">
-        {editing ? (
+        {draft !== null ? (
           <input
             ref={inputRef}
             type="number"
@@ -88,10 +91,7 @@ export function McqCounter() {
             onBlur={commit}
             onKeyDown={(e) => {
               if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-              if (e.key === "Escape") {
-                setEditing(false);
-                setDraft("");
-              }
+              if (e.key === "Escape") setDraft(null);
             }}
             disabled={saving}
             data-testid="mcq-counter-input"

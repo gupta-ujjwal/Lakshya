@@ -47,6 +47,16 @@ export interface ExportPayload {
   mcqLogs: McqLogRecord[];
 }
 
+// All persisted tables, kept in one place so a new table only has to
+// register itself here to be covered by clearAll / importAll resets.
+const ALL_TABLES = [
+  db.schedules,
+  db.tasks,
+  db.taskProgress,
+  db.sessions,
+  db.mcqLogs,
+] as const;
+
 export async function exportAll(): Promise<ExportPayload> {
   const [schedules, tasks, taskProgress, sessions, mcqLogs] = await Promise.all([
     db.schedules.toArray(),
@@ -68,42 +78,25 @@ export async function exportAll(): Promise<ExportPayload> {
 
 export async function importAll(payload: unknown): Promise<void> {
   const parsed = parsePayload(payload);
-  await db.transaction(
-    "rw",
-    [db.schedules, db.tasks, db.taskProgress, db.sessions, db.mcqLogs],
-    async () => {
-      await Promise.all([
-        db.schedules.clear(),
-        db.tasks.clear(),
-        db.taskProgress.clear(),
-        db.sessions.clear(),
-        db.mcqLogs.clear(),
-      ]);
-      await Promise.all([
-        db.schedules.bulkAdd(parsed.schedules),
-        db.tasks.bulkAdd(parsed.tasks),
-        db.taskProgress.bulkAdd(parsed.taskProgress),
-        db.sessions.bulkAdd(parsed.sessions),
-        db.mcqLogs.bulkAdd(parsed.mcqLogs),
-      ]);
-    },
-  );
+  await db.transaction("rw", ALL_TABLES, async () => {
+    await Promise.all(ALL_TABLES.map((t) => t.clear()));
+    // bulkAdd stays explicit per table — each takes a different slice
+    // of the parsed payload, so a generic map() would be type-noise
+    // without saving any duplication.
+    await Promise.all([
+      db.schedules.bulkAdd(parsed.schedules),
+      db.tasks.bulkAdd(parsed.tasks),
+      db.taskProgress.bulkAdd(parsed.taskProgress),
+      db.sessions.bulkAdd(parsed.sessions),
+      db.mcqLogs.bulkAdd(parsed.mcqLogs),
+    ]);
+  });
 }
 
 export async function clearAll(): Promise<void> {
-  await db.transaction(
-    "rw",
-    [db.schedules, db.tasks, db.taskProgress, db.sessions, db.mcqLogs],
-    async () => {
-      await Promise.all([
-        db.schedules.clear(),
-        db.tasks.clear(),
-        db.taskProgress.clear(),
-        db.sessions.clear(),
-        db.mcqLogs.clear(),
-      ]);
-    },
-  );
+  await db.transaction("rw", ALL_TABLES, async () => {
+    await Promise.all(ALL_TABLES.map((t) => t.clear()));
+  });
 }
 
 const SUPPORTED_VERSIONS = [1, 2] as const;

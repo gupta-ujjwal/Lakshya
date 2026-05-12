@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { formatDateLong } from "@/lib/format";
 import { DaysLeftHero } from "@/components/DaysLeftHero";
+import { McqCounter } from "@/components/McqCounter";
 import { SessionWidget } from "@/components/SessionWidget";
 import { getPinnedSubjects, unpinSubject } from "@/lib/focus-pin";
 import {
@@ -219,6 +220,8 @@ export function DashboardPage() {
           </span>
         </div>
       )}
+
+      <McqCounter />
 
       <div className="grid grid-cols-3 gap-3">
         <div className="card p-3 text-center">

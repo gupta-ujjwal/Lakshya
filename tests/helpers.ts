@@ -6,5 +6,6 @@ export async function clearDb(): Promise<void> {
     db.tasks.clear(),
     db.taskProgress.clear(),
     db.sessions.clear(),
+    db.mcqLogs.clear(),
   ]);
 }

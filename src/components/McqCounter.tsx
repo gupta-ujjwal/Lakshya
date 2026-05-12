@@ -101,7 +101,10 @@ export function McqCounter() {
         ) : (
           <button
             onClick={beginEdit}
-            disabled={count === null}
+            // disabled during the in-flight save window too — without
+            // it, a fast double-tap can re-enter edit mode with stale
+            // count before the post-commit readStats lands.
+            disabled={count === null || saving}
             data-testid="mcq-counter-display"
             className="font-display text-4xl font-bold text-text-primary tabular-nums min-h-[44px] text-left disabled:opacity-60"
             aria-label={`MCQs solved today: ${count ?? 0}. Tap to edit.`}

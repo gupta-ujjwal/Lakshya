@@ -41,12 +41,35 @@ export interface McqLogRecord {
   count: number;
 }
 
+export const MOCK_SERIES = [
+  "marrow",
+  "prepladder",
+  "dams",
+  "other",
+] as const;
+export type MockSeries = (typeof MOCK_SERIES)[number];
+
+export interface MockTestRecord {
+  id: string;
+  series: MockSeries;
+  date: string;
+  // Per-subject percentage 0-100. Subject keys come from listSubjects()
+  // at write time so weakSubjects() aggregates by canonical name.
+  subjectScores: Record<string, number>;
+  // Platform-reported overall percentage. Stored separately from
+  // subjectScores because mock platforms section-weight differently
+  // than a simple average — do not compute this from subjectScores.
+  total: number;
+  createdAt: string;
+}
+
 class LakshyaDB extends Dexie {
   schedules!: Table<ScheduleRecord, string>;
   tasks!: Table<TaskRecord, string>;
   taskProgress!: Table<TaskProgressRecord, string>;
   sessions!: Table<SessionRecord, string>;
   mcqLogs!: Table<McqLogRecord, string>;
+  mockTests!: Table<MockTestRecord, string>;
 
   constructor() {
     super("lakshya");
@@ -76,6 +99,17 @@ class LakshyaDB extends Dexie {
       taskProgress: "id, &[taskId+date], taskId, date",
       sessions: "id, startedAt, state",
       mcqLogs: "date",
+    });
+    // v4: add mockTests. Strictly additive — no .upgrade() callback,
+    // no transform on prior rows. The whole schema is repeated per
+    // Dexie's full-schema-per-version rule.
+    this.version(4).stores({
+      schedules: "id, createdAt",
+      tasks: "id, scheduleId, [scheduleId+targetDate], targetDate",
+      taskProgress: "id, &[taskId+date], taskId, date",
+      sessions: "id, startedAt, state",
+      mcqLogs: "date",
+      mockTests: "id, date, createdAt",
     });
   }
 }

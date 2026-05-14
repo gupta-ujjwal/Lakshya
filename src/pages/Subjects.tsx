@@ -129,6 +129,21 @@ export function SubjectsPage() {
         </div>
       )}
 
+      <Link
+        to="/mocks"
+        className="card p-3 flex items-center justify-between hover:bg-bg-tertiary/40 transition-colors"
+      >
+        <span>
+          <span className="block text-sm font-semibold text-text-primary">
+            Mock tests
+          </span>
+          <span className="block text-xs text-text-muted mt-0.5">
+            Log per-subject scores · surface weak subjects
+          </span>
+        </span>
+        <span aria-hidden className="text-text-muted">›</span>
+      </Link>
+
       <ul className="space-y-2">
         {subjects.map((s) => {
           const pct =

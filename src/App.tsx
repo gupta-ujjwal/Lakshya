@@ -7,6 +7,7 @@ import { ImportPage } from "@/pages/Import";
 import { TasksPage } from "@/pages/Tasks";
 import { CalendarPage } from "@/pages/Calendar";
 import { SubjectsPage, SubjectDetailPage } from "@/pages/Subjects";
+import { MocksPage } from "@/pages/Mocks";
 
 // BrowserRouter — GitHub Pages doesn't have an SPA fallback, but
 // public/404.html + the decoder script in index.html implement one
@@ -34,6 +35,7 @@ export function App() {
             <Route path="/calendar" element={<CalendarPage />} />
             <Route path="/subjects" element={<SubjectsPage />} />
             <Route path="/subjects/:subject" element={<SubjectDetailPage />} />
+            <Route path="/mocks" element={<MocksPage />} />
             <Route path="/import" element={<ImportPage />} />
           </Route>
         </Routes>

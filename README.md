@@ -109,6 +109,7 @@ src/
 │   ├── tasks.ts          listTasks, listSubjects, recordTaskProgress, pickNextTaskForToday
 │   ├── sessions.ts       startSession, endSession, recordSessionReflection, markSessionTaskComplete, getActiveSession
 │   ├── mcqs.ts           getTodayCount, setTodayCount, addToTodayCount, getLast7DayAverage
+│   ├── mocks.ts          addMock, listMocks, deleteMock, weakSubjects
 │   ├── dashboard.ts      getDashboard, getOverallProgress
 │   ├── calendar.ts       getCalendarSummary (per-day heat for the month)
 │   └── serialize.ts      exportAll, importAll, clearAll
@@ -124,6 +125,7 @@ Stored in IndexedDB:
 - **TaskProgress** — `(taskId, date)` unique; status pending/completed
 - **Session** — discriminated union: `{ state: "open" }` while active, `{ state: "closed", endedAt, duration, reflection }` once ended
 - **McqLog** — one row per calendar day, `{ date, count }`; primary key is `date` so upserts replace today's row
+- **MockTest** — one row per logged mock test, `{ id, series, date, subjectScores, total, createdAt }`; UUID `id` (multiple mocks per day allowed), `subjectScores` is a `Record<string, number>` keyed on canonical subject names from `listSubjects()`, `total` is the platform-reported overall (NOT the simple average — mock platforms section-weight differently)
 
 Dates are ISO date strings (`YYYY-MM-DD`) at storage boundaries; Dates only appear inside computation. There is no `User` concept — one device, one user.
 
@@ -134,6 +136,14 @@ Lakshya is per-device. The Import page's "Manage data" panel has **Export JSON**
 ## Sessions
 
 The **Up Next** card on the dashboard includes a **Start Session** button. It picks the highest-priority incomplete task for today, opens a stopwatch (counts up — no fixed target), and writes an open `Session` row. Pressing **Stop** closes the row immediately — writing `endedAt` and computing `duration` — and only then transitions to the reflection screen, which has a "Mark this task as done" toggle (default on) and three emoji reflection buttons. Closing the tab between Stop and emoji-pick leaves the session closed but unreflected, which is the harmless outcome; the dashboard's hours-studied tile can no longer absorb a multi-hour junk duration. If a session is abandoned mid-active (never stopped), the recovery path auto-closes it after 12 h with the duration clipped to the cap so the aggregates stay bounded. A discriminated union enforces the open/closed state at the type level — no nullable `endedAt`/`duration` parallel fields.
+
+## MCQs solved today
+
+## Mock tests
+
+The `/mocks` page (linked from the Subjects tab — no 5th bottom-nav slot) is a single-page form-on-top, history-list-below for logging full mock tests by series (Marrow / PrepLadder / DAMS / Other) and per-subject percentage. Subjects in the form are pre-filled from the latest schedule's `listSubjects()` so weak-subject aggregation buckets by canonical names; blank rows are skipped on save. The `total` field is stored separately from the per-subject scores because mock platforms section-weight differently than a simple average — don't compute it from the row.
+
+`weakSubjects(n)` returns the n subjects with the lowest mean across the last 5 mocks, excluding subjects appearing in fewer than 2 of those mocks (one bad day on Anatomy shouldn't tag it weak forever). Edit is intentionally not in v1 — delete-and-re-add for typos. Backup/restore round-trips `mockTests` via a `serialize.test.ts` round-trip case that is the load-bearing detector for the silent-drop class of bug; without that test, omitting any of the four serialize touch points loses every mock the user ever logged.
 
 ## MCQs solved today
 

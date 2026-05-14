@@ -1,11 +1,13 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { db } from "@/db";
 import {
+  addMock,
   EXPORT_VERSION,
   exportAll,
   getTodayCount,
   importAll,
   importSchedule,
+  listMocks,
   setTodayCount,
 } from "@/repo";
 import type { ImportScheduleInput } from "@/domain/schedule";
@@ -87,6 +89,63 @@ describe("export/import round trip", () => {
     await setTodayCount(99); // sentinel — should be wiped on import
     await importAll(v1);
     expect(await db.mcqLogs.toArray()).toEqual([]);
+    expect(await db.schedules.toArray()).toHaveLength(1);
+  });
+
+  // Tenet 4 detector — without this test, omitting mockTests from
+  // ALL_TABLES / ExportPayloadSchema / parsePayload silently drops
+  // the user's entire mock-test history on every backup. Same shape
+  // as the mcqLogs round-trip case above.
+  it("round-trips mockTests (Tenet 4 — silent-drop detector)", async () => {
+    await addMock({
+      series: "marrow",
+      date: "2026-05-12",
+      subjectScores: { Anatomy: 70, Physiology: 60 },
+      total: 65,
+    });
+    await addMock({
+      series: "prepladder",
+      date: "2026-05-11",
+      subjectScores: { Pathology: 80 },
+      total: 80,
+    });
+    const before = await exportAll();
+    expect(before.mockTests).toHaveLength(2);
+
+    await clearDb();
+    expect(await listMocks()).toHaveLength(0);
+
+    await importAll(before);
+    const after = await listMocks();
+    expect(after).toHaveLength(2);
+    // Sort both sides by id so order doesn't matter for equality.
+    const byId = (a: { id: string }, b: { id: string }) =>
+      a.id.localeCompare(b.id);
+    expect([...after].sort(byId)).toEqual([...before.mockTests].sort(byId));
+  });
+
+  it("accepts a v2 payload without mockTests (back-compat)", async () => {
+    await importSchedule(sampleInput);
+    const v3 = await exportAll();
+    const v2 = {
+      version: 2,
+      exportedAt: v3.exportedAt,
+      schedules: v3.schedules,
+      tasks: v3.tasks,
+      taskProgress: v3.taskProgress,
+      sessions: v3.sessions,
+      mcqLogs: v3.mcqLogs,
+      // no mockTests field
+    };
+    await clearDb();
+    await addMock({
+      series: "marrow",
+      date: "2026-05-12",
+      subjectScores: { Anatomy: 70 },
+      total: 70,
+    }); // sentinel — should be wiped on import
+    await importAll(v2);
+    expect(await listMocks()).toEqual([]);
     expect(await db.schedules.toArray()).toHaveLength(1);
   });
 });

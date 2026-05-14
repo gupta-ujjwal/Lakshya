@@ -27,6 +27,9 @@ export {
   getLast7DayAverage,
 } from "./mcqs";
 
+export { addMock, listMocks, deleteMock, weakSubjects } from "./mocks";
+export type { AddMockInput } from "./mocks";
+
 export { getDashboard, getOverallProgress } from "./dashboard";
 export type {
   Dashboard,

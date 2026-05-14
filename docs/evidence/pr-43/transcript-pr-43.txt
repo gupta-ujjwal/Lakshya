@@ -1,47 +1,46 @@
 ## Setup
 
-✅ Cold start redirects to /import (no schedule)  — url=http://localhost:3003/import
+✅ Cold start redirects to /import (no schedule)  — url=http://localhost:3002/import
 ✅ Imported sample schedule
-✅ Dashboard loaded  — url=http://localhost:3003/
+✅ Dashboard loaded  — url=http://localhost:3002/
 
-## PR-specific flows
+## PR-specific flows (append semantics)
 
 ✅ MCQ counter card renders on dashboard
 ✅ Initial MCQ count reads '0'  — text="0"
 ✅ Eyebrow label reads 'MCQs solved today'  — text="MCQs solved today"
-✅ 7-day avg subtext shows '7-day avg: 0' initially  — text="7-day avg: 0"
-ℹ️  Screenshot: dashboard-idle  — /tmp/qa-lakshya/artifacts/evidence-pr-43-dashboard-idle.png
+✅ Day-0 meta shows bare '7-day avg: 0' (no green/red verdict yet)  — text="7-day avg: 0"
+ℹ️  Screenshot: dashboard-idle  — /tmp/lakshya-evidence-pr43-v2/evidence-pr-43-dashboard-idle.png
 ✅ Tapping the number swaps in an <input>
 ✅ Input is auto-focused after tap (rAF focus)
 ✅ Input type is 'number'  — type="number"
-✅ Input pre-populated with current count ('0')  — value="0"
-ℹ️  Screenshot: edit-mode  — /tmp/qa-lakshya/artifacts/evidence-pr-43-edit-mode.png
-✅ Enter commits '50' and collapses input back to display  — text="50"
-✅ Pre-selection works: typing '50' REPLACED the prefilled '0' (not '050')  — final="50" — would be "050" without select()
-✅ 7-day avg updates to ~7 (50/7 rounded)  — text="7-day avg: 7"
-ℹ️  Screenshot: after-commit-50  — /tmp/qa-lakshya/artifacts/evidence-pr-43-after-commit-50.png
-✅ Re-entered edit mode
-✅ Re-edit overwrites prior value: display reads '73'  — text="73"
-ℹ️  Screenshot: after-commit-73  — /tmp/qa-lakshya/artifacts/evidence-pr-43-after-commit-73.png
+✅ Input opens EMPTY (append semantics, not pre-populated with current count)  — value=""
+✅ '+' glyph rendered between running total and input (append affordance)
+✅ Running total stays visible during edit  — text="0"
+ℹ️  Screenshot: edit-mode-empty  — /tmp/lakshya-evidence-pr43-v2/evidence-pr-43-edit-mode-empty.png
+✅ Enter commits +50 → display reads '50'  — text="50"
+✅ Delta indicator goes GREEN '▲ N above 7-day avg (M)'  — text="▲ 43 above 7-day avg (7)"
+✅ Delta indicator uses text-success token when ahead
+ℹ️  Screenshot: after-add-50  — /tmp/lakshya-evidence-pr43-v2/evidence-pr-43-after-add-50.png
+✅ Re-entering edit mode also opens with empty input (no stale draft)  — value=""
+✅ Running total in edit mode shows current 50 (visual proof of append)  — text="50"
+ℹ️  Screenshot: edit-mode-50-plus-23  — /tmp/lakshya-evidence-pr43-v2/evidence-pr-43-edit-mode-50-plus-23.png
+✅ Append works: 50 + 23 → display reads '73' (NOT '23')  — text="73"
+✅ Delta indicator updates after append  — text="▲ 63 above 7-day avg (10)"
+ℹ️  Screenshot: after-append-23  — /tmp/lakshya-evidence-pr43-v2/evidence-pr-43-after-append-23.png
 ✅ MCQ count persists across page.reload() (still '73')  — text="73"
-ℹ️  Screenshot: after-reload-persisted  — /tmp/qa-lakshya/artifacts/evidence-pr-43-after-reload-persisted.png
-✅ Escape discards the draft (display still '73')  — text="73"
-✅ Dark mode applied (html.dark)  — html.class="dark"
-✅ MCQ card still reads '73' in dark mode
-ℹ️  Screenshot: dashboard-dark  — /tmp/qa-lakshya/artifacts/evidence-pr-43-dashboard-dark.png
-
-## Direct URL navigation
-
-✅ Cold page.goto('/') still shows MCQ card
-✅ Cold reload still shows persisted value '73'  — text="73"
+ℹ️  Screenshot: after-reload-persisted  — /tmp/lakshya-evidence-pr43-v2/evidence-pr-43-after-reload-persisted.png
+✅ Escape discards the draft (display still '73', no append)  — text="73"
+✅ Dark mode applied (html.dark)
+✅ MCQ card still reads '73' in dark mode  — text="73"
+ℹ️  Screenshot: dashboard-dark  — /tmp/lakshya-evidence-pr43-v2/evidence-pr-43-dashboard-dark.png
 
 ## Pinned design rules
 
-✅ MCQ display button has min-h-[44px] touch target  — class="font-display text-4xl font-bold text-text-primary tabular-nums min-h-[44px] text-left disabled:opacity-60"
-✅ Eyebrow 'MCQs solved today' uses text-accent-strong (AA token)  — class="text-xs font-semibold text-accent-strong uppercase tracking-wide mb-1"
-✅ MCQ card sits AFTER the 3-column stats grid in DOM order  — {"found":true,"mcqIdx":60,"statsIdx":58,"tasksIdx":67}
-✅ MCQ card sits BEFORE the 'Today's Tasks' heading in DOM order  — {"found":true,"mcqIdx":60,"statsIdx":58,"tasksIdx":67}
-✅ No ±1 / increment buttons inside the MCQ card (tap-to-edit only)  — incrementButtons=0
+✅ MCQ display button has min-h-[44px] touch target
+✅ Eyebrow uses text-accent-strong (AA token)  — class="text-xs font-semibold text-accent-strong uppercase tracking-wide mb-1"
+✅ MCQ card sits AFTER stats grid AND BEFORE Today's Tasks in DOM order  — {"mcqIdx":60,"statsIdx":52,"tasksIdx":68}
+✅ No ±N stepper buttons inside the MCQ card (tap-to-add only)  — stepperCount=0
 
 ## Console / page errors
 

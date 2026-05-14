@@ -53,6 +53,9 @@ export default tseslint.config(
       // produces no-undef noise for `process`, `Buffer`, etc., and
       // they're not part of the src/ build anyway.
       ".agency/",
+      // Same rationale: per-PR Playwright probes shipped under
+      // docs/evidence/<pr>/ are Node scripts, not browser app code.
+      "docs/evidence/**/*.mjs",
     ],
   }
 );

@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { db } from "@/db";
 import {
+  addToTodayCount,
   getLast7DayAverage,
   getTodayCount,
   setTodayCount,
@@ -40,6 +41,38 @@ describe("mcq counter repo", () => {
   it("setTodayCount clamps negative input to 0", async () => {
     await setTodayCount(-5);
     expect(await getTodayCount()).toBe(0);
+  });
+
+  it("addToTodayCount appends to an existing total", async () => {
+    await setTodayCount(50);
+    await addToTodayCount(20);
+    expect(await getTodayCount()).toBe(70);
+  });
+
+  it("addToTodayCount creates today's row when none exists", async () => {
+    await addToTodayCount(15);
+    expect(await getTodayCount()).toBe(15);
+    expect(await db.mcqLogs.count()).toBe(1);
+  });
+
+  it("addToTodayCount accumulates across repeated batches", async () => {
+    await addToTodayCount(30);
+    await addToTodayCount(25);
+    await addToTodayCount(10);
+    expect(await getTodayCount()).toBe(65);
+  });
+
+  it("addToTodayCount ignores non-positive deltas", async () => {
+    await setTodayCount(40);
+    await addToTodayCount(0);
+    await addToTodayCount(-7);
+    await addToTodayCount(NaN);
+    expect(await getTodayCount()).toBe(40);
+  });
+
+  it("addToTodayCount truncates fractional deltas", async () => {
+    await addToTodayCount(12.9);
+    expect(await getTodayCount()).toBe(12);
   });
 
   it("getLast7DayAverage returns 0 when no rows exist", async () => {

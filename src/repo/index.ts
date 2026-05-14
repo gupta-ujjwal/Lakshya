@@ -23,6 +23,7 @@ export type { ActiveSession, StartSessionResult } from "./sessions";
 export {
   getTodayCount,
   setTodayCount,
+  addToTodayCount,
   getLast7DayAverage,
 } from "./mcqs";
 

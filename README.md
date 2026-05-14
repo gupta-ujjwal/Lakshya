@@ -108,7 +108,7 @@ src/
 │   ├── schedules.ts      importSchedule, getLatestSchedule
 │   ├── tasks.ts          listTasks, listSubjects, recordTaskProgress, pickNextTaskForToday
 │   ├── sessions.ts       startSession, endSession, recordSessionReflection, markSessionTaskComplete, getActiveSession
-│   ├── mcqs.ts           getTodayCount, setTodayCount, getLast7DayAverage
+│   ├── mcqs.ts           getTodayCount, setTodayCount, addToTodayCount, getLast7DayAverage
 │   ├── dashboard.ts      getDashboard, getOverallProgress
 │   ├── calendar.ts       getCalendarSummary (per-day heat for the month)
 │   └── serialize.ts      exportAll, importAll, clearAll
@@ -137,7 +137,7 @@ The **Up Next** card on the dashboard includes a **Start Session** button. It pi
 
 ## MCQs solved today
 
-A small dashboard card above the stats triplet logs the day's MCQ count. Tap the big number to edit it directly — designed for "I just finished a 50-question test" entry, not "+1 per MCQ." The card shows today's count plus a 7-day rolling average; missing days count as zero so the average doesn't lie about consistency. One IndexedDB row per calendar day, keyed on the date.
+A small dashboard card below the stats triplet logs the day's MCQ count. Tap the big number to add a batch — typing `20` means *+20*, not *set to 20* — built for "I just finished a 50-q test" entries, not per-MCQ ticking. The card surfaces today's running total alongside a delta-vs-7-day-avg indicator (`▲ above` in green, `▼ below` in amber); missing days count as zero so the average doesn't lie about consistency. One IndexedDB row per calendar day, keyed on the date; the append uses an `rw` transaction so two near-simultaneous taps can't lose an increment.
 
 ## Subjects & focus pinning
 

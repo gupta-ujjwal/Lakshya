@@ -13,6 +13,19 @@ export async function setTodayCount(count: number): Promise<void> {
   await db.mcqLogs.put(record);
 }
 
+// Append a batch (e.g. "I just finished a 50-question test") onto
+// today's running total. Read-then-write inside an `rw` transaction so
+// two near-simultaneous taps can't both read the same starting value
+// and lose an increment. Non-positive deltas are no-ops.
+export async function addToTodayCount(delta: number): Promise<void> {
+  if (!Number.isFinite(delta) || delta <= 0) return;
+  const key = today();
+  await db.transaction("rw", db.mcqLogs, async () => {
+    const current = (await db.mcqLogs.get(key))?.count ?? 0;
+    await db.mcqLogs.put({ date: key, count: current + Math.floor(delta) });
+  });
+}
+
 // Missing days count as 0 so a single-MCQ day doesn't inflate the
 // average by leaving prior days out of the denominator.
 export async function getLast7DayAverage(): Promise<number> {

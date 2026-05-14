@@ -1,25 +1,37 @@
 import { z } from "zod";
 import { db } from "@/db";
 import type {
+  McqLogRecord,
   ScheduleRecord,
   TaskRecord,
   SessionRecord,
   TaskProgressRecord,
 } from "@/db";
 
-export const EXPORT_VERSION = 1;
+// Wire-validation schema for incoming MCQ rows. Lives next to the
+// other wire schemas (ExportPayloadSchema below) rather than in mcqs.ts
+// because the repo trusts its own writes — only the import boundary
+// needs per-row validation.
+const McqLogSchema = z.object({
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  count: z.number().int().min(0),
+});
+
+export const EXPORT_VERSION = 2;
 
 // When bumping EXPORT_VERSION, add a per-version migration branch in
-// parsePayload before bulkAdd. Do not add new tables to importAll
-// without incrementing the version — bulkAdd of an unknown table
-// would silently no-op.
+// parsePayload before bulkAdd, and add the new collection to
+// SUPPORTED_VERSIONS. Adding a table to importAll without bumping
+// silently no-ops on older payloads — bulkAdd of an unrecognized
+// collection just isn't called.
 const ExportPayloadSchema = z.object({
-  version: z.literal(EXPORT_VERSION),
+  version: z.union([z.literal(1), z.literal(2)]),
   exportedAt: z.string().optional(),
   schedules: z.array(z.unknown()),
   tasks: z.array(z.unknown()),
   taskProgress: z.array(z.unknown()),
   sessions: z.array(z.unknown()),
+  mcqLogs: z.array(McqLogSchema).optional(),
 });
 
 export interface ExportPayload {
@@ -29,14 +41,26 @@ export interface ExportPayload {
   tasks: TaskRecord[];
   taskProgress: TaskProgressRecord[];
   sessions: SessionRecord[];
+  mcqLogs: McqLogRecord[];
 }
 
+// All persisted tables, kept in one place so a new table only has to
+// register itself here to be covered by clearAll / importAll resets.
+const ALL_TABLES = [
+  db.schedules,
+  db.tasks,
+  db.taskProgress,
+  db.sessions,
+  db.mcqLogs,
+] as const;
+
 export async function exportAll(): Promise<ExportPayload> {
-  const [schedules, tasks, taskProgress, sessions] = await Promise.all([
+  const [schedules, tasks, taskProgress, sessions, mcqLogs] = await Promise.all([
     db.schedules.toArray(),
     db.tasks.toArray(),
     db.taskProgress.toArray(),
     db.sessions.toArray(),
+    db.mcqLogs.toArray(),
   ]);
   return {
     version: EXPORT_VERSION,
@@ -45,60 +69,46 @@ export async function exportAll(): Promise<ExportPayload> {
     tasks,
     taskProgress,
     sessions,
+    mcqLogs,
   };
 }
 
 export async function importAll(payload: unknown): Promise<void> {
   const parsed = parsePayload(payload);
-  await db.transaction(
-    "rw",
-    db.schedules,
-    db.tasks,
-    db.taskProgress,
-    db.sessions,
-    async () => {
-      await Promise.all([
-        db.schedules.clear(),
-        db.tasks.clear(),
-        db.taskProgress.clear(),
-        db.sessions.clear(),
-      ]);
-      await Promise.all([
-        db.schedules.bulkAdd(parsed.schedules),
-        db.tasks.bulkAdd(parsed.tasks),
-        db.taskProgress.bulkAdd(parsed.taskProgress),
-        db.sessions.bulkAdd(parsed.sessions),
-      ]);
-    },
-  );
+  await db.transaction("rw", ALL_TABLES, async () => {
+    await Promise.all(ALL_TABLES.map((t) => t.clear()));
+    // bulkAdd stays explicit per table — each takes a different slice
+    // of the parsed payload, so a generic map() would be type-noise
+    // without saving any duplication.
+    await Promise.all([
+      db.schedules.bulkAdd(parsed.schedules),
+      db.tasks.bulkAdd(parsed.tasks),
+      db.taskProgress.bulkAdd(parsed.taskProgress),
+      db.sessions.bulkAdd(parsed.sessions),
+      db.mcqLogs.bulkAdd(parsed.mcqLogs),
+    ]);
+  });
 }
 
 export async function clearAll(): Promise<void> {
-  await db.transaction(
-    "rw",
-    db.schedules,
-    db.tasks,
-    db.taskProgress,
-    db.sessions,
-    async () => {
-      await Promise.all([
-        db.schedules.clear(),
-        db.tasks.clear(),
-        db.taskProgress.clear(),
-        db.sessions.clear(),
-      ]);
-    },
-  );
+  await db.transaction("rw", ALL_TABLES, async () => {
+    await Promise.all(ALL_TABLES.map((t) => t.clear()));
+  });
 }
+
+const SUPPORTED_VERSIONS = [1, 2] as const;
 
 function parsePayload(raw: unknown): ExportPayload {
   if (raw === null || typeof raw !== "object") {
     throw new Error("Invalid export: not an object");
   }
   const versioned = raw as { version?: unknown };
-  if (versioned.version !== undefined && versioned.version !== EXPORT_VERSION) {
+  if (
+    versioned.version !== undefined &&
+    !SUPPORTED_VERSIONS.includes(versioned.version as 1 | 2)
+  ) {
     throw new Error(
-      `Unsupported export version ${String(versioned.version)} (expected ${EXPORT_VERSION})`,
+      `Unsupported export version ${String(versioned.version)} (expected ${SUPPORTED_VERSIONS.join(" or ")})`,
     );
   }
   const result = ExportPayloadSchema.safeParse(raw);
@@ -116,5 +126,6 @@ function parsePayload(raw: unknown): ExportPayload {
     tasks: result.data.tasks as TaskRecord[],
     taskProgress: result.data.taskProgress as TaskProgressRecord[],
     sessions: result.data.sessions as SessionRecord[],
+    mcqLogs: result.data.mcqLogs ?? [],
   };
 }

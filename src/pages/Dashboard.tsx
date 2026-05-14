@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { formatDateLong } from "@/lib/format";
 import { DaysLeftHero } from "@/components/DaysLeftHero";
+import { McqCounter } from "@/components/McqCounter";
 import { SessionWidget } from "@/components/SessionWidget";
 import { getPinnedSubjects, unpinSubject } from "@/lib/focus-pin";
 import {
@@ -245,6 +246,8 @@ export function DashboardPage() {
           <p className="text-[11px] text-text-secondary mt-0.5">studied</p>
         </div>
       </div>
+
+      <McqCounter />
 
       <div className="card p-5 animate-fade-in">
         <div className="flex items-center justify-between mb-3">

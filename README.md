@@ -108,6 +108,7 @@ src/
 │   ├── schedules.ts      importSchedule, getLatestSchedule
 │   ├── tasks.ts          listTasks, listSubjects, recordTaskProgress, pickNextTaskForToday
 │   ├── sessions.ts       startSession, endSession, recordSessionReflection, markSessionTaskComplete, getActiveSession
+│   ├── mcqs.ts           getTodayCount, setTodayCount, addToTodayCount, getLast7DayAverage
 │   ├── dashboard.ts      getDashboard, getOverallProgress
 │   ├── calendar.ts       getCalendarSummary (per-day heat for the month)
 │   └── serialize.ts      exportAll, importAll, clearAll
@@ -122,6 +123,7 @@ Stored in IndexedDB:
 - **Task** — title, subject, target date (YYYY-MM-DD), priority
 - **TaskProgress** — `(taskId, date)` unique; status pending/completed
 - **Session** — discriminated union: `{ state: "open" }` while active, `{ state: "closed", endedAt, duration, reflection }` once ended
+- **McqLog** — one row per calendar day, `{ date, count }`; primary key is `date` so upserts replace today's row
 
 Dates are ISO date strings (`YYYY-MM-DD`) at storage boundaries; Dates only appear inside computation. There is no `User` concept — one device, one user.
 
@@ -132,6 +134,10 @@ Lakshya is per-device. The Import page's "Manage data" panel has **Export JSON**
 ## Sessions
 
 The **Up Next** card on the dashboard includes a **Start Session** button. It picks the highest-priority incomplete task for today, opens a stopwatch (counts up — no fixed target), and writes an open `Session` row. Pressing **Stop** closes the row immediately — writing `endedAt` and computing `duration` — and only then transitions to the reflection screen, which has a "Mark this task as done" toggle (default on) and three emoji reflection buttons. Closing the tab between Stop and emoji-pick leaves the session closed but unreflected, which is the harmless outcome; the dashboard's hours-studied tile can no longer absorb a multi-hour junk duration. If a session is abandoned mid-active (never stopped), the recovery path auto-closes it after 12 h with the duration clipped to the cap so the aggregates stay bounded. A discriminated union enforces the open/closed state at the type level — no nullable `endedAt`/`duration` parallel fields.
+
+## MCQs solved today
+
+A small dashboard card below the stats triplet logs the day's MCQ count. Tap the big number to add a batch — typing `20` means *+20*, not *set to 20* — built for "I just finished a 50-q test" entries, not per-MCQ ticking. The card surfaces today's running total alongside a delta-vs-7-day-avg indicator (`▲ above` in green, `▼ below` in amber); missing days count as zero so the average doesn't lie about consistency. One IndexedDB row per calendar day, keyed on the date; the append uses an `rw` transaction so two near-simultaneous taps can't lose an increment.
 
 ## Subjects & focus pinning
 

@@ -20,6 +20,13 @@ export {
 } from "./sessions";
 export type { ActiveSession, StartSessionResult } from "./sessions";
 
+export {
+  getTodayCount,
+  setTodayCount,
+  addToTodayCount,
+  getLast7DayAverage,
+} from "./mcqs";
+
 export { getDashboard, getOverallProgress } from "./dashboard";
 export type {
   Dashboard,

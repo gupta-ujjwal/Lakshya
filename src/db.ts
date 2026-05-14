@@ -34,11 +34,19 @@ export interface TaskRecord {
 
 export type SessionRecord = OpenSession | ClosedSession;
 
+// One row per calendar day — date is the primary key, no surrogate
+// UUID, because daily aggregate identity *is* the date.
+export interface McqLogRecord {
+  date: string;
+  count: number;
+}
+
 class LakshyaDB extends Dexie {
   schedules!: Table<ScheduleRecord, string>;
   tasks!: Table<TaskRecord, string>;
   taskProgress!: Table<TaskProgressRecord, string>;
   sessions!: Table<SessionRecord, string>;
+  mcqLogs!: Table<McqLogRecord, string>;
 
   constructor() {
     super("lakshya");
@@ -60,6 +68,15 @@ class LakshyaDB extends Dexie {
           delete s.focusMinutes;
         }),
     );
+    // Dexie's `.stores()` is the full schema for a version, not a
+    // delta — every prior store must be repeated.
+    this.version(3).stores({
+      schedules: "id, createdAt",
+      tasks: "id, scheduleId, [scheduleId+targetDate], targetDate",
+      taskProgress: "id, &[taskId+date], taskId, date",
+      sessions: "id, startedAt, state",
+      mcqLogs: "date",
+    });
   }
 }
 

@@ -1,0 +1,47 @@
+## Setup
+
+✅ Cold start redirects to /import (no schedule)  — url=http://localhost:3002/import
+✅ Imported sample schedule
+✅ Dashboard loaded  — url=http://localhost:3002/
+
+## PR-specific flows (append semantics)
+
+✅ MCQ counter card renders on dashboard
+✅ Initial MCQ count reads '0'  — text="0"
+✅ Eyebrow label reads 'MCQs solved today'  — text="MCQs solved today"
+✅ Day-0 meta shows bare '7-day avg: 0' (no green/red verdict yet)  — text="7-day avg: 0"
+ℹ️  Screenshot: dashboard-idle  — /tmp/lakshya-evidence-pr43-v2/evidence-pr-43-dashboard-idle.png
+✅ Tapping the number swaps in an <input>
+✅ Input is auto-focused after tap (rAF focus)
+✅ Input type is 'number'  — type="number"
+✅ Input opens EMPTY (append semantics, not pre-populated with current count)  — value=""
+✅ '+' glyph rendered between running total and input (append affordance)
+✅ Running total stays visible during edit  — text="0"
+ℹ️  Screenshot: edit-mode-empty  — /tmp/lakshya-evidence-pr43-v2/evidence-pr-43-edit-mode-empty.png
+✅ Enter commits +50 → display reads '50'  — text="50"
+✅ Delta indicator goes GREEN '▲ N above 7-day avg (M)'  — text="▲ 43 above 7-day avg (7)"
+✅ Delta indicator uses text-success token when ahead
+ℹ️  Screenshot: after-add-50  — /tmp/lakshya-evidence-pr43-v2/evidence-pr-43-after-add-50.png
+✅ Re-entering edit mode also opens with empty input (no stale draft)  — value=""
+✅ Running total in edit mode shows current 50 (visual proof of append)  — text="50"
+ℹ️  Screenshot: edit-mode-50-plus-23  — /tmp/lakshya-evidence-pr43-v2/evidence-pr-43-edit-mode-50-plus-23.png
+✅ Append works: 50 + 23 → display reads '73' (NOT '23')  — text="73"
+✅ Delta indicator updates after append  — text="▲ 63 above 7-day avg (10)"
+ℹ️  Screenshot: after-append-23  — /tmp/lakshya-evidence-pr43-v2/evidence-pr-43-after-append-23.png
+✅ MCQ count persists across page.reload() (still '73')  — text="73"
+ℹ️  Screenshot: after-reload-persisted  — /tmp/lakshya-evidence-pr43-v2/evidence-pr-43-after-reload-persisted.png
+✅ Escape discards the draft (display still '73', no append)  — text="73"
+✅ Dark mode applied (html.dark)
+✅ MCQ card still reads '73' in dark mode  — text="73"
+ℹ️  Screenshot: dashboard-dark  — /tmp/lakshya-evidence-pr43-v2/evidence-pr-43-dashboard-dark.png
+
+## Pinned design rules
+
+✅ MCQ display button has min-h-[44px] touch target
+✅ Eyebrow uses text-accent-strong (AA token)  — class="text-xs font-semibold text-accent-strong uppercase tracking-wide mb-1"
+✅ MCQ card sits AFTER stats grid AND BEFORE Today's Tasks in DOM order  — {"mcqIdx":60,"statsIdx":52,"tasksIdx":68}
+✅ No ±N stepper buttons inside the MCQ card (tap-to-add only)  — stepperCount=0
+
+## Console / page errors
+
+_(none)_
